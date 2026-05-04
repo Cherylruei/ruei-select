@@ -1,0 +1,134 @@
+/* ================================================================
+   DESIGN TOKENS — 訂單系統
+   森林系底色 × 櫻花粉點綴
+   Forest Moss × Sakura Accent
+
+   使用方式：
+   在 Next.js 的 app/globals.css 最頂端加入：
+   @import './design-tokens.css';
+   ================================================================ */
+
+:root {
+
+  /* ── Forest Green · 主色（導覽、結構、標籤）─────────────── */
+  --forest-50:   #f2f8f0;
+  --forest-100:  #dcefd8;
+  --forest-200:  #b5dcac;
+  --forest-300:  #82c278;
+  --forest-400:  #55a44a;
+  --forest-base: #3a8838;
+  --forest-deep: #2a6428;
+
+  /* ── Sakura Pink · 點綴色（價格、CTA、收藏、熱銷）──────── */
+  --sakura-50:   #fff5f7;
+  --sakura-100:  #ffe0e8;
+  --sakura-200:  #ffc0d0;
+  --sakura-300:  #ff96b0;
+  --sakura-400:  #f26b8c;
+  --sakura-base: #e83a6a;
+  --sakura-deep: #c42858;
+
+  /* ── Earth Brown · 輔色（廠商標記、木質感細節）─────────── */
+  --earth-50:    #faf6f0;
+  --earth-100:   #f0e4d0;
+  --earth-200:   #ddc8a0;
+  --earth-300:   #c4a870;
+  --earth-base:  #8c6e32;
+
+  /* ── Neutral Warm Gray · 文字、邊框、底色 ───────────────── */
+  --neutral-0:   #ffffff;
+  --neutral-50:  #ffffff;   /* ← 頁面底色：白色 */
+  --neutral-100: #edf0e8;
+  --neutral-200: #d8ddd0;
+  --neutral-300: #b4bcaa;
+  --neutral-400: #8c9880;
+  --neutral-500: #647058;
+  --neutral-600: #485040;
+  --neutral-700: #323828;
+  --neutral-800: #1e2218;
+
+  /* ── Semantic ────────────────────────────────────────────── */
+  --color-success: #3a8838;   /* = forest-base */
+  --color-warning: #c4a828;
+  --color-error:   #e83a6a;   /* = sakura-base */
+  --color-info:    #4878b8;
+
+  /* ================================================================
+     COLOR ROLE MAP — 什麼顏色用在哪裡
+     ================================================================
+     CTA 按鈕（下單）    → --sakura-base
+     價格顯示            → --sakura-base
+     收藏愛心（已收藏）  → --sakura-base
+     熱銷 badge          → --sakura-base
+     分類篩選 chip       → --forest-base
+     NEW badge           → --forest-base
+     廠商 dot            → --earth-base
+     規格 pill 底色      → --forest-50 / --forest-100
+     頁面底色            → --neutral-50  (白色)
+     卡片底色            → --neutral-0   (白色)
+     主文字              → --neutral-800
+     次文字              → --neutral-500
+     輔助文字            → --neutral-400
+     邊框（預設）        → --neutral-200
+     邊框（hover）       → --neutral-300
+     ================================================================ */
+
+  /* ── Typography ──────────────────────────────────────────── */
+  --font-display: 'Zen Maru Gothic', sans-serif;
+  --font-body:    'Noto Sans TC', sans-serif;
+
+  --text-xs:   0.6875rem;  /* 11px */
+  --text-sm:   0.8125rem;  /* 13px */
+  --text-base: 0.9375rem;  /* 15px */
+  --text-md:   1.0625rem;  /* 17px */
+  --text-lg:   1.25rem;    /* 20px */
+  --text-xl:   1.5rem;     /* 24px */
+  --text-2xl:  1.875rem;   /* 30px */
+  --text-3xl:  2.375rem;   /* 38px */
+
+  --weight-light:   300;
+  --weight-regular: 400;
+  --weight-medium:  500;
+  --weight-bold:    700;
+
+  --leading-tight:  1.3;
+  --leading-normal: 1.6;
+  --leading-loose:  1.9;
+
+  /* ── Spacing (rem-based) ─────────────────────────────────── */
+  --sp-1:  0.25rem;   /*  4px */
+  --sp-2:  0.5rem;    /*  8px */
+  --sp-3:  0.75rem;   /* 12px */
+  --sp-4:  1rem;      /* 16px */
+  --sp-5:  1.25rem;   /* 20px */
+  --sp-6:  1.5rem;    /* 24px */
+  --sp-8:  2rem;      /* 32px */
+  --sp-10: 2.5rem;    /* 40px */
+  --sp-12: 3rem;      /* 48px */
+  --sp-16: 4rem;      /* 64px */
+
+  /* ── Border Radius ───────────────────────────────────────── */
+  --r-sm:   6px;
+  --r-md:   12px;
+  --r-lg:   18px;
+  --r-xl:   24px;
+  --r-full: 9999px;
+
+  /* ── Shadow ──────────────────────────────────────────────── */
+  --sh-xs:  0 1px 3px  rgba(30, 50, 20, 0.07);
+  --sh-sm:  0 2px 8px  rgba(30, 50, 20, 0.09);
+  --sh-md:  0 4px 16px rgba(30, 50, 20, 0.11);
+  --sh-lg:  0 8px 28px rgba(30, 50, 20, 0.13);
+  --sh-card-hover:
+    0 12px 36px rgba(58, 136, 56, 0.13),
+    0  2px  8px rgba(30,  50, 20, 0.07);
+  --sh-cta:   0 4px 14px rgba(232, 58, 106, 0.32);
+  --sh-cta-h: 0 6px 20px rgba(232, 58, 106, 0.42);
+
+  /* ── Motion ──────────────────────────────────────────────── */
+  --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-smooth: cubic-bezier(0.40, 0.00, 0.20, 1);
+  --dur-fast: 150ms;
+  --dur-base: 240ms;
+  --dur-slow: 380ms;
+}
