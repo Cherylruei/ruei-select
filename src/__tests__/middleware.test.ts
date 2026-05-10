@@ -37,7 +37,7 @@ function mockNextResponse() {
 async function runMiddleware(url: string, isAuthenticated: boolean) {
   vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(isAuthenticated) as never)
 
-  const { middleware } = await import('../middleware')
+  const { proxy: middleware } = await import('../proxy')
 
   const request = new NextRequest(new URL(url, 'http://localhost:3000'))
   return middleware(request)
