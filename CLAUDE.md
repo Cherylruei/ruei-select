@@ -11,7 +11,7 @@
 **產品定位：** 以 LINE 生態系為核心的代購賣場管理平台
 **目標用戶：** 台灣代購賣家（商家）、買家（顧客）
 **核心價值：** 讓代購賣家把時間花在選品和顧客關係上，而不是手動整理訂單和撰寫文案
-**技術棧：** Next.js 16.2 (App Router · Turbopack) · React 19.2 · TypeScript · Supabase · Tailwind CSS · LINE LIFF
+**技術棧：** Next.js 15 (App Router · Turbopack) · React 19 · TypeScript · Supabase · Tailwind CSS · LINE LIFF
 **部署：** Vercel
 **PRD：** docs/PRD.md
 
@@ -19,12 +19,39 @@
 
 ## 2. 分支策略
 
+**採用 GitHub Flow（簡化版）**
+一人開發 + Claude Code 線性推進，不需要 develop 整合分支。
+每個 feature 獨立完成、獨立驗收、獨立 merge，互不干擾。
+
 ```
-main          ← 正式版本，Claude Code 禁止直接 push 或 merge
-develop       ← 整合分支，feature 開發完成後 merge 至此
-feature/*     ← 功能分支，命名規則見下方
-fix/*         ← 修復分支
-docs/*        ← 文件更新分支
+main
+├── feature/sprint1-init-setup      ← 從 main 開，完成後 merge 回 main
+├── feature/sprint1-line-auth       ← 從最新 main 開，完成後 merge 回 main
+├── feature/sprint1-admin-layout    ← 從最新 main 開，完成後 merge 回 main
+└── ...（後續 feature 同理）
+```
+
+### 每個 feature 的完整生命週期
+
+```
+1. 從最新 main 開分支
+   git checkout main && git pull origin main
+   git checkout -b feature/sprint{n}-{description}
+
+2. Claude Code 在此分支開發（TDD → Code → Verify）
+
+3. 所有測試通過 + Cheryl 視覺驗收
+
+4. Merge 進 main（由 Cheryl 執行）
+   git checkout main
+   git merge feature/sprint{n}-{description}
+   git push origin main
+
+5. 刪除已完成的 feature 分支
+   git branch -d feature/sprint{n}-{description}
+   git push origin --delete feature/sprint{n}-{description}
+
+6. 下一個 feature 從步驟 1 重新開始
 ```
 
 ### 分支命名規則
@@ -35,8 +62,13 @@ fix/sprint{n}-{kebab-case-description}
 docs/sprint{n}-{kebab-case-description}
 
 範例：
-feature/sprint1-store-setup
-feature/sprint1-product-create
+feature/sprint1-init-setup       ← DB migration + Supabase client + types + middleware
+feature/sprint1-line-auth        ← LINE 登入流程
+feature/sprint1-admin-layout     ← 後台 Sidebar 框架
+feature/sprint1-store-settings   ← 賣場設定頁
+feature/sprint1-suppliers        ← 供應商管理
+feature/sprint1-invite-link      ← 邀請連結
+feature/sprint1-customers-frame  ← 顧客審核框架
 fix/sprint2-duplicate-order
 docs/sprint1-update-dor
 ```
@@ -44,8 +76,10 @@ docs/sprint1-update-dor
 ### 禁止事項（Claude Code 不得執行）
 
 - ❌ 直接 push 到 `main`
-- ❌ 將 `develop` merge 進 `main`
+- ❌ 直接 merge 任何分支進 `main`（只有 Cheryl 可以）
+- ❌ feature 分支互相 merge
 - ❌ 強制 push（`git push --force`）任何分支
+- ❌ 未完成、測試未過的 feature merge 進 main
 - ❌ 未經確認修改 `claude.md`
 
 ---
@@ -166,8 +200,9 @@ DoR → Explore① → SDD(delta) → DoD → TDD → Explore② → Code → Ve
 ### Done
 
 - 所有 Verify 項目通過
-- PR 開至 `develop`，描述清楚變更內容
-- 等待 Cheryl review 並 merge
+- 通知 Cheryl：「feature/sprint{n}-xxx 已完成，請 review 並 merge 進 main」
+- 提供完成項目清單、截圖、測試結果摘要
+- 等待 Cheryl review、視覺驗收、執行 merge
 
 ### Retro
 
@@ -289,30 +324,33 @@ km/
 
 ## 9. 目前狀態
 
-> 這個區塊在每個 Sprint 開始時更新。
+> 這個區塊在每個 feature 開始和完成時更新。
 
 ```
-目前 Sprint：  Sprint 0（準備階段）
-目前分支：     develop
-進行中 feature：無
-上次 Retro：   尚未開始
+目前 Sprint：   Sprint 1
+目前分支：      feature/sprint1-init-setup（待建立）
+進行中 feature：sprint1-init-setup
+上次 Retro：    尚未開始
 
-待確認事項：
-- [ ] Next.js 專案初始化
-- [ ] Supabase 專案建立
-- [ ] Sprint 1 DoR 完成
+Sprint 1 feature 進度：
+- [ ] feature/sprint1-init-setup       DB migration + Supabase client + types + middleware
+- [ ] feature/sprint1-line-auth        LINE 登入流程
+- [ ] feature/sprint1-admin-layout     後台 Sidebar 框架 + Dashboard
+- [ ] feature/sprint1-store-settings   賣場設定頁
+- [ ] feature/sprint1-suppliers        供應商管理
+- [ ] feature/sprint1-invite-link      邀請連結
+- [ ] feature/sprint1-customers-frame  顧客審核框架
 
+環境準備狀態：
+- [x] LINE Login Channel 建立完成
+- [x] LIFF App 建立完成
+- [x] GitHub repo：ruei-select
+- [x] Next.js 16 專案初始化
+- [x] design-tokens.css 放入 src/app/
+- [x] docs/ 和 km/ 資料夾結構建立
+- [ ] Supabase Project 建立 + .env.local 完成（開發前必須確認）
+- [ ] Vercel 部署 + LIFF Endpoint URL 填入（開發前必須確認）
 ```
-
-桌機（≥ 768px）
-Sidebar 展開 220px，可收合到 64px（只剩 icon）
-Grid 維持多欄
-
-手機（< 768px）
-Sidebar 隱藏，頂部出現 Hamburger 按鈕
-點擊後 Sidebar 從左側滑出覆蓋頁面
-Grid 全部變單欄
-Drawer 改為從底部滑出（Bottom Sheet）
 
 ---
 
@@ -320,22 +358,25 @@ Drawer 改為從底部滑出（Bottom Sheet）
 
 ```
 ruei-select/
-├── claude.md                          ← 本文件
+├── claude.md                          ← 本文件（根目錄）
 ├── src/
 │   └── app/
-│       ├── design-tokens.css
+│       ├── design-tokens.css          ← Design System tokens
 │       ├── globals.css
 │       └── layout.tsx
 ├── docs/
+│   ├── PRD.md
 │   ├── sdd/
-│   │   ├── system-sdd.md              ← 系統整體架構（寫一次，持續更新）
-│   │   └── sprint{n}-delta.md        ← 每個 Sprint 的設計變動
+│   │   └── system-sdd.md              ← 系統整體架構
 │   ├── dor/
-│   │   └── sprint{n}-dor.md
+│   │   └── sprint1-dor.md
 │   ├── dod/
-│   │   └── sprint{n}-dod.md
+│   │   └── sprint1-dod.md
+│   ├── design/
+│   │   ├── admin-login-final.html     ← 登入頁設計稿（定稿）
+│   │   ├── admin-pages-design.html   ← 後台各頁面設計稿
+│   │   └── design-system-final.html  ← Design System 參考
 │   └── sprint-retro/
-│       └── sprint{n}-retro.md
 └── km/
     ├── bugs/
     ├── decisions/
