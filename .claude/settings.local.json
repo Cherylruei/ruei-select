@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-Content \"c:\\\\Users\\\\heave\\\\ruei-select\\\\docs\\\\design\\\\logo.svg\" -TotalCount 50)",
+      "Bash(npm install *)",
+      "Bash(npm run *)",
+      "Bash(npx vitest *)",
+      "Bash(git add *)",
+      "Bash(git commit -m 'test\\(db\\): add migration validation tests *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
