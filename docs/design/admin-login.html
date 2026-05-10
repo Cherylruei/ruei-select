@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>芮選 · V2-C 圓形印章 Logo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html,
+      body {
+        height: 100%;
+      }
+
+      :root {
+        --sage-600: #3d7020;
+        --sage-700: #2c5218;
+        --sage-50: #f2f8ec;
+        --sage-100: #e0f0d0;
+        --sage-400: #6dab3d;
+        --sakura: #e8749d;
+        --sakura-mid: #f5a8bf;
+        --sakura-pale: #fff0f5;
+        --line-green: #00b900;
+        --text-dark: #192e10;
+        --text-mid: #4a5e42;
+        --text-muted: #8a9a82;
+      }
+
+      body {
+        display: flex;
+        min-height: 100vh;
+        font-family: 'Noto Sans TC', sans-serif;
+        background: #f6fbf0;
+      }
+
+      /* ── LEFT PANEL ──────────────────────────────────── */
+      .brand {
+        width: 46%;
+        background: var(--sage-600);
+        background-image:
+          radial-gradient(
+            ellipse 60% 50% at 85% 12%,
+            rgba(109, 171, 61, 0.4) 0%,
+            transparent 65%
+          ),
+          radial-gradient(
+            ellipse 50% 60% at 10% 88%,
+            rgba(44, 82, 24, 0.52) 0%,
+            transparent 60%
+          );
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 52px 48px;
+        min-height: 100vh;
+      }
+
+      /* Subtle ring decorations behind the logo */
+      .bg-ring {
+        position: absolute;
+        border-radius: 50%;
+        border: 1px solid rgba(255, 255, 255, 0.07);
+        pointer-events: none;
+      }
+      .ring-1 {
+        width: 320px;
+        height: 320px;
+        top: -80px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .ring-2 {
+        width: 220px;
+        height: 220px;
+        top: -30px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-color: rgba(255, 255, 255, 0.05);
+      }
+      .ring-3 {
+        width: 480px;
+        height: 480px;
+        top: -180px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-color: rgba(255, 255, 255, 0.04);
+      }
+      /* Bottom leaf clusters */
+      .ring-4 {
+        width: 260px;
+        height: 260px;
+        bottom: -80px;
+        right: -60px;
+        border-color: rgba(232, 116, 157, 0.1);
+      }
+      .ring-5 {
+        width: 180px;
+        height: 180px;
+        bottom: -40px;
+        right: -20px;
+        border-color: rgba(232, 116, 157, 0.08);
+      }
+
+      /* Floating leaf silhouettes */
+      .deco-leaf {
+        position: absolute;
+        pointer-events: none;
+      }
+      .dl-l1 {
+        bottom: 25%;
+        left: 8%;
+        width: 50px;
+        opacity: 0.1;
+        transform: rotate(55deg);
+      }
+      .dl-l2 {
+        bottom: 14%;
+        right: 10%;
+        width: 62px;
+        opacity: 0.09;
+        transform: rotate(-20deg);
+      }
+      .dl-l3 {
+        top: 55%;
+        right: 5%;
+        width: 38px;
+        opacity: 0.08;
+        transform: rotate(30deg);
+      }
+
+      .brand-inner {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+        text-align: center;
+      }
+
+      /* ─ LOGO AREA: 圓形印章 ─ */
+      .logo-area {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+
+      /* The circular emblem — large */
+      .logo-emblem {
+        width: 200px;
+        height: 200px;
+        margin-bottom: 18px;
+        filter: drop-shadow(0 6px 18px rgba(0, 0, 0, 0.25));
+      }
+
+      /* 芮選 text below emblem — BIG */
+      .logo-name {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 48px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.1em;
+        line-height: 1;
+        margin-bottom: 6px;
+      }
+      .logo-sub {
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.42);
+        letter-spacing: 0.26em;
+        text-transform: uppercase;
+      }
+
+      /* Divider ornament */
+      .ornament {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 24px 0;
+        width: 100%;
+        max-width: 280px;
+      }
+      .ornament::before,
+      .ornament::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.18);
+      }
+      .ornament-center {
+        display: flex;
+        gap: 5px;
+        align-items: center;
+      }
+      .orn-dot {
+        width: 4px;
+        height: 4px;
+        border-radius: 50%;
+        background: rgba(245, 168, 191, 0.7);
+      }
+      .orn-dot-sm {
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: rgba(245, 168, 191, 0.4);
+      }
+
+      .brand-hl {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 27px;
+        font-weight: 700;
+        color: #fff;
+        line-height: 1.5;
+        letter-spacing: 0.04em;
+        margin-bottom: 10px;
+      }
+      .brand-hl .accent {
+        color: var(--sakura-mid);
+      }
+
+      .features {
+        margin: 15px 40px 0;
+        list-style: none;
+        width: 80%;
+        text-align: left;
+      }
+      .feature {
+        display: flex;
+        align-items: center;
+        gap: 13px;
+        padding: 12px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .feature:last-child {
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .feature-icon-wrap {
+        width: 28px;
+        height: 28px;
+        border-radius: 8px;
+        background: rgba(255, 255, 255, 0.12);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .feature-icon-wrap svg {
+        width: 13px;
+        height: 13px;
+        color: var(--sakura-mid);
+      }
+      .feature-label {
+        font-size: 18px;
+        color: rgba(255, 255, 255, 0.78);
+      }
+
+      .brand-foot {
+        margin-top: 26px;
+        font-size: 11.5px;
+        color: rgba(255, 255, 255, 0.25);
+      }
+
+      /* ── RIGHT PANEL ─────────────────────────────────── */
+      .form-side {
+        width: 54%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 72px;
+        background: #fcfff9;
+        position: relative;
+      }
+      .form-side::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        right: 0;
+        width: 220px;
+        height: 220px;
+        background: radial-gradient(
+          circle at top right,
+          rgba(184, 216, 153, 0.16) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+      }
+
+      .form-box {
+        width: 100%;
+        max-width: 400px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .form-eyebrow {
+        font-size: 16px;
+        font-weight: 500;
+        color: var(--sage-400);
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .form-eyebrow::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: var(--sage-100);
+      }
+
+      .form-title {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 40px;
+        font-weight: 700;
+        color: var(--text-dark);
+        line-height: 1.3;
+        margin-bottom: 10px;
+      }
+      .form-body {
+        font-size: 18px;
+        color: var(--text-mid);
+        line-height: 1.85;
+        margin-bottom: 25px;
+      }
+
+      .btn-line {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        width: 100%;
+        padding: 17px 28px;
+        background: var(--line-green);
+        color: #fff;
+        border: none;
+        border-radius: 100px;
+        font-size: 16px;
+        font-weight: 700;
+        font-family: 'Noto Sans TC', sans-serif;
+        cursor: pointer;
+        text-decoration: none;
+        letter-spacing: 0.05em;
+        transition: all 0.2s ease;
+        box-shadow: 0 6px 24px rgba(0, 185, 0, 0.25);
+        position: relative;
+        overflow: hidden;
+      }
+      .btn-line::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 255, 255, 0.12) 0%,
+          transparent 50%
+        );
+      }
+      .btn-line:hover {
+        background: #00a800;
+        box-shadow: 0 8px 30px rgba(0, 185, 0, 0.35);
+        transform: translateY(-2px);
+      }
+      .line-logo {
+        width: 23px;
+        height: 23px;
+        flex-shrink: 0;
+        position: relative;
+      }
+
+      .feature-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 26px;
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: var(--sage-50);
+        border: 1px solid var(--sage-100);
+        border-radius: 20px;
+        padding: 5px 11px;
+        font-size: 14px;
+        color: var(--text-mid);
+      }
+      .pill::before {
+        content: '';
+        width: 5px;
+        height: 5px;
+        border-radius: 50%;
+        background: var(--sakura);
+        flex-shrink: 0;
+      }
+
+      .info-note {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        margin-top: 26px;
+        padding: 14px 16px;
+        background: var(--sakura-pale);
+        border-radius: 10px;
+      }
+      .info-note svg {
+        width: 15px;
+        height: 15px;
+        color: var(--sakura);
+        flex-shrink: 0;
+        margin-top: 2px;
+      }
+      .info-note p {
+        font-size: 15px;
+        color: #7a3050;
+        line-height: 1.7;
+      }
+      .info-note strong {
+        color: #5a1a38;
+      }
+
+      .form-foot {
+        margin-top: 34px;
+        text-align: center;
+        font-size: 12.5px;
+        color: var(--text-muted);
+      }
+      .form-foot a {
+        color: var(--text-mid);
+      }
+
+      @media (max-width: 800px) {
+        body {
+          flex-direction: column;
+        }
+        .brand {
+          width: 100%;
+          min-height: auto;
+          padding: 44px 32px 36px;
+        }
+        .brand-hl {
+          font-size: 22px;
+        }
+        .features {
+          display: none;
+        }
+        .form-side {
+          width: 100%;
+          padding: 48px 32px 60px;
+        }
+        .form-side::after {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ── BRAND SIDE ─────────────────────────────────── -->
+    <aside class="brand">
+      <div class="bg-ring ring-1"></div>
+      <div class="bg-ring ring-2"></div>
+      <div class="bg-ring ring-3"></div>
+      <div class="bg-ring ring-4"></div>
+      <div class="bg-ring ring-5"></div>
+
+      <!-- Leaf silhouettes -->
+      <svg class="deco-leaf dl-l1" viewBox="0 0 50 68" fill="none">
+        <path
+          d="M25 4 C13 9 7 22 9 36 C11 49 19 60 25 64 C31 60 39 49 41 36 C43 22 37 9 25 4Z"
+          fill="white"
+        />
+        <line x1="25" y1="4" x2="25" y2="64" stroke="white" stroke-width="1" />
+      </svg>
+      <svg class="deco-leaf dl-l2" viewBox="0 0 62 82" fill="none">
+        <path
+          d="M31 5 C17 10 9 26 11 44 C13 58 22 72 31 78 C40 72 49 58 51 44 C53 26 45 10 31 5Z"
+          fill="white"
+        />
+        <line
+          x1="31"
+          y1="5"
+          x2="31"
+          y2="78"
+          stroke="white"
+          stroke-width="1.2"
+        />
+      </svg>
+      <svg class="deco-leaf dl-l3" viewBox="0 0 38 52" fill="none">
+        <path
+          d="M19 3 C10 7 6 17 8 28 C10 38 15 46 19 50 C23 46 28 38 30 28 C32 17 28 7 19 3Z"
+          fill="white"
+        />
+      </svg>
+
+      <div class="brand-inner">
+        <!-- ══ LOGO: 圓形印章 × 芮選 ══ -->
+        <div class="logo-area">
+          <svg class="logo-emblem" viewBox="0 0 120 120" fill="none">
+            <!-- Outer ring -->
+            <circle cx="60" cy="60" r="57" stroke="rgba(255,255,255,.65)" stroke-width="1.8" />
+            <!-- Inner ring -->
+            <circle cx="60" cy="60" r="50" stroke="rgba(255,255,255,.28)" stroke-width=".9" />
+            <!-- Fill -->
+            <circle cx="60" cy="60" r="57" fill="rgba(255,255,255,.08)" />
+            <!-- 四葉愛心草 -->
+            <g transform="translate(60,35)">
+              <g transform="rotate(-45) translate(0,-4)">
+                <path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round" />
+              </g>
+              <g transform="rotate(45) translate(0,-4)">
+                <path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round" />
+              </g>
+              <g transform="rotate(135) translate(0,-4)">
+                <path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round" />
+              </g>
+              <g transform="rotate(235) translate(0,-4)">
+                <path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round" />
+              </g>
+              <circle r="2.2" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".9" />
+              <circle r="1.1" fill="rgba(232,116,157,.82)" />
+            </g>
+            <!-- Stem -->
+            <line x1="60" y1="44" x2="60" y2="54" stroke="rgba(255,255,255,.32)" stroke-width="1.2" stroke-linecap="round" />
+            <!-- 芮選 text -->
+            <text x="60" y="80" font-family="'Zen Maru Gothic','Noto Sans TC',sans-serif" font-size="28" font-weight="700" fill="rgba(255,255,255,.95)" text-anchor="middle" letter-spacing="6">芮選</text>
+            <!-- Sakura dots -->
+            <circle cx="60" cy="103" r="1.5" fill="rgba(245,168,191,.6)" />
+            <circle cx="18" cy="82" r="1.5" fill="rgba(245,168,191,.4)" />
+            <circle cx="102" cy="82" r="1.5" fill="rgba(245,168,191,.4)" />
+            <circle cx="10" cy="55" r="1" fill="rgba(255,255,255,.25)" />
+            <circle cx="110" cy="55" r="1" fill="rgba(255,255,255,.25)" />
+            <!-- RUEI SELECT arc -->
+            <path id="bottomArc" d="M 15 70 A 50 50 0 0 0 105 70" fill="none" />
+            <text font-family="'Noto Sans TC',sans-serif" font-size="8" fill="rgba(255,255,255,.38)" letter-spacing="3">
+              <textPath href="#bottomArc" startOffset="50%" text-anchor="middle">RUEI SELECT</textPath>
+            </text>
+          </svg>
+
+          <p class="logo-sub">Ruei Select · 代購賣家後台</p>
+        </div>
+
+        <!-- Ornament divider -->
+        <div class="ornament">
+          <div class="ornament-center">
+            <div class="orn-dot-sm"></div>
+            <div class="orn-dot"></div>
+            <div class="orn-dot-sm"></div>
+          </div>
+        </div>
+
+        <h1 class="brand-hl">
+          選你所選，<span class="accent">賣得輕鬆</span>。
+        </h1>
+        <ul class="features">
+          <li class="feature">
+            <div class="feature-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M9 11l3 3L22 4" />
+                <path
+                  d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"
+                />
+              </svg>
+            </div>
+            <span class="feature-label">系統化訂單管理，不再漏單</span>
+          </li>
+          <li class="feature">
+            <div class="feature-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M12 20h9" />
+                <path
+                  d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"
+                />
+              </svg>
+            </div>
+            <span class="feature-label">AI 一鍵優化商品文案</span>
+          </li>
+          <li class="feature">
+            <div class="feature-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" />
+              </svg>
+            </div>
+            <span class="feature-label">外幣匯率自動換算，定價更輕鬆</span>
+          </li>
+          <li class="feature">
+            <div class="feature-icon-wrap">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12" />
+              </svg>
+            </div>
+            <span class="feature-label">銷售數據分析，洞察顧客偏好</span>
+          </li>
+        </ul>
+
+        <p class="brand-foot">© 2026 芮選系統 · 商家專屬後台</p>
+      </div>
+    </aside>
+
+    <!-- ── FORM SIDE ──────────────────────────────────── -->
+    <main class="form-side">
+      <div class="form-box">
+        <p class="form-eyebrow">商家後台登入</p>
+        <h2 class="form-title">Hi，歡迎回來 👋</h2>
+        <p class="form-body">
+          使用你的 LINE 帳號快速登入。<br />
+          首次登入會自動建立後台帳號，無需另外申請。
+        </p>
+
+        <a href="#" class="btn-line">
+          <svg class="line-logo" viewBox="0 0 48 48" fill="none">
+            <rect
+              width="48"
+              height="48"
+              rx="10"
+              fill="rgba(255,255,255,0.25)"
+            />
+            <path
+              d="M24 10C15.16 10 8 15.82 8 22.9C8 29.24 13.46 34.58 21.06 35.74C21.58 35.84 22.3 36.06 22.48 36.5C22.64 36.9 22.58 37.52 22.52 37.92L22.24 39.58C22.16 39.98 21.88 41.12 24 40.24C26.12 39.36 35.28 33.72 39.06 29.36C41.62 26.56 43 24 43 22.9C43 15.82 35.84 10 27 10H24Z"
+              fill="white"
+            />
+            <path
+              d="M20 26.5V19.5H21.5V26.5H20ZM28 26.5L24.5 21.5V26.5H23V19.5H24.5L28 24.5V19.5H29.5V26.5H28ZM18.5 26.5H15V19.5H16.5V25H18.5V26.5ZM33 21H30.5V22.5H33V24H30.5V25H33V26.5H29V19.5H33V21Z"
+              fill="#00B900"
+            />
+          </svg>
+          使用 LINE 帳號登入
+        </a>
+
+        <div class="feature-pills">
+          <span class="pill">訂單管理</span>
+          <span class="pill">AI 文案</span>
+          <span class="pill">匯率換算</span>
+          <span class="pill">數據分析</span>
+          <span class="pill">供應商管理</span>
+        </div>
+
+        <div class="info-note">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <circle cx="12" cy="16" r="0.5" fill="currentColor" />
+          </svg>
+          <p>
+            這是
+            <strong>商家專屬</strong>
+            後台。如果你是顧客，請透過商家提供的邀請連結進入。
+          </p>
+        </div>
+
+        <div class="form-foot">
+          登入即代表同意 <a href="#">服務條款</a> 與 <a href="#">隱私政策</a>
+        </div>
+      </div>
+    </main>
+  </body>
+</html>

@@ -1,0 +1,694 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>芮選 · 賣場設定</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; }
+
+      :root {
+        --sage-50:#f2f8ec; --sage-100:#e0f0d0; --sage-200:#b8dca0;
+        --sage-400:#6dab3d; --sage-500:#508a2c; --sage-600:#3d7020;
+        --sage-700:#2c5218; --sage-800:#1c3610;
+        --sakura-pale:#fff0f5; --sakura-100:#ffd8e8;
+        --sakura-mid:#f5a8bf; --sakura:#e8749d;
+        --neutral-0:#fff; --neutral-50:#f6fbf0; --neutral-100:#edf5e8;
+        --neutral-200:#d8e8cc; --neutral-300:#b4c8a0; --neutral-400:#8a9a82;
+        --neutral-500:#647258; --neutral-600:#4a5e42; --neutral-700:#2a3e20; --neutral-800:#192e10;
+        --color-warning:#c4a828;
+        --r-sm:6px; --r-md:12px; --r-lg:18px; --r-xl:24px; --r-full:999px;
+        --sh-xs:0 1px 3px rgba(28,54,16,.07); --sh-sm:0 2px 8px rgba(28,54,16,.09);
+        --sh-md:0 4px 16px rgba(28,54,16,.11); --sh-lg:0 8px 32px rgba(28,54,16,.14);
+        --ease-smooth:cubic-bezier(.4,0,.2,1); --ease-bounce:cubic-bezier(.34,1.56,.64,1);
+        --sidebar-w:220px; --sidebar-min:64px; --topbar-h:60px;
+      }
+
+      body {
+        font-family: 'Noto Sans TC', sans-serif;
+        background: var(--neutral-50);
+        color: var(--neutral-800);
+        min-height: 100vh;
+        display: flex;
+      }
+
+      /* SIDEBAR (shared) */
+      .sidebar {
+        width: var(--sidebar-w);
+        flex-shrink: 0;
+        background: var(--sage-600);
+        background-image:
+          radial-gradient(ellipse 60% 50% at 85% 12%, rgba(109,171,61,.32) 0%, transparent 65%),
+          radial-gradient(ellipse 50% 60% at 10% 88%, rgba(28,54,16,.45) 0%, transparent 60%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        z-index: 50;
+        transition: width .3s var(--ease-smooth), transform .3s var(--ease-smooth);
+        overflow: hidden;
+      }
+      .sidebar.collapsed { width: var(--sidebar-min); }
+      .sb-head { padding: 18px 16px 16px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid rgba(255,255,255,.08); }
+      .sb-logo { flex-shrink: 0; width: 40px; height: 40px; display: grid; place-items: center; filter: drop-shadow(0 2px 6px rgba(0,0,0,.18)); }
+      .sb-brand { font-family: 'Zen Maru Gothic', sans-serif; font-weight: 700; font-size: 19px; letter-spacing: .12em; white-space: nowrap; transition: opacity .2s var(--ease-smooth); }
+      .sb-brand-sub { font-size: 10px; color: rgba(255,255,255,.42); letter-spacing: .22em; white-space: nowrap; }
+      .sidebar.collapsed .sb-brand,
+      .sidebar.collapsed .sb-brand-sub,
+      .sidebar.collapsed .nav-label,
+      .sidebar.collapsed .nav-badge,
+      .sidebar.collapsed .nav-tag,
+      .sidebar.collapsed .sb-user-meta,
+      .sidebar.collapsed .sb-nav-section { opacity: 0; pointer-events: none; }
+      .sb-nav { list-style: none; padding: 14px 10px; flex: 1; overflow-y: auto; }
+      .sb-nav-section { font-size: 10.5px; color: rgba(255,255,255,.32); letter-spacing: .22em; text-transform: uppercase; padding: 14px 12px 8px; white-space: nowrap; transition: opacity .2s var(--ease-smooth); }
+      .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 10px; color: rgba(255,255,255,.78); text-decoration: none; font-size: 14.5px; transition: background .15s var(--ease-smooth), color .15s var(--ease-smooth); white-space: nowrap; margin-bottom: 2px; cursor: pointer; }
+      .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+      .nav-item.active { background: rgba(255,255,255,.13); color: #fff; box-shadow: inset 3px 0 0 var(--sakura-mid); }
+      .nav-item.disabled { opacity: .35; cursor: not-allowed; }
+      .nav-item.disabled:hover { background: transparent; }
+      .nav-icon { flex-shrink: 0; width: 20px; height: 20px; display: grid; place-items: center; }
+      .nav-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+      .nav-label { flex: 1; transition: opacity .2s var(--ease-smooth); }
+      .nav-badge { background: var(--sakura); color: #fff; font-size: 11px; font-weight: 700; padding: 2px 7px; border-radius: var(--r-full); line-height: 1.4; transition: opacity .2s var(--ease-smooth); }
+      .nav-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,255,255,.08); color: rgba(255,255,255,.5); font-weight: 500; transition: opacity .2s var(--ease-smooth); }
+      .sb-foot { padding: 12px 10px; border-top: 1px solid rgba(255,255,255,.08); display: flex; align-items: center; gap: 10px; }
+      .sb-user { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+      .sb-avatar { flex-shrink: 0; width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, var(--sakura-mid), var(--sakura)); display: grid; place-items: center; color: #fff; font-weight: 700; font-size: 14px; font-family: 'Zen Maru Gothic', sans-serif; box-shadow: 0 2px 6px rgba(0,0,0,.2); }
+      .sb-user-meta { line-height: 1.3; overflow: hidden; transition: opacity .2s var(--ease-smooth); }
+      .sb-user-name { font-size: 13px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .sb-user-role { font-size: 11px; color: rgba(255,255,255,.45); white-space: nowrap; }
+      .sb-toggle { flex-shrink: 0; width: 30px; height: 30px; border-radius: 8px; border: none; background: rgba(255,255,255,.08); color: rgba(255,255,255,.7); display: grid; place-items: center; cursor: pointer; transition: background .15s var(--ease-smooth); }
+      .sb-toggle:hover { background: rgba(255,255,255,.16); color: #fff; }
+      .sb-toggle svg { width: 16px; height: 16px; transition: transform .3s var(--ease-smooth); }
+      .sidebar.collapsed .sb-toggle svg { transform: rotate(180deg); }
+      .sb-backdrop { display: none; position: fixed; inset: 0; background: rgba(28,54,16,.4); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); z-index: 40; opacity: 0; transition: opacity .25s var(--ease-smooth); }
+      .sb-backdrop.active { display: block; opacity: 1; }
+
+      /* MAIN */
+      .main {
+        flex: 1;
+        margin-left: var(--sidebar-w);
+        transition: margin-left .3s var(--ease-smooth);
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .main.collapsed { margin-left: var(--sidebar-min); }
+
+      .topbar {
+        height: var(--topbar-h);
+        background: rgba(255,255,255,.85);
+        backdrop-filter: saturate(140%) blur(8px);
+        -webkit-backdrop-filter: saturate(140%) blur(8px);
+        border-bottom: 1px solid var(--neutral-200);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 24px;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+      }
+      .hamburger { display: none; background: none; border: 1px solid var(--neutral-200); border-radius: 8px; width: 36px; height: 36px; place-items: center; cursor: pointer; color: var(--sage-700); }
+      .hamburger svg { width: 18px; height: 18px; }
+      .crumb { font-size: 13px; color: var(--neutral-500); display: flex; align-items: center; gap: 6px; }
+      .crumb a { color: var(--neutral-500); text-decoration: none; }
+      .crumb strong { color: var(--neutral-800); font-weight: 500; }
+      .crumb svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+      .topbar-spacer { flex: 1; }
+
+      .content { flex: 1; padding: 28px 32px 56px; max-width: 1100px; width: 100%; }
+
+      .page-head {
+        margin-bottom: 22px;
+      }
+      .page-title {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--neutral-800);
+        letter-spacing: .04em;
+        margin-bottom: 6px;
+      }
+      .page-sub {
+        font-size: 13.5px;
+        color: var(--neutral-500);
+      }
+
+      /* Section card */
+      .card {
+        background: #fff;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-lg);
+        padding: 26px 28px;
+        margin-bottom: 22px;
+        box-shadow: var(--sh-xs);
+      }
+      .card-head {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 18px;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .card-title {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 17px;
+        font-weight: 500;
+        color: var(--neutral-800);
+        letter-spacing: .04em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .card-title::before {
+        content: '';
+        width: 4px; height: 16px;
+        background: var(--sage-500);
+        border-radius: 4px;
+      }
+      .card-hint {
+        font-size: 12.5px;
+        color: var(--neutral-500);
+      }
+
+      /* Store info layout */
+      .store-info {
+        display: grid;
+        grid-template-columns: 140px 1fr;
+        gap: 32px;
+        align-items: flex-start;
+      }
+      .avatar-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+      }
+      .avatar {
+        position: relative;
+        width: 100px; height: 100px;
+        border-radius: 50%;
+        background: var(--sage-600);
+        background-image:
+          radial-gradient(ellipse 60% 60% at 30% 30%, rgba(109,171,61,.5) 0%, transparent 65%),
+          radial-gradient(ellipse 60% 60% at 70% 80%, rgba(28,54,16,.4) 0%, transparent 60%);
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 42px;
+        font-weight: 700;
+        cursor: pointer;
+        box-shadow: var(--sh-sm), inset 0 0 0 4px rgba(255,255,255,.12);
+        overflow: hidden;
+        transition: transform .25s var(--ease-smooth);
+      }
+      .avatar:hover { transform: scale(1.03); }
+      .avatar-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(28,54,16,.65);
+        color: #fff;
+        font-family: 'Noto Sans TC', sans-serif;
+        font-size: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        opacity: 0;
+        transition: opacity .2s var(--ease-smooth);
+      }
+      .avatar:hover .avatar-overlay { opacity: 1; }
+      .avatar-overlay svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+      .avatar-cap {
+        font-size: 11.5px;
+        color: var(--neutral-500);
+      }
+
+      .form-row {
+        margin-bottom: 18px;
+      }
+      .form-row:last-child { margin-bottom: 0; }
+      .form-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--neutral-700);
+        margin-bottom: 6px;
+        letter-spacing: .03em;
+      }
+      .form-label .req { color: var(--sakura); margin-left: 2px; }
+
+      .input, .textarea {
+        width: 100%;
+        padding: 11px 14px;
+        font-family: inherit;
+        font-size: 14px;
+        color: var(--neutral-800);
+        background: #fff;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-md);
+        outline: none;
+        transition: border-color .2s var(--ease-smooth), box-shadow .2s var(--ease-smooth);
+      }
+      .input:hover, .textarea:hover { border-color: var(--neutral-300); }
+      .input:focus, .textarea:focus {
+        border-color: var(--sage-400);
+        box-shadow: 0 0 0 3px rgba(109,171,61,.15);
+      }
+      .textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
+      .form-meta {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 6px;
+        font-size: 11.5px;
+        color: var(--neutral-400);
+      }
+      .form-meta .count { color: var(--neutral-500); }
+
+      .form-actions {
+        margin-top: 22px;
+        padding-top: 18px;
+        border-top: 1px solid var(--neutral-100);
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+      }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 18px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: var(--r-md);
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: background .15s var(--ease-smooth), color .15s var(--ease-smooth), transform .15s var(--ease-smooth), box-shadow .15s var(--ease-smooth);
+        text-decoration: none;
+      }
+      .btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+      .btn-primary { background: var(--sage-600); color: #fff; box-shadow: 0 2px 8px rgba(61,112,32,.22); }
+      .btn-primary:hover { background: var(--sage-700); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(61,112,32,.3); }
+      .btn-ghost { background: transparent; color: var(--neutral-600); border-color: var(--neutral-200); }
+      .btn-ghost:hover { background: var(--neutral-100); color: var(--neutral-800); }
+      .btn-warning {
+        background: none;
+        color: var(--color-warning);
+        font-size: 12.5px;
+        padding: 6px 0;
+        border: none;
+      }
+      .btn-warning:hover { color: #8a7416; text-decoration: underline; }
+
+      /* Invite link */
+      .invite-row {
+        display: flex;
+        gap: 10px;
+        align-items: stretch;
+        margin-bottom: 14px;
+      }
+      .invite-link {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 16px;
+        background: var(--sage-50);
+        border: 1px dashed var(--sage-200);
+        border-radius: var(--r-md);
+        font-family: 'SF Mono', 'Menlo', 'Consolas', monospace;
+        font-size: 13px;
+        color: var(--sage-700);
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      .invite-link svg { flex-shrink: 0; width: 14px; height: 14px; stroke: var(--sage-500); fill: none; stroke-width: 2; }
+      .copy-toast {
+        position: fixed;
+        bottom: 30px; left: 50%;
+        transform: translateX(-50%) translateY(20px);
+        background: var(--sage-700);
+        color: #fff;
+        padding: 10px 20px;
+        border-radius: var(--r-full);
+        font-size: 13px;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .25s var(--ease-smooth), transform .25s var(--ease-smooth);
+        z-index: 100;
+        box-shadow: var(--sh-md);
+      }
+      .copy-toast.show {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      .invite-note {
+        font-size: 12.5px;
+        color: var(--neutral-500);
+        line-height: 1.7;
+      }
+
+      /* Preview card (mini login) */
+      .preview-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+      .preview-card {
+        width: 100%;
+        max-width: 320px;
+        background: var(--sage-700);
+        background-image:
+          radial-gradient(ellipse 80% 50% at 90% 10%, rgba(109,171,61,.3) 0%, transparent 60%),
+          radial-gradient(ellipse 60% 70% at 5% 95%, rgba(28,54,16,.6) 0%, transparent 60%);
+        border-radius: var(--r-lg);
+        padding: 28px 24px;
+        color: #fff;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+        box-shadow: var(--sh-md);
+      }
+      .preview-mini-logo {
+        width: 56px; height: 56px;
+        margin: 0 auto 12px;
+        border-radius: 50%;
+        background: rgba(255,255,255,.1);
+        border: 1px solid rgba(255,255,255,.3);
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+      }
+      .preview-name {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 19px;
+        font-weight: 700;
+        letter-spacing: .1em;
+        margin-bottom: 6px;
+      }
+      .preview-desc {
+        font-size: 11.5px;
+        color: rgba(255,255,255,.6);
+        line-height: 1.6;
+        margin-bottom: 16px;
+      }
+      .preview-line-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        background: #00b900;
+        color: #fff;
+        padding: 8px 18px;
+        border-radius: var(--r-full);
+        font-size: 12.5px;
+        font-weight: 700;
+        box-shadow: 0 3px 10px rgba(0,185,0,.3);
+      }
+      .preview-line-btn svg { width: 14px; height: 14px; }
+      .preview-link {
+        font-size: 12.5px;
+        color: var(--sage-600);
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .preview-link:hover { text-decoration: underline; }
+
+      @media (max-width: 768px) {
+        .store-info { grid-template-columns: 1fr; gap: 18px; }
+        .avatar-wrap { align-items: flex-start; }
+      }
+      @media (max-width: 767px) {
+        .sidebar { transform: translateX(-100%); width: var(--sidebar-w); }
+        .sidebar.open { transform: translateX(0); }
+        .sidebar.collapsed { width: var(--sidebar-w); }
+        .main { margin-left: 0 !important; }
+        .hamburger { display: grid; }
+        .content { padding: 18px 16px 48px; }
+        .topbar { padding: 0 16px; }
+        .card { padding: 20px 18px; }
+        .invite-row { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-head">
+        <div class="sb-logo">
+          <svg width="40" height="40" viewBox="0 0 120 120" fill="none">
+            <circle cx="60" cy="60" r="57" stroke="rgba(255,255,255,.65)" stroke-width="1.8"/>
+            <circle cx="60" cy="60" r="57" fill="rgba(255,255,255,.08)"/>
+            <g transform="translate(60,60)">
+              <g transform="rotate(-45) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <g transform="rotate(45) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <g transform="rotate(135) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <g transform="rotate(235) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <circle r="2.2" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".9"/>
+              <circle r="1.1" fill="rgba(232,116,157,.82)"/>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <div class="sb-brand">芮選</div>
+          <div class="sb-brand-sub">RUEI SELECT</div>
+        </div>
+      </div>
+
+      <ul class="sb-nav">
+        <li class="sb-nav-section">主功能</li>
+        <li><a href="admin-dashboard.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>
+          <span class="nav-label">總覽</span>
+        </a></li>
+        <li><a href="admin-store.html" class="nav-item active">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5"/><path d="M3 9v11a1 1 0 001 1h16a1 1 0 001-1V9"/><path d="M3 9c0 2 1.5 3 3 3s3-1 3-3M9 9c0 2 1.5 3 3 3s3-1 3-3M15 9c0 2 1.5 3 3 3s3-1 3-3"/></svg></span>
+          <span class="nav-label">賣場設定</span>
+        </a></li>
+        <li><a href="admin-suppliers.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg></span>
+          <span class="nav-label">供應商管理</span>
+        </a></li>
+        <li><a href="admin-customers.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15 14c2.5 0 6 1.5 6 5"/></svg></span>
+          <span class="nav-label">顧客管理</span>
+          <span class="nav-badge">3</span>
+        </a></li>
+
+        <li class="sb-nav-section">即將推出</li>
+        <li><span class="nav-item disabled">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M3 10h18M8 6V4M16 6V4"/></svg></span>
+          <span class="nav-label">商品管理</span>
+          <span class="nav-tag">S2</span>
+        </span></li>
+        <li><span class="nav-item disabled">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14l-1 12H6L5 4z"/><path d="M5 4l-1-2H1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></span>
+          <span class="nav-label">訂單管理</span>
+          <span class="nav-tag">S3</span>
+        </span></li>
+      </ul>
+
+      <div class="sb-foot">
+        <div class="sb-user">
+          <div class="sb-avatar">芮</div>
+          <div class="sb-user-meta">
+            <div class="sb-user-name">Cheryl</div>
+            <div class="sb-user-role">商家管理員</div>
+          </div>
+        </div>
+        <button class="sb-toggle" id="sbToggle" aria-label="收合側邊欄">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+    </aside>
+    <div class="sb-backdrop" id="sbBackdrop"></div>
+
+    <div class="main" id="main">
+      <header class="topbar">
+        <button class="hamburger" id="hamburger" aria-label="開啟選單">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+        <div class="crumb">
+          <a href="admin-dashboard.html">後台</a>
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          <strong>賣場設定</strong>
+        </div>
+        <div class="topbar-spacer"></div>
+      </header>
+
+      <main class="content">
+        <div class="page-head">
+          <h1 class="page-title">賣場設定</h1>
+          <p class="page-sub">管理賣場形象、邀請連結，掌握顧客看到的第一印象。</p>
+        </div>
+
+        <!-- Section 1: Store info -->
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">賣場基本資訊</h2>
+            <span class="card-hint">儲存後將同步至顧客端</span>
+          </div>
+          <div class="store-info">
+            <div class="avatar-wrap">
+              <div class="avatar" role="button" aria-label="更換頭像">
+                芮
+                <div class="avatar-overlay">
+                  <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                  更換頭像
+                </div>
+              </div>
+              <div class="avatar-cap">建議 400×400px<br/>JPG / PNG</div>
+            </div>
+            <div>
+              <div class="form-row">
+                <label class="form-label" for="storeName">賣場名稱<span class="req">*</span></label>
+                <input id="storeName" class="input" type="text" value="芮選小舖" />
+                <div class="form-meta">
+                  <span>顧客將看到的店家名稱</span>
+                  <span class="count">4 / 30</span>
+                </div>
+              </div>
+              <div class="form-row">
+                <label class="form-label" for="storeDesc">賣場介紹</label>
+                <textarea id="storeDesc" class="textarea" maxlength="200" placeholder="例：日韓代購精選，主打女裝、配件與生活雜貨。每月固定收單兩次，週三截止。">日韓代購精選，主打女裝。</textarea>
+                <div class="form-meta">
+                  <span>最多 200 字，可包含營業時間、聯絡方式</span>
+                  <span class="count" id="descCount">14 / 200</span>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn-ghost" type="button">取消變更</button>
+                <button class="btn btn-primary" type="button">
+                  <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  儲存變更
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Section 2: Invite link -->
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">顧客邀請連結</h2>
+            <span class="card-hint">透過此連結邀請顧客加入</span>
+          </div>
+          <p class="invite-note" style="margin-bottom:14px">
+            將以下連結分享給顧客，顧客點擊後可申請加入賣場。商家審核通過後，顧客即可瀏覽商品與下單。
+          </p>
+          <div class="invite-row">
+            <div class="invite-link">
+              <svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 007.07 0l3-3a5 5 0 10-7.07-7.07l-1 1"/><path d="M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 107.07 7.07l1-1"/></svg>
+              https://ruei-select.vercel.app/store/miko-shop-a3f2
+            </div>
+            <button class="btn btn-primary" id="copyBtn" type="button">
+              <svg viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              複製連結
+            </button>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;padding-top:12px;border-top:1px solid var(--neutral-100)">
+            <span class="invite-note">舊連結點擊後將顯示「此連結已失效」。</span>
+            <button class="btn-warning" type="button">
+              <svg style="display:inline-block;width:13px;height:13px;vertical-align:middle;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"/></svg>
+              重新產生連結
+            </button>
+          </div>
+        </section>
+
+        <!-- Section 3: Preview -->
+        <section class="card">
+          <div class="card-head">
+            <h2 class="card-title">顧客看到的賣場登入頁</h2>
+            <a href="store-login.html" class="preview-link" target="_blank">
+              查看完整頁面
+              <svg style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2" viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
+            </a>
+          </div>
+          <div class="preview-wrap">
+            <div class="preview-card">
+              <div class="preview-mini-logo">芮</div>
+              <div class="preview-name">芮選小舖</div>
+              <div class="preview-desc">日韓代購精選，主打女裝。</div>
+              <div class="preview-line-btn">
+                <svg viewBox="0 0 48 48" fill="none">
+                  <rect width="48" height="48" rx="10" fill="rgba(255,255,255,.25)"/>
+                  <path d="M24 10C15.16 10 8 15.82 8 22.9C8 29.24 13.46 34.58 21.06 35.74C21.58 35.84 22.3 36.06 22.48 36.5C22.64 36.9 22.58 37.52 22.52 37.92L22.24 39.58C22.16 39.98 21.88 41.12 24 40.24C26.12 39.36 35.28 33.72 39.06 29.36C41.62 26.56 43 24 43 22.9C43 15.82 35.84 10 27 10H24Z" fill="white"/>
+                </svg>
+                使用 LINE 登入
+              </div>
+            </div>
+            <span style="font-size:11.5px;color:var(--neutral-400)">↑ 縮小預覽 · 實際畫面更精緻</span>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <div class="copy-toast" id="copyToast">已複製連結到剪貼簿 ✓</div>
+
+    <script>
+      const sidebar = document.getElementById('sidebar');
+      const main = document.getElementById('main');
+      const sbToggle = document.getElementById('sbToggle');
+      const hamburger = document.getElementById('hamburger');
+      const backdrop = document.getElementById('sbBackdrop');
+
+      sbToggle.addEventListener('click', () => {
+        if (window.innerWidth < 768) {
+          sidebar.classList.remove('open');
+          backdrop.classList.remove('active');
+        } else {
+          sidebar.classList.toggle('collapsed');
+          main.classList.toggle('collapsed');
+        }
+      });
+      hamburger.addEventListener('click', () => {
+        sidebar.classList.add('open');
+        backdrop.classList.add('active');
+      });
+      backdrop.addEventListener('click', () => {
+        sidebar.classList.remove('open');
+        backdrop.classList.remove('active');
+      });
+
+      // Description char count
+      const desc = document.getElementById('storeDesc');
+      const descCount = document.getElementById('descCount');
+      const updateCount = () => {
+        descCount.textContent = `${desc.value.length} / 200`;
+      };
+      desc.addEventListener('input', updateCount);
+      updateCount();
+
+      // Copy link
+      const copyBtn = document.getElementById('copyBtn');
+      const toast = document.getElementById('copyToast');
+      copyBtn.addEventListener('click', () => {
+        const link = 'https://ruei-select.vercel.app/store/miko-shop-a3f2';
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(link).catch(() => {});
+        }
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1800);
+      });
+    </script>
+  </body>
+</html>

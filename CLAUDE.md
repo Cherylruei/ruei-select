@@ -105,7 +105,9 @@ DoR → Explore① → SDD(delta) → DoD → TDD → Explore② → Code → Ve
 ```
 
 ### DoR（Definition of Ready）
+
 `docs/dor/sprint{n}-dor.md`
+
 - 背景與問題定義
 - 目標用戶與使用情境
 - User Stories（格式：As a [role], I want [action], so that [value]）
@@ -116,35 +118,43 @@ DoR → Explore① → SDD(delta) → DoD → TDD → Explore② → Code → Ve
 **DoR 未完成 → 不得開始開發**
 
 ### Explore①
+
 閱讀 DoR，列出技術疑問、設計疑問，回報給 Cheryl 確認。
 
 ### SDD delta
+
 `docs/sdd/sprint{n}-delta.md`
+
 - 本 Sprint 新增的資料模型（Supabase table schema）
 - 新增的 API routes
 - 新增的 component 結構
 - 與既有系統的介面變更
 
 ### DoD（Definition of Done）
+
 `docs/dod/sprint{n}-dod.md`
 每個 User Story 的完成標準，格式見第 6 節。
 
 ### TDD
+
 - 先建立測試檔案（vitest unit tests）
 - 執行 → 確認失敗（Red）
 - 寫實作 → 確認通過（Green）
 - 重構（Refactor）
 
 ### Explore②
+
 - 確認 UI 元件與 Design System（design-tokens.css）對齊
 - 有疑問的 UI 行為先問 Cheryl
 
 ### Code
+
 - 在正確的 feature 分支上開發
 - 每個有意義的進度 commit 一次
 - 遵守 Conventional Commits 格式
 
 ### Verify
+
 ```
 □ vitest 全部通過（npm run test）
 □ playwright E2E 全部通過（npm run test:e2e）
@@ -154,11 +164,13 @@ DoR → Explore① → SDD(delta) → DoD → TDD → Explore② → Code → Ve
 ```
 
 ### Done
+
 - 所有 Verify 項目通過
 - PR 開至 `develop`，描述清楚變更內容
 - 等待 Cheryl review 並 merge
 
 ### Retro
+
 自動產出 `docs/sprint-retro/sprint{n}-retro.md`，格式見第 7 節。
 
 ---
@@ -173,20 +185,24 @@ DoR → Explore① → SDD(delta) → DoD → TDD → Explore② → Code → Ve
 ## User Story: {標題}
 
 ### 功能完成標準
+
 - [ ] {具體可驗證的功能項目}
 
 ### 測試完成標準
+
 - [ ] 單元測試覆蓋率 ≥ 80%
 - [ ] E2E 測試涵蓋 happy path 和主要 error path
 - [ ] 所有測試通過
 
 ### 技術完成標準
+
 - [ ] TypeScript 無 error
 - [ ] ESLint 無 error
 - [ ] 無 console.log 殘留
 - [ ] 環境變數未 hardcode
 
 ### UI 完成標準
+
 - [ ] 與 design-tokens.css 對齊
 - [ ] RWD：mobile 375px / desktop 1280px 正常顯示
 - [ ] 載入狀態、錯誤狀態皆已處理
@@ -202,24 +218,30 @@ DoR → Explore① → SDD(delta) → DoD → TDD → Explore② → Code → Ve
 # Sprint {n} Retro
 
 ## 本 Sprint 完成項目
+
 - {User Story 標題}：{完成狀態}
 
 ## 測試結果
+
 - 單元測試：{通過數}/{總數}
 - E2E 測試：{通過數}/{總數}
 
 ## 技術債
+
 - {發現的問題，尚未修復}
 
 ## 踩坑記錄（草稿，待 Cheryl 補充）
-| 問題 | 原因 | 解法 | 預防方式 |
-|------|------|------|----------|
+
+| 問題       | 原因       | 解法       | 預防方式       |
+| ---------- | ---------- | ---------- | -------------- |
 | {問題描述} | {根本原因} | {如何解決} | {下次如何避免} |
 
 ## claude.md 建議修改
+
 - {如有發現規則不清楚或需要補充的地方，列在這裡供 Cheryl 確認}
 
 ## 下個 Sprint 注意事項
+
 - {帶進下個 Sprint 的觀察}
 ```
 
@@ -237,6 +259,7 @@ km/
 ```
 
 ### ADR 格式（Architecture Decision Record）
+
 `km/decisions/adr-{n}-{title}.md`
 
 ```markdown
@@ -246,15 +269,19 @@ km/
 **狀態：** 提議中 / 已採用 / 已廢棄
 
 ## 背景
+
 {為什麼需要做這個決定}
 
 ## 決策
+
 {決定做什麼}
 
 ## 理由
+
 {為什麼這樣決定，考慮過哪些替代方案}
 
 ## 後果
+
 {這個決定帶來什麼影響，包含優缺點}
 ```
 
@@ -274,7 +301,18 @@ km/
 - [ ] Next.js 專案初始化
 - [ ] Supabase 專案建立
 - [ ] Sprint 1 DoR 完成
+
 ```
+
+桌機（≥ 768px）
+Sidebar 展開 220px，可收合到 64px（只剩 icon）
+Grid 維持多欄
+
+手機（< 768px）
+Sidebar 隱藏，頂部出現 Hamburger 按鈕
+點擊後 Sidebar 從左側滑出覆蓋頁面
+Grid 全部變單欄
+Drawer 改為從底部滑出（Bottom Sheet）
 
 ---
 
