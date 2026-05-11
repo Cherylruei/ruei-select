@@ -9,10 +9,7 @@ function isProtectedAdminRoute(pathname: string) {
 }
 
 function isProtectedStoreRoute(pathname: string) {
-  return (
-    pathname.match(/^\/store\/[^/]+/) !== null &&
-    !pathname.match(/^\/store\/[^/]+\/login$/)
-  )
+  return pathname.match(/^\/store\/[^/]+/) !== null && !pathname.match(/^\/store\/[^/]+\/login$/)
 }
 
 async function getAuthUser(request: NextRequest, response: NextResponse) {
@@ -91,7 +88,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
-  ],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)'],
 }
