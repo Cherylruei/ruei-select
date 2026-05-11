@@ -1,36 +1,62 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createServerClient } from '@supabase/ssr'
 
-export async function proxy(request: NextRequest) {
-  const { pathname } = request.nextUrl
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-  const response = NextResponse.next({
-    request,
-  })
+function isProtectedAdminRoute(pathname: string) {
+  return pathname.startsWith('/admin') && pathname !== '/admin/login'
+}
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll()
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
-          cookiesToSet.forEach(({ name, value, options }) =>
-            response.cookies.set(name, value, options)
-          )
-        },
-      },
-    }
+function isProtectedStoreRoute(pathname: string) {
+  return (
+    pathname.match(/^\/store\/[^/]+/) !== null &&
+    !pathname.match(/^\/store\/[^/]+\/login$/)
   )
+}
+
+async function getAuthUser(request: NextRequest, response: NextResponse) {
+  if (!supabaseUrl || !supabaseAnonKey) {
+    return null
+  }
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll()
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+        cookiesToSet.forEach(({ name, value, options }) =>
+          response.cookies.set(name, value, options)
+        )
+      },
+    },
+  })
 
   const {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // /admin/login — public, but redirect authenticated users to /admin
+  return user
+}
+
+export async function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl
+
+  const response = NextResponse.next({ request })
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.warn(
+      '[proxy] NEXT_PUBLIC_SUPABASE_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY is not set. ' +
+        'Copy .env.example to .env.local and fill in your Supabase credentials.'
+    )
+    return response
+  }
+
+  const user = await getAuthUser(request, response)
+
+  // /admin/login — public; redirect authenticated users to /admin
   if (pathname === '/admin/login') {
     if (user) {
       return NextResponse.redirect(new URL('/admin', request.url))
@@ -39,7 +65,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // /admin/* — require authentication
-  if (pathname.startsWith('/admin')) {
+  if (isProtectedAdminRoute(pathname)) {
     if (!user) {
       return NextResponse.redirect(new URL('/admin/login', request.url))
     }
@@ -52,7 +78,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // /store/[slug]/* — require authentication
-  if (pathname.match(/^\/store\/[^/]+/)) {
+  if (isProtectedStoreRoute(pathname)) {
     if (!user) {
       const slugMatch = pathname.match(/^\/store\/([^/]+)/)
       const slug = slugMatch ? slugMatch[1] : ''

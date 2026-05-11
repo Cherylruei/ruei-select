@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest } from 'next/server'
 
-// Mock @supabase/ssr createServerClient
 vi.mock('@supabase/ssr', () => ({
   createServerClient: vi.fn(),
 }))
 
 import { createServerClient } from '@supabase/ssr'
+import { proxy as middleware } from '../proxy'
 
 function makeSupabaseMock(isAuthenticated: boolean) {
   return {
@@ -21,72 +21,60 @@ function makeSupabaseMock(isAuthenticated: boolean) {
   }
 }
 
-function mockNextResponse() {
-  const headers = new Map<string, string>()
-  return {
-    cookies: {
-      set: vi.fn(),
-    },
-    headers: {
-      get: (name: string) => headers.get(name) ?? null,
-      set: (name: string, value: string) => headers.set(name, value),
-    },
-  }
-}
-
-async function runMiddleware(url: string, isAuthenticated: boolean) {
-  vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(isAuthenticated) as never)
-
-  const { proxy: middleware } = await import('../proxy')
-
-  const request = new NextRequest(new URL(url, 'http://localhost:3000'))
-  return middleware(request)
+function makeRequest(url: string) {
+  return new NextRequest(new URL(url, 'http://localhost:3000'))
 }
 
 beforeEach(() => {
-  vi.resetModules()
   vi.clearAllMocks()
 })
 
 describe('middleware route protection', () => {
   describe('/admin/* protected routes', () => {
     it('redirects unauthenticated user from /admin to /admin/login', async () => {
-      const response = await runMiddleware('/admin', false)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/admin'))
       expect(response.status).toBe(307)
       expect(response.headers.get('location')).toContain('/admin/login')
     })
 
     it('redirects unauthenticated user from /admin/store to /admin/login', async () => {
-      const response = await runMiddleware('/admin/store', false)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/admin/store'))
       expect(response.status).toBe(307)
       expect(response.headers.get('location')).toContain('/admin/login')
     })
 
     it('redirects unauthenticated user from /admin/suppliers to /admin/login', async () => {
-      const response = await runMiddleware('/admin/suppliers', false)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/admin/suppliers'))
       expect(response.status).toBe(307)
       expect(response.headers.get('location')).toContain('/admin/login')
     })
 
     it('allows authenticated user to access /admin', async () => {
-      const response = await runMiddleware('/admin', true)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(true) as never)
+      const response = await middleware(makeRequest('/admin'))
       expect(response.status).not.toBe(307)
     })
 
     it('allows authenticated user to access /admin/store', async () => {
-      const response = await runMiddleware('/admin/store', true)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(true) as never)
+      const response = await middleware(makeRequest('/admin/store'))
       expect(response.status).not.toBe(307)
     })
   })
 
   describe('/admin/login public route', () => {
     it('allows unauthenticated access to /admin/login', async () => {
-      const response = await runMiddleware('/admin/login', false)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/admin/login'))
       expect(response.status).not.toBe(307)
     })
 
     it('redirects authenticated user from /admin/login to /admin', async () => {
-      const response = await runMiddleware('/admin/login', true)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(true) as never)
+      const response = await middleware(makeRequest('/admin/login'))
       expect(response.status).toBe(307)
       expect(response.headers.get('location')).toContain('/admin')
     })
@@ -94,38 +82,44 @@ describe('middleware route protection', () => {
 
   describe('/store/[slug]/* protected routes', () => {
     it('redirects unauthenticated user from /store/test-shop to /store/test-shop/login', async () => {
-      const response = await runMiddleware('/store/test-shop', false)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/store/test-shop'))
       expect(response.status).toBe(307)
       expect(response.headers.get('location')).toContain('/store/test-shop/login')
     })
 
     it('redirects unauthenticated user from /store/test-shop/orders to /store/test-shop/login', async () => {
-      const response = await runMiddleware('/store/test-shop/orders', false)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/store/test-shop/orders'))
       expect(response.status).toBe(307)
       expect(response.headers.get('location')).toContain('/store/test-shop/login')
     })
 
     it('allows authenticated user to access /store/test-shop', async () => {
-      const response = await runMiddleware('/store/test-shop', true)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(true) as never)
+      const response = await middleware(makeRequest('/store/test-shop'))
       expect(response.status).not.toBe(307)
     })
   })
 
   describe('/store/[slug]/login public route', () => {
     it('allows unauthenticated access to /store/test-shop/login', async () => {
-      const response = await runMiddleware('/store/test-shop/login', false)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/store/test-shop/login'))
       expect(response.status).not.toBe(307)
     })
   })
 
   describe('unprotected routes', () => {
     it('allows access to /', async () => {
-      const response = await runMiddleware('/', false)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/'))
       expect(response.status).not.toBe(307)
     })
 
     it('allows access to /api/auth/line', async () => {
-      const response = await runMiddleware('/api/auth/line', false)
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/api/auth/line'))
       expect(response.status).not.toBe(307)
     })
   })
