@@ -7,7 +7,28 @@
       "Bash(npx vitest *)",
       "Bash(git add *)",
       "Bash(git commit -m 'test\\(db\\): add migration validation tests *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(node -e \"const next = require\\('next/package.json'\\); console.log\\(next.version\\)\")",
+      "Skill(update-config)",
+      "Skill(update-config:*)",
+      "Bash(ls \"c:/Users/heave/.claude/\" 2>/dev/null | head -20)",
+      "Read(//c/Users/heave/.claude/**)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\);console.log\\('JSON valid'\\)\")",
+      "Bash(node -e \"const s=JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\);const h=s.hooks.PostToolUse[0];console.log\\('matcher:',h.matcher\\);console.log\\('command:',h.hooks[0].command.substring\\(0,60\\)+'...'\\)\")"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"let d='';process.stdin.on('data',c=>d+=c);process.stdin.on('end',()=>{const i=JSON.parse(d);const f=(i.tool_input||{}).file_path;if(f&&/\\.(ts|tsx|js|jsx|json|css)$/.test(f)){try{require('child_process').execSync('npx --no prettier --write '+JSON.stringify(f),{stdio:'inherit',shell:true})}catch(e){}}})\"",
+            "statusMessage": "Formatting with prettier..."
+          }
+        ]
+      }
     ]
   }
 }
