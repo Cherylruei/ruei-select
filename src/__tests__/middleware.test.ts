@@ -6,7 +6,7 @@ vi.mock('@supabase/ssr', () => ({
 }))
 
 import { createServerClient } from '@supabase/ssr'
-import { proxy as middleware } from '../proxy'
+import { authMiddleware as middleware } from '../lib/auth-middleware'
 
 function makeSupabaseMock(isAuthenticated: boolean) {
   return {
