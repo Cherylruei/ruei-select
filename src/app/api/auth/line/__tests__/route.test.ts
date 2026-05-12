@@ -32,11 +32,21 @@ vi.mock('@/lib/supabase/server', () => ({
 
 // ── Fetch mock helpers ────────────────────────────────────────────────────────
 
-function mockLineToken(ok: boolean, body: Record<string, unknown> = { access_token: 'mock-access-token' }) {
+function mockLineToken(
+  ok: boolean,
+  body: Record<string, unknown> = { access_token: 'mock-access-token' }
+) {
   return { ok, json: vi.fn().mockResolvedValue(body), status: ok ? 200 : 400 }
 }
 
-function mockLineProfile(ok: boolean, body = { userId: 'U123', displayName: '芮選測試', pictureUrl: 'https://pic.example.com/avatar.jpg' }) {
+function mockLineProfile(
+  ok: boolean,
+  body = {
+    userId: 'U123',
+    displayName: '芮選測試',
+    pictureUrl: 'https://pic.example.com/avatar.jpg',
+  }
+) {
   return { ok, json: vi.fn().mockResolvedValue(body), status: ok ? 200 : 401 }
 }
 
@@ -75,18 +85,20 @@ describe('POST /api/auth/line', () => {
 
   describe('LINE code exchange flow', () => {
     it('returns 401 when LINE token exchange fails (invalid code)', async () => {
-      global.fetch = vi
-        .fn()
-        .mockResolvedValueOnce(mockLineToken(false, { error: 'invalid_grant' }))
+      global.fetch = vi.fn().mockResolvedValueOnce(mockLineToken(false, { error: 'invalid_grant' }))
       const { POST } = await import('../route')
-      const res = await POST(makeRequest({ code: 'bad-code', redirectUri: 'http://localhost:3000/admin/login' }))
+      const res = await POST(
+        makeRequest({ code: 'bad-code', redirectUri: 'http://localhost:3000/admin/login' })
+      )
       expect(res.status).toBe(401)
     })
 
     it('returns 503 when LINE API is unreachable', async () => {
       global.fetch = vi.fn().mockRejectedValueOnce(new Error('fetch failed'))
       const { POST } = await import('../route')
-      const res = await POST(makeRequest({ code: 'any', redirectUri: 'http://localhost:3000/admin/login' }))
+      const res = await POST(
+        makeRequest({ code: 'any', redirectUri: 'http://localhost:3000/admin/login' })
+      )
       expect(res.status).toBe(503)
     })
   })
@@ -105,7 +117,10 @@ describe('POST /api/auth/line', () => {
       const mockUpsert = vi.fn().mockResolvedValue({ error: null })
       mockServiceFrom.mockReturnValue({ upsert: mockUpsert })
       mockServiceAuth.admin.listUsers.mockResolvedValue({ data: { users: [] }, error: null })
-      mockServiceAuth.admin.createUser.mockResolvedValue({ data: { user: { id: 'sup-123' } }, error: null })
+      mockServiceAuth.admin.createUser.mockResolvedValue({
+        data: { user: { id: 'sup-123' } },
+        error: null,
+      })
 
       const { POST } = await import('../route')
       const res = await POST(makeRequest({ accessToken: 'valid-token' }))
@@ -114,7 +129,7 @@ describe('POST /api/auth/line', () => {
       expect(mockServiceFrom).toHaveBeenCalledWith('users')
       expect(mockUpsert).toHaveBeenCalledWith(
         expect.objectContaining({ line_id: 'U123', role: 'merchant' }),
-        expect.objectContaining({ onConflict: 'line_id' }),
+        expect.objectContaining({ onConflict: 'line_id' })
       )
     })
 

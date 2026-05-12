@@ -15,7 +15,9 @@
       "Read(//c/Users/heave/.claude/**)",
       "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\);console.log\\('JSON valid'\\)\")",
       "Bash(node -e \"const s=JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\);const h=s.hooks.PostToolUse[0];console.log\\('matcher:',h.matcher\\);console.log\\('command:',h.hooks[0].command.substring\\(0,60\\)+'...'\\)\")",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(npm test *)",
+      "Bash(npx eslint *)"
     ]
   },
   "hooks": {

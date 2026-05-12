@@ -21,14 +21,9 @@ type Relationship = {
   referencedColumns: string[]
 }
 
-type InsertRow<T extends { id: string; created_at: string }> = Omit<
-  T,
-  'id' | 'created_at'
->
+type InsertRow<T extends { id: string; created_at: string }> = Omit<T, 'id' | 'created_at'>
 
-type UpdateRow<T extends { id: string; created_at: string }> = Partial<
-  Omit<T, 'id' | 'created_at'>
->
+type UpdateRow<T extends { id: string; created_at: string }> = Partial<Omit<T, 'id' | 'created_at'>>
 
 export interface Database {
   public: {

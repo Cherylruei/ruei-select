@@ -14,7 +14,7 @@ interface LineProfile {
 class LineAuthError extends Error {
   constructor(
     message: string,
-    public readonly status: number,
+    public readonly status: number
   ) {
     super(message)
     this.name = 'LineAuthError'
@@ -75,9 +75,7 @@ function deriveEmail(lineId: string): string {
 }
 
 function derivePassword(lineId: string): string {
-  return createHmac('sha256', process.env.LINE_CHANNEL_SECRET!)
-    .update(lineId)
-    .digest('hex')
+  return createHmac('sha256', process.env.LINE_CHANNEL_SECRET!).update(lineId).digest('hex')
 }
 
 export async function POST(request: NextRequest) {
@@ -115,7 +113,7 @@ export async function POST(request: NextRequest) {
         role: 'merchant' as const,
         updated_at: new Date().toISOString(),
       },
-      { onConflict: 'line_id' },
+      { onConflict: 'line_id' }
     )
 
     if (upsertError) {
