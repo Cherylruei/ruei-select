@@ -1,4 +1,5 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+// @vitest-environment node
+import { describe, it, expect } from 'vitest'
 
 describe('Supabase environment variables', () => {
   it('NEXT_PUBLIC_SUPABASE_URL is defined', () => {

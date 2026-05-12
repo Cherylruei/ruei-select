@@ -5,10 +5,10 @@ import { resolve } from 'path'
 export default defineConfig({
   plugins: [react()],
   test: {
-    environment: 'node',
+    environment: 'jsdom',
     globals: true,
     setupFiles: ['./vitest.setup.ts'],
-    isolate: true,
+    isolate: false,
   },
   resolve: {
     alias: {

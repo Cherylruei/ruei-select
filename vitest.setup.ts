@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom/vitest'
 import { readFileSync } from 'fs'
 import { resolve } from 'path'
 
