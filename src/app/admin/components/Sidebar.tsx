@@ -32,7 +32,14 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
         label: '總覽',
         exact: true,
         icon: (
-          <svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' strokeWidth='1.7'>
+          <svg
+            viewBox='0 0 24 24'
+            width='18'
+            height='18'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.7'
+          >
             <rect x='3' y='3' width='7' height='9' rx='1.5' />
             <rect x='14' y='3' width='7' height='5' rx='1.5' />
             <rect x='14' y='12' width='7' height='9' rx='1.5' />
@@ -45,7 +52,14 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
         label: '賣場設定',
         exact: false,
         icon: (
-          <svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' strokeWidth='1.7'>
+          <svg
+            viewBox='0 0 24 24'
+            width='18'
+            height='18'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.7'
+          >
             <path d='M3 9l1-5h16l1 5' />
             <path d='M3 9v11a1 1 0 001 1h16a1 1 0 001-1V9' />
             <path d='M3 9c0 2 1.5 3 3 3s3-1 3-3M9 9c0 2 1.5 3 3 3s3-1 3-3M15 9c0 2 1.5 3 3 3s3-1 3-3' />
@@ -57,7 +71,14 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
         label: '供應商管理',
         exact: false,
         icon: (
-          <svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' strokeWidth='1.7'>
+          <svg
+            viewBox='0 0 24 24'
+            width='18'
+            height='18'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.7'
+          >
             <path d='M3 7l9-4 9 4-9 4-9-4z' />
             <path d='M3 12l9 4 9-4' />
             <path d='M3 17l9 4 9-4' />
@@ -69,7 +90,14 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
         label: '顧客管理',
         exact: false,
         icon: (
-          <svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' strokeWidth='1.7'>
+          <svg
+            viewBox='0 0 24 24'
+            width='18'
+            height='18'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.7'
+          >
             <circle cx='9' cy='8' r='3.5' />
             <path d='M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6' />
             <circle cx='17' cy='9' r='2.5' />
@@ -89,7 +117,14 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
         disabled: true,
         exact: false,
         icon: (
-          <svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' strokeWidth='1.7'>
+          <svg
+            viewBox='0 0 24 24'
+            width='18'
+            height='18'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.7'
+          >
             <rect x='3' y='6' width='18' height='14' rx='2' />
             <path d='M3 10h18M8 6V4M16 6V4' />
           </svg>
@@ -102,7 +137,14 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
         disabled: true,
         exact: false,
         icon: (
-          <svg viewBox='0 0 24 24' width='18' height='18' fill='none' stroke='currentColor' strokeWidth='1.7'>
+          <svg
+            viewBox='0 0 24 24'
+            width='18'
+            height='18'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.7'
+          >
             <path d='M5 4h14l-1 12H6L5 4z' />
             <path d='M5 4l-1-2H1' />
             <circle cx='9' cy='20' r='1.5' />
@@ -355,7 +397,13 @@ export default function Sidebar({
             }}
           >
             {avatarUrl ? (
-              <Image src={avatarUrl} alt={displayName} width={36} height={36} style={{ objectFit: 'cover' }} />
+              <Image
+                src={avatarUrl}
+                alt={displayName}
+                width={36}
+                height={36}
+                style={{ objectFit: 'cover' }}
+              />
             ) : (
               <span data-testid='avatar-fallback'>{firstChar}</span>
             )}
@@ -381,7 +429,9 @@ export default function Sidebar({
             >
               {displayName}
             </div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', whiteSpace: 'nowrap' }}>商家管理員</div>
+            <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', whiteSpace: 'nowrap' }}>
+              商家管理員
+            </div>
           </div>
         </div>
 
@@ -441,7 +491,10 @@ export default function Sidebar({
             fill='none'
             stroke='currentColor'
             strokeWidth='2'
-            style={{ transform: isCollapsed ? 'rotate(180deg)' : 'none', transition: 'transform 0.3s' }}
+            style={{
+              transform: isCollapsed ? 'rotate(180deg)' : 'none',
+              transition: 'transform 0.3s',
+            }}
             aria-hidden='true'
           >
             <polyline points='15 18 9 12 15 6' />

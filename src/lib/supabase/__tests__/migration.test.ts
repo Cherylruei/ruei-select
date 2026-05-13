@@ -1,13 +1,10 @@
 // @vitest-environment node
-import { describe, it, expect } from 'vitest';
-import { readFileSync } from 'fs';
-import { resolve } from 'path';
+import { describe, it, expect } from 'vitest'
+import { readFileSync } from 'fs'
+import { resolve } from 'path'
 
-const migrationPath = resolve(
-  __dirname,
-  '../../../../supabase/migrations/0001_initial.sql',
-);
-const sql = readFileSync(migrationPath, 'utf-8');
+const migrationPath = resolve(__dirname, '../../../../supabase/migrations/0001_initial.sql')
+const sql = readFileSync(migrationPath, 'utf-8')
 
 const REQUIRED_TABLES = [
   'users',
@@ -22,7 +19,7 @@ const REQUIRED_TABLES = [
   'shipment_orders',
   'customer_shipping_profiles',
   'exchange_rates',
-];
+]
 
 const REQUIRED_INDEXES = [
   'idx_users_line_id',
@@ -45,18 +42,10 @@ const REQUIRED_INDEXES = [
   'idx_shipments_customer_id',
   'idx_shipping_profiles_user_store',
   'idx_shipping_profiles_default',
-];
+]
 
 const REQUIRED_COLUMNS: Record<string, string[]> = {
-  users: [
-    'id',
-    'line_id',
-    'display_name',
-    'avatar_url',
-    'role',
-    'created_at',
-    'updated_at',
-  ],
+  users: ['id', 'line_id', 'display_name', 'avatar_url', 'role', 'created_at', 'updated_at'],
   stores: [
     'id',
     'owner_id',
@@ -112,83 +101,75 @@ const REQUIRED_COLUMNS: Record<string, string[]> = {
     'recipient_name',
     'recipient_phone',
   ],
-  exchange_rates: [
-    'id',
-    'base_currency',
-    'target_currency',
-    'rate',
-    'fetched_at',
-  ],
-};
+  exchange_rates: ['id', 'base_currency', 'target_currency', 'rate', 'fetched_at'],
+}
 
 describe('0001_initial.sql migration', () => {
   describe('tables', () => {
     REQUIRED_TABLES.forEach((table) => {
       it(`creates table: ${table}`, () => {
-        expect(sql).toMatch(new RegExp(`CREATE TABLE ${table}\\s*\\(`, 'i'));
-      });
-    });
-  });
+        expect(sql).toMatch(new RegExp(`CREATE TABLE ${table}\\s*\\(`, 'i'))
+      })
+    })
+  })
 
   describe('RLS enabled', () => {
     REQUIRED_TABLES.forEach((table) => {
       it(`enables RLS on: ${table}`, () => {
-        expect(sql).toMatch(
-          new RegExp(`ALTER TABLE ${table}\\s+ENABLE ROW LEVEL SECURITY`, 'i'),
-        );
-      });
-    });
-  });
+        expect(sql).toMatch(new RegExp(`ALTER TABLE ${table}\\s+ENABLE ROW LEVEL SECURITY`, 'i'))
+      })
+    })
+  })
 
   describe('indexes', () => {
     REQUIRED_INDEXES.forEach((idx) => {
       it(`creates index: ${idx}`, () => {
-        expect(sql).toMatch(new RegExp(idx, 'i'));
-      });
-    });
-  });
+        expect(sql).toMatch(new RegExp(idx, 'i'))
+      })
+    })
+  })
 
   describe('required columns', () => {
     Object.entries(REQUIRED_COLUMNS).forEach(([table, columns]) => {
       columns.forEach((col) => {
         it(`${table} has column: ${col}`, () => {
           const tableMatch = sql.match(
-            new RegExp(`CREATE TABLE ${table}\\s*\\(([\\s\\S]*?)\\);`, 'i'),
-          );
-          expect(tableMatch, `table ${table} not found`).toBeTruthy();
-          expect(tableMatch![1]).toContain(col);
-        });
-      });
-    });
-  });
+            new RegExp(`CREATE TABLE ${table}\\s*\\(([\\s\\S]*?)\\);`, 'i')
+          )
+          expect(tableMatch, `table ${table} not found`).toBeTruthy()
+          expect(tableMatch![1]).toContain(col)
+        })
+      })
+    })
+  })
 
   describe('RLS policies', () => {
     it('has users_select_own policy', () => {
-      expect(sql).toContain('users_select_own');
-    });
+      expect(sql).toContain('users_select_own')
+    })
 
     it('has stores_merchant_all policy', () => {
-      expect(sql).toContain('stores_merchant_all');
-    });
+      expect(sql).toContain('stores_merchant_all')
+    })
 
     it('has suppliers_owner_all policy', () => {
-      expect(sql).toContain('suppliers_owner_all');
-    });
+      expect(sql).toContain('suppliers_owner_all')
+    })
 
     it('has store_members_customer_insert policy', () => {
-      expect(sql).toContain('store_members_customer_insert');
-    });
+      expect(sql).toContain('store_members_customer_insert')
+    })
 
     it('has products_merchant_all policy', () => {
-      expect(sql).toContain('products_merchant_all');
-    });
+      expect(sql).toContain('products_merchant_all')
+    })
 
     it('has orders_merchant_all policy', () => {
-      expect(sql).toContain('orders_merchant_all');
-    });
+      expect(sql).toContain('orders_merchant_all')
+    })
 
     it('has exchange_rates_read policy', () => {
-      expect(sql).toContain('exchange_rates_read');
-    });
-  });
-});
+      expect(sql).toContain('exchange_rates_read')
+    })
+  })
+})

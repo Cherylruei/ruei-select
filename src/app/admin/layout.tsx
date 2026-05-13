@@ -22,7 +22,10 @@ export default async function AdminLayout({ children }: { children: React.ReactN
       .from('users')
       .select('display_name, avatar_url')
       .eq('line_id', match[1])
-      .single()) as { data: { display_name: string; avatar_url: string | null } | null; error: unknown }
+      .single()) as {
+      data: { display_name: string; avatar_url: string | null } | null
+      error: unknown
+    }
     if (data) {
       displayName = data.display_name
       avatarUrl = data.avatar_url

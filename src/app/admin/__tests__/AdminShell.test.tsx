@@ -14,7 +14,7 @@ import AdminShell from '../components/AdminShell'
 const defaultProps = {
   displayName: 'Cheryl',
   avatarUrl: null,
-  children: <div data-testid="page-content">Page Content</div>,
+  children: <div data-testid='page-content'>Page Content</div>,
 }
 
 beforeEach(() => {

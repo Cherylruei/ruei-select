@@ -22,7 +22,14 @@ export default function CustomersPage() {
           color: 'var(--neutral-400)',
         }}
       >
-        <svg viewBox='0 0 24 24' width='28' height='28' fill='none' stroke='currentColor' strokeWidth='1.5'>
+        <svg
+          viewBox='0 0 24 24'
+          width='28'
+          height='28'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='1.5'
+        >
           <circle cx='9' cy='8' r='3.5' />
           <path d='M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6' />
           <circle cx='17' cy='9' r='2.5' />

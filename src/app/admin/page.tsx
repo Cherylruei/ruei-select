@@ -27,7 +27,14 @@ export default function AdminDashboard() {
         }}
       >
         <div style={{ position: 'relative', zIndex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 13.5, color: 'rgba(255,255,255,.62)', letterSpacing: '.04em', marginBottom: 8 }}>
+          <div
+            style={{
+              fontSize: 13.5,
+              color: 'rgba(255,255,255,.62)',
+              letterSpacing: '.04em',
+              marginBottom: 8,
+            }}
+          >
             歡迎回來 👋
           </div>
           <h1
@@ -102,7 +109,15 @@ export default function AdminDashboard() {
               <circle r='2.2' fill='none' stroke='rgba(255,255,255,.55)' strokeWidth='.9' />
               <circle r='1.1' fill='rgba(232,116,157,.82)' />
             </g>
-            <line x1='60' y1='44' x2='60' y2='54' stroke='rgba(255,255,255,.32)' strokeWidth='1.2' strokeLinecap='round' />
+            <line
+              x1='60'
+              y1='44'
+              x2='60'
+              y2='54'
+              stroke='rgba(255,255,255,.32)'
+              strokeWidth='1.2'
+              strokeLinecap='round'
+            />
             <text
               x='60'
               y='80'
@@ -166,7 +181,14 @@ export default function AdminDashboard() {
               title: '賣場設定',
               desc: '設定賣場名稱、介紹、頭像與邀請連結',
               icon: (
-                <svg viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' strokeWidth='1.7'>
+                <svg
+                  viewBox='0 0 24 24'
+                  width='22'
+                  height='22'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='1.7'
+                >
                   <path d='M3 9l1-5h16l1 5' />
                   <path d='M3 9v11a1 1 0 001 1h16a1 1 0 001-1V9' />
                   <path d='M3 9c0 2 1.5 3 3 3s3-1 3-3M9 9c0 2 1.5 3 3 3s3-1 3-3M15 9c0 2 1.5 3 3 3s3-1 3-3' />
@@ -178,7 +200,14 @@ export default function AdminDashboard() {
               title: '供應商管理',
               desc: '新增、編輯、刪除供應商資料',
               icon: (
-                <svg viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' strokeWidth='1.7'>
+                <svg
+                  viewBox='0 0 24 24'
+                  width='22'
+                  height='22'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='1.7'
+                >
                   <path d='M3 7l9-4 9 4-9 4-9-4z' />
                   <path d='M3 12l9 4 9-4' />
                   <path d='M3 17l9 4 9-4' />
@@ -190,7 +219,14 @@ export default function AdminDashboard() {
               title: '顧客管理',
               desc: '審核顧客申請、查看會員名單',
               icon: (
-                <svg viewBox='0 0 24 24' width='22' height='22' fill='none' stroke='currentColor' strokeWidth='1.7'>
+                <svg
+                  viewBox='0 0 24 24'
+                  width='22'
+                  height='22'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='1.7'
+                >
                   <circle cx='9' cy='8' r='3.5' />
                   <path d='M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6' />
                   <circle cx='17' cy='9' r='2.5' />
@@ -214,7 +250,8 @@ export default function AdminDashboard() {
                 gap: 12,
                 position: 'relative',
                 overflow: 'hidden',
-                transition: 'transform 0.25s var(--ease-smooth), box-shadow 0.25s var(--ease-smooth)',
+                transition:
+                  'transform 0.25s var(--ease-smooth), box-shadow 0.25s var(--ease-smooth)',
               }}
             >
               <div
@@ -240,7 +277,9 @@ export default function AdminDashboard() {
               >
                 {card.title}
               </div>
-              <div style={{ fontSize: 12.5, color: 'var(--neutral-500)', lineHeight: 1.6 }}>{card.desc}</div>
+              <div style={{ fontSize: 12.5, color: 'var(--neutral-500)', lineHeight: 1.6 }}>
+                {card.desc}
+              </div>
             </a>
           ))}
         </div>

@@ -22,7 +22,14 @@ export default function StoreSettingsPage() {
           color: 'var(--neutral-400)',
         }}
       >
-        <svg viewBox='0 0 24 24' width='28' height='28' fill='none' stroke='currentColor' strokeWidth='1.5'>
+        <svg
+          viewBox='0 0 24 24'
+          width='28'
+          height='28'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='1.5'
+        >
           <path d='M3 9l1-5h16l1 5' />
           <path d='M3 9v11a1 1 0 001 1h16a1 1 0 001-1V9' />
           <path d='M3 9c0 2 1.5 3 3 3s3-1 3-3M9 9c0 2 1.5 3 3 3s3-1 3-3M15 9c0 2 1.5 3 3 3s3-1 3-3' />

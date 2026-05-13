@@ -70,12 +70,12 @@ describe('Sidebar', () => {
     })
 
     it('shows first char of displayName when avatarUrl is null', () => {
-      render(<Sidebar {...defaultProps} displayName="芮選" />)
+      render(<Sidebar {...defaultProps} displayName='芮選' />)
       expect(screen.getByTestId('avatar-fallback')).toHaveTextContent('芮')
     })
 
     it('shows img tag when avatarUrl is provided', () => {
-      render(<Sidebar {...defaultProps} avatarUrl="https://example.com/avatar.jpg" />)
+      render(<Sidebar {...defaultProps} avatarUrl='https://example.com/avatar.jpg' />)
       const img = screen.getByAltText('Cheryl')
       expect(img).toBeInTheDocument()
     })

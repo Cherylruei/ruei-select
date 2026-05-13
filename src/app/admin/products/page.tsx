@@ -21,7 +21,9 @@ export default function ProductsPage() {
       >
         商品管理
       </div>
-      <div style={{ fontSize: 12.5, color: 'var(--neutral-400)', lineHeight: 1.7 }}>Sprint 2 實作</div>
+      <div style={{ fontSize: 12.5, color: 'var(--neutral-400)', lineHeight: 1.7 }}>
+        Sprint 2 實作
+      </div>
     </div>
   )
 }

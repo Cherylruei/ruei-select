@@ -22,7 +22,14 @@ export default function SuppliersPage() {
           color: 'var(--neutral-400)',
         }}
       >
-        <svg viewBox='0 0 24 24' width='28' height='28' fill='none' stroke='currentColor' strokeWidth='1.5'>
+        <svg
+          viewBox='0 0 24 24'
+          width='28'
+          height='28'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='1.5'
+        >
           <path d='M3 7l9-4 9 4-9 4-9-4z' />
           <path d='M3 12l9 4 9-4' />
           <path d='M3 17l9 4 9-4' />
