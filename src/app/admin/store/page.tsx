@@ -1,54 +1,62 @@
-export default function StoreSettingsPage() {
+import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
+import type { Store } from '@/types'
+import StoreSettingsClient from './StoreSettingsClient'
+
+export default async function StoreSettingsPage() {
+  const rhc = await createRouteHandlerClient()
+  const {
+    data: { user },
+  } = await rhc.auth.getUser()
+
+  let store: Store | null = null
+
+  if (user?.email) {
+    const lineIdMatch = user.email.match(/^line_(.+)@internal\.rueiselect\.local$/)
+    if (lineIdMatch) {
+      const serviceClient = createServiceClient()
+      const { data: userData } = (await serviceClient
+        .from('users')
+        .select('id')
+        .eq('line_id', lineIdMatch[1])
+        .single()) as { data: { id: string } | null; error: unknown }
+
+      if (userData) {
+        const { data: storeData } = (await serviceClient
+          .from('stores')
+          .select('*')
+          .eq('owner_id', userData.id)
+          .maybeSingle()) as { data: Store | null; error: unknown }
+        store = storeData
+      }
+    }
+  }
+
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ruei-select.vercel.app'
+
   return (
-    <div
-      style={{
-        background: '#fff',
-        border: '1px solid var(--neutral-200)',
-        borderRadius: 'var(--r-lg)',
-        padding: '48px 24px',
-        textAlign: 'center',
-        color: 'var(--neutral-500)',
-      }}
-    >
-      <div
-        style={{
-          width: 64,
-          height: 64,
-          margin: '0 auto 14px',
-          borderRadius: '50%',
-          background: 'var(--neutral-100)',
-          display: 'grid',
-          placeItems: 'center',
-          color: 'var(--neutral-400)',
-        }}
-      >
-        <svg
-          viewBox='0 0 24 24'
-          width='28'
-          height='28'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='1.5'
-        >
-          <path d='M3 9l1-5h16l1 5' />
-          <path d='M3 9v11a1 1 0 001 1h16a1 1 0 001-1V9' />
-          <path d='M3 9c0 2 1.5 3 3 3s3-1 3-3M9 9c0 2 1.5 3 3 3s3-1 3-3M15 9c0 2 1.5 3 3 3s3-1 3-3' />
-        </svg>
+    <div>
+      <div className='store-page-head'>
+        <h1 className='store-page-title'>賣場設定</h1>
+        <p className='store-page-sub'>管理賣場形象、邀請連結，掌握顧客看到的第一印象。</p>
       </div>
-      <div
-        style={{
-          fontFamily: 'var(--font-zen-maru-gothic)',
-          fontSize: 15,
-          color: 'var(--neutral-700)',
-          marginBottom: 6,
-          fontWeight: 500,
-        }}
-      >
-        賣場設定
-      </div>
-      <div style={{ fontSize: 12.5, color: 'var(--neutral-400)', lineHeight: 1.7 }}>
-        開發中，即將推出
-      </div>
+
+      <StoreSettingsClient initialStore={store} appUrl={appUrl} />
+
+      <style>{`
+        .store-page-head { margin-bottom: 22px; }
+        .store-page-title {
+          font-family: var(--font-zen-maru-gothic), 'Zen Maru Gothic', sans-serif;
+          font-size: 26px;
+          font-weight: 700;
+          color: var(--neutral-800);
+          letter-spacing: .04em;
+          margin-bottom: 6px;
+        }
+        .store-page-sub {
+          font-size: 13.5px;
+          color: var(--neutral-500);
+        }
+      `}</style>
     </div>
   )
 }
