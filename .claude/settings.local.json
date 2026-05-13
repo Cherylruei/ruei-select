@@ -17,7 +17,14 @@
       "Bash(node -e \"const s=JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\);const h=s.hooks.PostToolUse[0];console.log\\('matcher:',h.matcher\\);console.log\\('command:',h.hooks[0].command.substring\\(0,60\\)+'...'\\)\")",
       "Bash(git rm *)",
       "Bash(npm test *)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(npx tsc *)",
+      "Bash(npx next *)",
+      "Bash(npx husky *)",
+      "Bash(node -e \"require\\('jsdom'\\); console.log\\('jsdom ok'\\)\")",
+      "Bash(node -e \"require\\('@testing-library/react'\\); console.log\\('RTL ok'\\)\")",
+      "Bash(node -e \"require\\('jsdom'\\); console.log\\('jsdom ok'\\)\")",
+      "Bash(node -e \"require\\('@testing-library/react'\\); console.log\\('RTL ok'\\)\")"
     ]
   },
   "hooks": {
