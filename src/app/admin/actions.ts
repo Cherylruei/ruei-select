@@ -6,5 +6,5 @@ import { createRouteHandlerClient } from '@/lib/supabase/server'
 export async function logout() {
   const supabase = await createRouteHandlerClient()
   await supabase.auth.signOut()
-  redirect('/admin/login')
+  redirect('/admin/login?signed_out=1')
 }

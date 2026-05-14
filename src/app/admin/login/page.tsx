@@ -1,7 +1,7 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect, useState, useCallback, Suspense } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -148,8 +148,10 @@ const FEATURES = [
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export default function AdminLoginPage() {
+function AdminLoginPageContent() {
   const router = useRouter()
+  const searchParams = useSearchParams()
+  const signedOut = searchParams.get('signed_out') === '1'
   const [state, setState] = useState<PageState>('loading')
   const [errorMessage, setErrorMessage] = useState<string>('')
 
@@ -182,6 +184,14 @@ export default function AdminLoginPage() {
         const { initLiff } = await import('@/lib/line/liff')
         const liff = await initLiff()
         if (cancelled) return
+
+        if (signedOut) {
+          if (liff.isLoggedIn()) liff.logout()
+          router.replace('/admin/login')
+          setState('idle')
+          return
+        }
+
         if (liff.isLoggedIn()) {
           const token = liff.getAccessToken()
           if (token) {
@@ -198,7 +208,7 @@ export default function AdminLoginPage() {
     return () => {
       cancelled = true
     }
-  }, [authenticate])
+  }, [authenticate, signedOut, router])
 
   const handleLineLogin = useCallback(async () => {
     try {
@@ -624,5 +634,13 @@ export default function AdminLoginPage() {
         }
       `}</style>
     </div>
+  )
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense>
+      <AdminLoginPageContent />
+    </Suspense>
   )
 }

@@ -100,6 +100,9 @@ export async function POST(request: NextRequest) {
 
     // Get LINE profile
     const profile = await getLineProfile(accessToken)
+    // Supabase normalizes auth emails to lowercase, so we normalize lineId here
+    // to keep public.users.line_id consistent with what extractLineId returns.
+    const lineId = profile.userId.toLowerCase()
 
     const serviceClient = createServiceClient()
 
@@ -107,7 +110,7 @@ export async function POST(request: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: upsertError } = await (serviceClient.from('users') as any).upsert(
       {
-        line_id: profile.userId,
+        line_id: lineId,
         display_name: profile.displayName,
         avatar_url: profile.pictureUrl ?? null,
         role: 'merchant' as const,
@@ -121,26 +124,38 @@ export async function POST(request: NextRequest) {
     }
 
     // Ensure Supabase auth user exists
-    const email = deriveEmail(profile.userId)
-    const password = derivePassword(profile.userId)
+    const email = deriveEmail(lineId)
+    const password = derivePassword(lineId)
 
-    const { data: listData } = await serviceClient.auth.admin.listUsers()
-    const exists = listData?.users?.some((u) => u.email === email) ?? false
+    // Try to create auth user; ignore "already registered" errors
+    const { error: createError } = await serviceClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    })
 
-    if (!exists) {
-      const { error: createError } = await serviceClient.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-      })
-      if (createError) {
-        throw new Error(`Failed to create auth user: ${createError.message}`)
-      }
+    const alreadyExists =
+      !!createError && createError.message.toLowerCase().includes('already been registered')
+
+    if (createError && !alreadyExists) {
+      throw new Error(`Failed to create auth user: ${createError.message}`)
     }
 
     // Sign in → sets session cookies via createRouteHandlerClient
     const sessionClient = await createRouteHandlerClient()
-    const { error: signInError } = await sessionClient.auth.signInWithPassword({ email, password })
+    let { error: signInError } = await sessionClient.auth.signInWithPassword({ email, password })
+
+    if (signInError && alreadyExists) {
+      // User exists but password derived from current secret doesn't match stored one
+      // Update the password to re-sync, then retry
+      const { data: listData } = await serviceClient.auth.admin.listUsers()
+      const existing = listData?.users?.find((u) => u.email === email)
+      if (existing) {
+        await serviceClient.auth.admin.updateUserById(existing.id, { password })
+        const retry = await sessionClient.auth.signInWithPassword({ email, password })
+        signInError = retry.error
+      }
+    }
 
     if (signInError) {
       throw new Error(`Session creation failed: ${signInError.message}`)
@@ -150,6 +165,10 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof LineAuthError) {
       return NextResponse.json({ error: error.message }, { status: error.status })
+    }
+    const detail = error instanceof Error ? error.message : String(error)
+    if (process.env.NODE_ENV === 'development') {
+      return NextResponse.json({ error: 'Internal server error', detail }, { status: 500 })
     }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

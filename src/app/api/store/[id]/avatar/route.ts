@@ -92,7 +92,11 @@ export async function POST(request: NextRequest, context: RouteContext) {
     if (updateError) throw new Error(updateError.message)
 
     return NextResponse.json({ success: true, data: { avatar_url: publicUrl } })
-  } catch {
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err)
+    if (process.env.NODE_ENV === 'development') {
+      return NextResponse.json({ error: 'Internal server error', detail }, { status: 500 })
+    }
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

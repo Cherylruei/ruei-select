@@ -38,6 +38,14 @@ async function getAuthUser(request: NextRequest, response: NextResponse) {
   return user
 }
 
+function redirectWithCookies(to: URL, cookieSource: NextResponse): NextResponse {
+  const res = NextResponse.redirect(to)
+  cookieSource.cookies.getAll().forEach(({ name, value, ...opts }) => {
+    res.cookies.set(name, value, opts)
+  })
+  return res
+}
+
 export async function authMiddleware(request: NextRequest) {
   const { pathname } = request.nextUrl
 
@@ -56,7 +64,7 @@ export async function authMiddleware(request: NextRequest) {
   // /admin/login — public; redirect authenticated users to /admin
   if (pathname === '/admin/login') {
     if (user) {
-      return NextResponse.redirect(new URL('/admin', request.url))
+      return redirectWithCookies(new URL('/admin', request.url), response)
     }
     return response
   }
@@ -64,7 +72,7 @@ export async function authMiddleware(request: NextRequest) {
   // /admin/* — require authentication
   if (isProtectedAdminRoute(pathname)) {
     if (!user) {
-      return NextResponse.redirect(new URL('/admin/login', request.url))
+      return redirectWithCookies(new URL('/admin/login', request.url), response)
     }
     return response
   }
@@ -79,7 +87,7 @@ export async function authMiddleware(request: NextRequest) {
     if (!user) {
       const slugMatch = pathname.match(/^\/store\/([^/]+)/)
       const slug = slugMatch ? slugMatch[1] : ''
-      return NextResponse.redirect(new URL(`/store/${slug}/login`, request.url))
+      return redirectWithCookies(new URL(`/store/${slug}/login`, request.url), response)
     }
     return response
   }

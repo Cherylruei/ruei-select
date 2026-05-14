@@ -30,10 +30,23 @@ export async function GET(_request: NextRequest) {
     const lineId = extractLineId(user.email)
     if (!lineId) return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
 
-    const userId = await resolveUserId(lineId)
+    const serviceClient = createServiceClient()
+    const { data: dbUser, error: dbError } = await serviceClient
+      .from('users')
+      .select('id')
+      .eq('line_id', lineId)
+      .single()
+
+    if (process.env.NODE_ENV === 'development' && !dbUser) {
+      return NextResponse.json(
+        { error: 'User not found', debug: { lineId, dbError } },
+        { status: 404 }
+      )
+    }
+
+    const userId = dbUser?.id ?? null
     if (!userId) return NextResponse.json({ error: 'User not found' }, { status: 404 })
 
-    const serviceClient = createServiceClient()
     const { data: store, error } = (await serviceClient
       .from('stores')
       .select('*')
@@ -57,10 +70,26 @@ export async function POST(request: NextRequest) {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
     const lineId = extractLineId(user.email)
-    if (!lineId) return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
+    if (!lineId) {
+      return NextResponse.json(
+        { error: 'Invalid session', debug: { email: user.email } },
+        { status: 401 }
+      )
+    }
 
     const userId = await resolveUserId(lineId)
-    if (!userId) return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    if (!userId) {
+      const serviceClient = createServiceClient()
+      const { data: dbUser, error: dbError } = await serviceClient
+        .from('users')
+        .select('id')
+        .eq('line_id', lineId)
+        .single()
+      return NextResponse.json(
+        { error: 'User not found', debug: { lineId, email: user.email, dbUser, dbError } },
+        { status: 404 }
+      )
+    }
 
     const body = (await request.json()) as { name?: string; description?: string }
     const name = body.name?.trim() ?? ''

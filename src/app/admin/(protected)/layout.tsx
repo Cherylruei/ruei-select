@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation'
 import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
-import AdminShell from './components/AdminShell'
+import AdminShell from '../components/AdminShell'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createRouteHandlerClient()
