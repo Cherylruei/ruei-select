@@ -330,17 +330,17 @@ km/
 
 ```
 目前 Sprint：   Sprint 1
-目前分支：      feature/sprint1-init-setup（待建立）
-進行中 feature：sprint1-init-setup
+目前分支：      feature/sprint1-adjust-defaultpage
+進行中 feature：sprint1-suppliers（待 Cheryl 視覺驗收後 merge）
 上次 Retro：    尚未開始
 
 Sprint 1 feature 進度：
-- [ ] feature/sprint1-init-setup       DB migration + Supabase client + types + middleware
-- [ ] feature/sprint1-line-auth        LINE 登入流程
-- [ ] feature/sprint1-admin-layout     後台 Sidebar 框架 + Dashboard
-- [ ] feature/sprint1-store-settings   賣場設定頁
-- [ ] feature/sprint1-suppliers        供應商管理
-- [ ] feature/sprint1-invite-link      邀請連結
+- [x] feature/sprint1-init-setup       DB migration + Supabase client + types + middleware
+- [x] feature/sprint1-line-auth        LINE 登入流程
+- [x] feature/sprint1-admin-layout     後台 Sidebar 框架 + Dashboard
+- [x] feature/sprint1-store-settings   賣場設定頁（含頭像上傳、邀請連結）
+- [x] feature/sprint1-suppliers        供應商管理（待 Cheryl 視覺驗收 + merge）
+- [ ] feature/sprint1-invite-link      邀請連結（已併入 store-settings）
 - [ ] feature/sprint1-customers-frame  顧客審核框架
 
 環境準備狀態：
@@ -350,8 +350,14 @@ Sprint 1 feature 進度：
 - [x] Next.js 16 專案初始化
 - [x] design-tokens.css 放入 src/app/
 - [x] docs/ 和 km/ 資料夾結構建立
-- [ ] Supabase Project 建立 + .env.local 完成（開發前必須確認）
-- [ ] Vercel 部署 + LIFF Endpoint URL 填入（開發前必須確認）
+- [x] Supabase Project 建立 + .env.local 完成
+- [x] Vercel 部署設定（env vars 需在 Vercel Dashboard 確認）
+
+Sprint 2 feature 預計清單：
+- [ ] feature/sprint2-landing-page     品牌首頁（根目錄 /）
+- [ ] feature/sprint2-customers        顧客審核完整功能
+- [ ] feature/sprint2-products         商品管理
+- [ ] feature/sprint2-orders           訂單管理
 ```
 
 ---
