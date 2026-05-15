@@ -1,55 +1,29 @@
-export default function CustomersPage() {
+import { Suspense } from 'react'
+import CustomersClient from './CustomersClient'
+
+interface CustomersPageProps {
+  searchParams: Promise<{ tab?: string }>
+}
+
+export default async function CustomersPage({ searchParams }: CustomersPageProps) {
+  const params = await searchParams
+  const initialTab = params.tab === 'approved' ? 'approved' : 'pending'
+
   return (
-    <div
-      style={{
-        background: '#fff',
-        border: '1px solid var(--neutral-200)',
-        borderRadius: 'var(--r-lg)',
-        padding: '48px 24px',
-        textAlign: 'center',
-        color: 'var(--neutral-500)',
-      }}
-    >
-      <div
-        style={{
-          width: 64,
-          height: 64,
-          margin: '0 auto 14px',
-          borderRadius: '50%',
-          background: 'var(--neutral-100)',
-          display: 'grid',
-          placeItems: 'center',
-          color: 'var(--neutral-400)',
-        }}
-      >
-        <svg
-          viewBox='0 0 24 24'
-          width='28'
-          height='28'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='1.5'
+    <div>
+      <div className='mb-6'>
+        <h1
+          className='text-2xl font-bold text-[var(--neutral-800)] tracking-wide mb-1.5'
+          style={{ fontFamily: 'var(--font-zen-maru-gothic)' }}
         >
-          <circle cx='9' cy='8' r='3.5' />
-          <path d='M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6' />
-          <circle cx='17' cy='9' r='2.5' />
-          <path d='M15 14c2.5 0 6 1.5 6 5' />
-        </svg>
+          顧客管理
+        </h1>
+        <p className='text-sm text-[var(--neutral-500)]'>審核顧客申請、管理賣場會員名單。</p>
       </div>
-      <div
-        style={{
-          fontFamily: 'var(--font-zen-maru-gothic)',
-          fontSize: 15,
-          color: 'var(--neutral-700)',
-          marginBottom: 6,
-          fontWeight: 500,
-        }}
-      >
-        顧客管理
-      </div>
-      <div style={{ fontSize: 12.5, color: 'var(--neutral-400)', lineHeight: 1.7 }}>
-        開發中，即將推出
-      </div>
+
+      <Suspense>
+        <CustomersClient initialTab={initialTab} />
+      </Suspense>
     </div>
   )
 }
