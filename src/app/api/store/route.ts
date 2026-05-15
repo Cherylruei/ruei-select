@@ -31,11 +31,11 @@ export async function GET(_request: NextRequest) {
     if (!lineId) return NextResponse.json({ error: 'Invalid session' }, { status: 401 })
 
     const serviceClient = createServiceClient()
-    const { data: dbUser, error: dbError } = await serviceClient
+    const { data: dbUser, error: dbError } = (await serviceClient
       .from('users')
       .select('id')
       .eq('line_id', lineId)
-      .single()
+      .single()) as { data: { id: string } | null; error: unknown }
 
     if (process.env.NODE_ENV === 'development' && !dbUser) {
       return NextResponse.json(
