@@ -78,9 +78,10 @@ export async function POST(request: NextRequest) {
     const context = await resolveUserAndStore(lineId)
     if (!context) return NextResponse.json({ error: 'Store not found' }, { status: 404 })
 
-    const body = (await request.json()) as { name?: string; note?: string }
+    const body = (await request.json()) as { name?: string; note?: string; website_url?: string }
     const name = body.name?.trim() ?? ''
     const note = body.note?.trim() || null
+    const website_url = body.website_url?.trim() || null
 
     if (name.length < 1) {
       return NextResponse.json({ error: '廠商名稱為必填' }, { status: 400 })
@@ -95,7 +96,7 @@ export async function POST(request: NextRequest) {
     const serviceClient = createServiceClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: supplier, error } = (await (serviceClient.from('suppliers') as any)
-      .insert({ store_id: context.storeId, name, note })
+      .insert({ store_id: context.storeId, name, note, website_url })
       .select()
       .single()) as { data: Supplier | null; error: { message: string } | null }
 

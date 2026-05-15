@@ -44,6 +44,7 @@ export interface Supplier {
   store_id: string
   name: string
   note: string | null
+  website_url: string | null
   created_at: string
   updated_at: string
 }

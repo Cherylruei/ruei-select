@@ -62,9 +62,10 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const body = (await request.json()) as { name?: string; note?: string }
+    const body = (await request.json()) as { name?: string; note?: string; website_url?: string }
     const name = body.name?.trim() ?? ''
-    const note = body.note?.trim() ?? null
+    const note = body.note?.trim() || null
+    const website_url = body.website_url?.trim() || null
 
     if (name.length < 1) {
       return NextResponse.json({ error: '廠商名稱為必填' }, { status: 400 })
@@ -78,7 +79,7 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: updated, error } = (await (serviceClient.from('suppliers') as any)
-      .update({ name, note })
+      .update({ name, note, website_url })
       .eq('id', id)
       .select()
       .single()) as { data: Supplier | null; error: { message: string } | null }

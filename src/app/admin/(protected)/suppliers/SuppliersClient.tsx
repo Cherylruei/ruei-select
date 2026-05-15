@@ -16,12 +16,14 @@ interface EditState {
   id: string
   name: string
   note: string
+  website_url: string
 }
 
 export default function SuppliersClient({ initialSuppliers }: Props) {
   const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers)
   const [newName, setNewName] = useState('')
   const [newNote, setNewNote] = useState('')
+  const [newWebsiteUrl, setNewWebsiteUrl] = useState('')
   const [editState, setEditState] = useState<EditState | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<Supplier | null>(null)
   const [toast, setToast] = useState<ToastState | null>(null)
@@ -43,7 +45,11 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
         const res = await fetch('/api/suppliers', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, note: newNote.trim() || null }),
+          body: JSON.stringify({
+            name,
+            note: newNote.trim() || null,
+            website_url: newWebsiteUrl.trim() || null,
+          }),
         })
         const body = await res.json()
         if (!res.ok) {
@@ -53,6 +59,7 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
         setSuppliers((prev) => [body.data as Supplier, ...prev])
         setNewName('')
         setNewNote('')
+        setNewWebsiteUrl('')
         showToast('廠商已新增', 'success')
       } catch {
         showToast('新增失敗，請稍後再試', 'error')
@@ -61,7 +68,12 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
   }
 
   function startEdit(supplier: Supplier) {
-    setEditState({ id: supplier.id, name: supplier.name, note: supplier.note ?? '' })
+    setEditState({
+      id: supplier.id,
+      name: supplier.name,
+      note: supplier.note ?? '',
+      website_url: supplier.website_url ?? '',
+    })
   }
 
   function cancelEdit() {
@@ -80,7 +92,11 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
         const res = await fetch(`/api/suppliers/${editState.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, note: editState.note.trim() || null }),
+          body: JSON.stringify({
+            name,
+            note: editState.note.trim() || null,
+            website_url: editState.website_url.trim() || null,
+          }),
         })
         const body = await res.json()
         if (!res.ok) {
@@ -165,6 +181,23 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
               <span className={newNote.length > 100 ? 'sup-count-error' : 'sup-count'}>
                 {newNote.length} / 100
               </span>
+            </div>
+          </div>
+          <div className='sup-form-row'>
+            <label htmlFor='newSupWebsite' className='sup-form-label'>
+              賣場連結
+            </label>
+            <input
+              id='newSupWebsite'
+              type='url'
+              className='sup-input'
+              value={newWebsiteUrl}
+              onChange={(e) => setNewWebsiteUrl(e.target.value)}
+              placeholder='https://example.com/store'
+              disabled={isPending}
+            />
+            <div className='sup-form-meta'>
+              <span className='sup-count'>廠商的官網或賣場頁面 URL</span>
             </div>
           </div>
           <div className='sup-form-actions'>
@@ -257,6 +290,22 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
                         disabled={isPending}
                       />
                     </div>
+                    <div className='sup-form-row'>
+                      <label htmlFor={`edit-website-${supplier.id}`} className='sup-form-label'>
+                        賣場連結
+                      </label>
+                      <input
+                        id={`edit-website-${supplier.id}`}
+                        type='url'
+                        className='sup-input'
+                        value={editState.website_url}
+                        onChange={(e) =>
+                          setEditState((prev) => prev && { ...prev, website_url: e.target.value })
+                        }
+                        placeholder='https://example.com/store'
+                        disabled={isPending}
+                      />
+                    </div>
                     <div className='sup-edit-actions'>
                       <button
                         type='button'
@@ -281,7 +330,32 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
                   <div className='sup-item-inner'>
                     <div className='sup-item-info'>
                       <span className='sup-item-name'>{supplier.name}</span>
-                      {supplier.note && <span className='sup-item-note'>{supplier.note}</span>}
+                      <div className='sup-item-meta'>
+                        {supplier.note && <span className='sup-item-note'>{supplier.note}</span>}
+                        {supplier.website_url && (
+                          <a
+                            href={supplier.website_url}
+                            target='_blank'
+                            rel='noopener noreferrer'
+                            className='sup-item-link'
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <svg
+                              viewBox='0 0 24 24'
+                              width='12'
+                              height='12'
+                              fill='none'
+                              stroke='currentColor'
+                              strokeWidth='2'
+                              aria-hidden='true'
+                            >
+                              <path d='M10 13a5 5 0 007.07 0l3-3a5 5 0 10-7.07-7.07l-1 1' />
+                              <path d='M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 107.07 7.07l1-1' />
+                            </svg>
+                            賣場連結
+                          </a>
+                        )}
+                      </div>
                     </div>
                     <div className='sup-item-actions'>
                       <button
@@ -550,6 +624,12 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
           font-weight: 500;
           color: var(--neutral-800);
         }
+        .sup-item-meta {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
         .sup-item-note {
           font-size: 12.5px;
           color: var(--neutral-500);
@@ -557,6 +637,16 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
           overflow: hidden;
           text-overflow: ellipsis;
         }
+        .sup-item-link {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-size: 12.5px;
+          color: var(--sage-600, #3d7020);
+          text-decoration: none;
+          white-space: nowrap;
+        }
+        .sup-item-link:hover { text-decoration: underline; }
         .sup-item-actions {
           display: flex;
           gap: 4px;
