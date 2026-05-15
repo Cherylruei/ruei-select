@@ -1,54 +1,71 @@
-export default function SuppliersPage() {
+import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
+import type { Supplier } from '@/types'
+import SuppliersClient from './SuppliersClient'
+
+export default async function SuppliersPage() {
+  const rhc = await createRouteHandlerClient()
+  const {
+    data: { user },
+  } = await rhc.auth.getUser()
+
+  let suppliers: Supplier[] = []
+
+  if (user?.email) {
+    const lineIdMatch = user.email.match(/^line_(.+)@internal\.rueiselect\.local$/)
+    if (lineIdMatch) {
+      const serviceClient = createServiceClient()
+      const { data: userData } = (await serviceClient
+        .from('users')
+        .select('id')
+        .eq('line_id', lineIdMatch[1])
+        .single()) as { data: { id: string } | null; error: unknown }
+
+      if (userData) {
+        const { data: storeData } = (await serviceClient
+          .from('stores')
+          .select('id')
+          .eq('owner_id', userData.id)
+          .maybeSingle()) as { data: { id: string } | null; error: unknown }
+
+        if (storeData) {
+          const { data: suppliersData } = (await serviceClient
+            .from('suppliers')
+            .select('*')
+            .eq('store_id', storeData.id)
+            .order('created_at', { ascending: false })) as {
+            data: Supplier[] | null
+            error: unknown
+          }
+          suppliers = suppliersData ?? []
+        }
+      }
+    }
+  }
+
   return (
-    <div
-      style={{
-        background: '#fff',
-        border: '1px solid var(--neutral-200)',
-        borderRadius: 'var(--r-lg)',
-        padding: '48px 24px',
-        textAlign: 'center',
-        color: 'var(--neutral-500)',
-      }}
-    >
-      <div
-        style={{
-          width: 64,
-          height: 64,
-          margin: '0 auto 14px',
-          borderRadius: '50%',
-          background: 'var(--neutral-100)',
-          display: 'grid',
-          placeItems: 'center',
-          color: 'var(--neutral-400)',
-        }}
-      >
-        <svg
-          viewBox='0 0 24 24'
-          width='28'
-          height='28'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='1.5'
-        >
-          <path d='M3 7l9-4 9 4-9 4-9-4z' />
-          <path d='M3 12l9 4 9-4' />
-          <path d='M3 17l9 4 9-4' />
-        </svg>
+    <div>
+      <div className='sup-page-head'>
+        <h1 className='sup-page-title'>供應商管理</h1>
+        <p className='sup-page-sub'>新增、編輯、刪除供應商，商品上架時可快速選擇對應廠商。</p>
       </div>
-      <div
-        style={{
-          fontFamily: 'var(--font-zen-maru-gothic)',
-          fontSize: 15,
-          color: 'var(--neutral-700)',
-          marginBottom: 6,
-          fontWeight: 500,
-        }}
-      >
-        供應商管理
-      </div>
-      <div style={{ fontSize: 12.5, color: 'var(--neutral-400)', lineHeight: 1.7 }}>
-        開發中，即將推出
-      </div>
+
+      <SuppliersClient initialSuppliers={suppliers} />
+
+      <style>{`
+        .sup-page-head { margin-bottom: 22px; }
+        .sup-page-title {
+          font-family: var(--font-zen-maru-gothic), 'Zen Maru Gothic', sans-serif;
+          font-size: 26px;
+          font-weight: 700;
+          color: var(--neutral-800);
+          letter-spacing: .04em;
+          margin-bottom: 6px;
+        }
+        .sup-page-sub {
+          font-size: 13.5px;
+          color: var(--neutral-500);
+        }
+      `}</style>
     </div>
   )
 }
