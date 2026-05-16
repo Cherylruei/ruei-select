@@ -178,42 +178,20 @@ export default function Sidebar({
       data-testid='sidebar'
       data-collapsed={String(isCollapsed)}
       data-mobile-open={String(isMobileOpen)}
+      className={`shrink-0 text-white flex flex-col fixed inset-y-0 left-0 z-50 overflow-hidden [transition:width_0.3s_var(--ease-smooth),transform_0.3s_var(--ease-smooth)] max-md:-translate-x-full max-md:data-[mobile-open=true]:translate-x-0 max-md:w-[220px] ${isCollapsed ? 'w-16' : 'w-[220px]'}`}
       style={{
-        width: isCollapsed ? 64 : 220,
-        flexShrink: 0,
         background: 'var(--forest-deep)',
         backgroundImage:
           'radial-gradient(ellipse 60% 50% at 85% 12%, rgba(85,164,74,.28) 0%, transparent 65%), radial-gradient(ellipse 50% 60% at 10% 88%, rgba(28,54,16,.45) 0%, transparent 60%)',
-        color: '#fff',
-        display: 'flex',
-        flexDirection: 'column',
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        bottom: 0,
-        zIndex: 50,
-        transition: 'width 0.3s var(--ease-smooth), transform 0.3s var(--ease-smooth)',
-        overflow: 'hidden',
-        transform: isMobileOpen ? 'translateX(0)' : undefined,
       }}
-      className='admin-sidebar'
     >
       {/* Header */}
       <Link
         href='/admin'
         onClick={onNavClick}
-        style={{
-          padding: '18px 16px 16px',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 12,
-          borderBottom: '1px solid rgba(255,255,255,.08)',
-          flexShrink: 0,
-          textDecoration: 'none',
-          color: 'inherit',
-        }}
+        className='pt-[18px] px-4 pb-4 flex items-center gap-3 border-b border-white/[.08] shrink-0 no-underline text-inherit'
       >
-        <div style={{ flexShrink: 0, width: 40, height: 40 }}>
+        <div className='shrink-0 w-10 h-10'>
           <svg width='40' height='40' viewBox='0 0 120 120' fill='none' aria-hidden='true'>
             <circle cx='60' cy='60' r='57' stroke='rgba(255,255,255,.65)' strokeWidth='1.8' />
             <circle cx='60' cy='60' r='57' fill='rgba(255,255,255,.08)' />
@@ -235,117 +213,48 @@ export default function Sidebar({
           </svg>
         </div>
         <div
-          style={{
-            overflow: 'hidden',
-            opacity: isCollapsed ? 0 : 1,
-            transition: 'opacity 0.2s var(--ease-smooth)',
-            pointerEvents: isCollapsed ? 'none' : 'auto',
-          }}
+          className={`overflow-hidden [transition:opacity_0.2s_var(--ease-smooth)] ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}`}
         >
-          <div
-            style={{
-              fontFamily: 'var(--font-zen-maru-gothic)',
-              fontWeight: 700,
-              fontSize: 19,
-              letterSpacing: '.12em',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <div className='[font-family:var(--font-zen-maru-gothic)] font-bold text-[19px] tracking-[.12em] whitespace-nowrap'>
             芮選
           </div>
-          <div
-            style={{
-              fontSize: 10,
-              color: 'rgba(255,255,255,.42)',
-              letterSpacing: '.22em',
-              whiteSpace: 'nowrap',
-            }}
-          >
+          <div className='text-[10px] text-white/[.42] tracking-[.22em] whitespace-nowrap'>
             RUEI SELECT
           </div>
         </div>
       </Link>
 
       {/* Nav */}
-      <ul
-        style={{
-          listStyle: 'none',
-          padding: '14px 10px',
-          flex: 1,
-          overflowY: 'auto',
-          margin: 0,
-        }}
-      >
+      <ul className='list-none py-3.5 px-2.5 flex-1 overflow-y-auto m-0'>
         {NAV_ITEMS.map(({ section, items }) => (
           <li key={section}>
             <div
-              style={{
-                fontSize: 10.5,
-                color: isCollapsed ? 'transparent' : 'rgba(255,255,255,.32)',
-                letterSpacing: '.22em',
-                textTransform: 'uppercase',
-                padding: '14px 12px 8px',
-                whiteSpace: 'nowrap',
-                transition: 'color 0.2s',
-              }}
+              className={`text-[10.5px] tracking-[.22em] uppercase pt-3.5 px-3 pb-2 whitespace-nowrap transition-colors duration-200 ${isCollapsed ? 'text-transparent' : 'text-white/[.32]'}`}
             >
               {section}
             </div>
-            <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+            <ul className='list-none p-0 m-0'>
               {items.map((item) => {
                 const active = isActive(item.href, pathname, item.exact ?? false)
-                const navStyle: React.CSSProperties = {
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  padding: '10px 12px',
-                  borderRadius: 10,
-                  color: active ? '#fff' : 'rgba(255,255,255,.78)',
-                  textDecoration: 'none',
-                  fontSize: 14.5,
-                  whiteSpace: 'nowrap',
-                  marginBottom: 2,
-                  background: active ? 'rgba(255,255,255,.13)' : 'transparent',
-                  boxShadow: active ? 'inset 3px 0 0 var(--sakura-300)' : 'none',
-                  opacity: item.disabled ? 0.35 : 1,
-                  cursor: item.disabled ? 'not-allowed' : 'pointer',
-                  transition: 'background 0.15s, color 0.15s',
-                }
+                const navClassName = [
+                  'flex items-center gap-3 py-2.5 px-3 rounded-[10px] text-[14.5px] whitespace-nowrap mb-0.5 no-underline',
+                  'transition-[background,color] duration-150',
+                  active
+                    ? 'text-white bg-white/[.13] shadow-[inset_3px_0_0_var(--sakura-300)]'
+                    : 'text-white/[.78] bg-transparent',
+                  item.disabled ? 'opacity-[.35] cursor-not-allowed' : 'cursor-pointer',
+                ].join(' ')
 
                 const content = (
                   <>
+                    <span className='shrink-0 w-5 h-5 grid place-items-center'>{item.icon}</span>
                     <span
-                      style={{
-                        flexShrink: 0,
-                        width: 20,
-                        height: 20,
-                        display: 'grid',
-                        placeItems: 'center',
-                      }}
-                    >
-                      {item.icon}
-                    </span>
-                    <span
-                      style={{
-                        flex: 1,
-                        opacity: isCollapsed ? 0 : 1,
-                        transition: 'opacity 0.2s',
-                        pointerEvents: isCollapsed ? 'none' : 'auto',
-                      }}
+                      className={`flex-1 transition-opacity duration-200 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}`}
                     >
                       {item.label}
                     </span>
                     {item.tag && !isCollapsed && (
-                      <span
-                        style={{
-                          fontSize: 10,
-                          padding: '2px 6px',
-                          borderRadius: 4,
-                          background: 'rgba(255,255,255,.08)',
-                          color: 'rgba(255,255,255,.5)',
-                          fontWeight: 500,
-                        }}
-                      >
+                      <span className='text-[10px] py-0.5 px-1.5 rounded bg-white/[.08] text-white/50 font-medium'>
                         {item.tag}
                       </span>
                     )}
@@ -355,7 +264,7 @@ export default function Sidebar({
                 if (item.disabled) {
                   return (
                     <li key={item.href}>
-                      <span style={navStyle}>{content}</span>
+                      <span className={navClassName}>{content}</span>
                     </li>
                   )
                 }
@@ -364,7 +273,7 @@ export default function Sidebar({
                   <li key={item.href}>
                     <Link
                       href={item.href}
-                      style={navStyle}
+                      className={navClassName}
                       data-active={String(active)}
                       onClick={onNavClick}
                     >
@@ -379,89 +288,37 @@ export default function Sidebar({
       </ul>
 
       {/* Footer */}
-      <div
-        style={{
-          padding: '12px 10px',
-          borderTop: '1px solid rgba(255,255,255,.08)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          flexShrink: 0,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
-          <div
-            style={{
-              flexShrink: 0,
-              width: 36,
-              height: 36,
-              borderRadius: '50%',
-              background: 'linear-gradient(135deg, var(--sakura-300), var(--sakura-base))',
-              display: 'grid',
-              placeItems: 'center',
-              color: '#fff',
-              fontWeight: 700,
-              fontSize: 14,
-              fontFamily: 'var(--font-zen-maru-gothic)',
-              boxShadow: '0 2px 6px rgba(0,0,0,.2)',
-              overflow: 'hidden',
-            }}
-          >
+      <div className='py-3 px-2.5 border-t border-white/[.08] flex items-center gap-2.5 shrink-0'>
+        <div className='flex items-center gap-2.5 flex-1 min-w-0'>
+          <div className='shrink-0 w-9 h-9 rounded-full bg-[linear-gradient(135deg,var(--sakura-300),var(--sakura-base))] grid place-items-center text-white font-bold text-[14px] [font-family:var(--font-zen-maru-gothic)] shadow-[0_2px_6px_rgba(0,0,0,0.2)] overflow-hidden'>
             {avatarUrl ? (
               <Image
                 src={avatarUrl}
                 alt={displayName}
                 width={36}
                 height={36}
-                style={{ objectFit: 'cover' }}
+                className='object-cover'
               />
             ) : (
               <span data-testid='avatar-fallback'>{firstChar}</span>
             )}
           </div>
           <div
-            style={{
-              lineHeight: 1.3,
-              overflow: 'hidden',
-              opacity: isCollapsed ? 0 : 1,
-              transition: 'opacity 0.2s',
-              pointerEvents: isCollapsed ? 'none' : 'auto',
-            }}
+            className={`leading-[1.3] overflow-hidden transition-opacity duration-200 ${isCollapsed ? 'opacity-0 pointer-events-none' : 'opacity-100 pointer-events-auto'}`}
           >
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 500,
-                color: '#fff',
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-              }}
-            >
+            <div className='text-[13px] font-medium text-white whitespace-nowrap overflow-hidden text-ellipsis'>
               {displayName}
             </div>
-            <div style={{ fontSize: 11, color: 'rgba(255,255,255,.45)', whiteSpace: 'nowrap' }}>
-              商家管理員
-            </div>
+            <div className='text-[11px] text-white/[.45] whitespace-nowrap'>商家管理員</div>
           </div>
         </div>
 
-        <form action={logout} style={{ flexShrink: 0 }}>
+        <form action={logout} className='shrink-0'>
           <button
             type='submit'
             aria-label='登出'
             title='登出'
-            style={{
-              width: 30,
-              height: 30,
-              borderRadius: 8,
-              border: 'none',
-              background: 'rgba(255,255,255,.08)',
-              color: 'rgba(255,255,255,.7)',
-              display: 'grid',
-              placeItems: 'center',
-              cursor: 'pointer',
-            }}
+            className='w-[30px] h-[30px] rounded-lg border-0 bg-white/[.08] text-white/[.7] grid place-items-center cursor-pointer'
           >
             <svg
               viewBox='0 0 24 24'
@@ -482,18 +339,7 @@ export default function Sidebar({
         <button
           onClick={onToggle}
           aria-label='收合側邊欄'
-          style={{
-            flexShrink: 0,
-            width: 30,
-            height: 30,
-            borderRadius: 8,
-            border: 'none',
-            background: 'rgba(255,255,255,.08)',
-            color: 'rgba(255,255,255,.7)',
-            display: 'grid',
-            placeItems: 'center',
-            cursor: 'pointer',
-          }}
+          className='shrink-0 w-[30px] h-[30px] rounded-lg border-0 bg-white/[.08] text-white/[.7] grid place-items-center cursor-pointer'
         >
           <svg
             viewBox='0 0 24 24'
@@ -502,10 +348,7 @@ export default function Sidebar({
             fill='none'
             stroke='currentColor'
             strokeWidth='2'
-            style={{
-              transform: isCollapsed ? 'rotate(180deg)' : 'none',
-              transition: 'transform 0.3s',
-            }}
+            className={`transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
             aria-hidden='true'
           >
             <polyline points='15 18 9 12 15 6' />

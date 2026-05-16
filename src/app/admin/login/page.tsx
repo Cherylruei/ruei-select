@@ -14,7 +14,7 @@ function RueiSelectEmblem() {
     <svg
       viewBox='0 0 120 120'
       fill='none'
-      style={{ width: 200, height: 200, filter: 'drop-shadow(0 6px 18px rgba(0,0,0,0.25))' }}
+      className='w-[200px] h-[200px] drop-shadow-[0_6px_18px_rgba(0,0,0,0.25)]'
     >
       <circle cx='60' cy='60' r='57' stroke='rgba(255,255,255,.65)' strokeWidth='1.8' />
       <circle cx='60' cy='60' r='50' stroke='rgba(255,255,255,.28)' strokeWidth='.9' />
@@ -100,11 +100,7 @@ function RueiSelectEmblem() {
 
 function LineIcon() {
   return (
-    <svg
-      viewBox='0 0 48 48'
-      fill='none'
-      style={{ width: 23, height: 23, flexShrink: 0, position: 'relative' }}
-    >
+    <svg viewBox='0 0 48 48' fill='none' className='w-[23px] h-[23px] shrink-0 relative'>
       <rect width='48' height='48' rx='10' fill='rgba(255,255,255,0.25)' />
       <path
         d='M24 10C15.16 10 8 15.82 8 22.9C8 29.24 13.46 34.58 21.06 35.74C21.58 35.84 22.3 36.06 22.48 36.5C22.64 36.9 22.58 37.52 22.52 37.92L22.24 39.58C22.16 39.98 21.88 41.12 24 40.24C26.12 39.36 35.28 33.72 39.06 29.36C41.62 26.56 43 24 43 22.9C43 15.82 35.84 10 27 10H24Z'
@@ -224,30 +220,14 @@ function AdminLoginPageContent() {
   const isLoading = state === 'loading' || state === 'authenticating'
 
   return (
-    <div
-      className='login-page'
-      style={{
-        display: 'flex',
-        minHeight: '100vh',
-        fontFamily: "'Noto Sans TC', sans-serif",
-        background: '#f6fbf0',
-      }}
-    >
+    <div className="flex min-h-screen [font-family:'Noto_Sans_TC',sans-serif] bg-[#f6fbf0] max-[800px]:flex-col">
       {/* ── Left panel ── */}
       <aside
-        className='login-aside'
+        className='w-[46%] relative overflow-hidden flex flex-col items-center py-[52px] px-12 min-h-screen max-[800px]:w-full max-[800px]:min-h-0 max-[800px]:pt-9 max-[800px]:px-7 max-[800px]:pb-7 max-[480px]:pt-7 max-[480px]:px-5 max-[480px]:pb-6'
         style={{
-          width: '46%',
           background: 'var(--forest-base, #3a8838)',
           backgroundImage:
             'radial-gradient(ellipse 60% 50% at 85% 12%, rgba(109,171,61,0.4) 0%, transparent 65%), radial-gradient(ellipse 50% 60% at 10% 88%, rgba(44,82,24,0.52) 0%, transparent 60%)',
-          position: 'relative',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          padding: '52px 48px',
-          minHeight: '100vh',
         }}
       >
         {/* Decorative rings */}
@@ -272,210 +252,78 @@ function AdminLoginPageContent() {
           />
         ))}
 
-        <div
-          style={{
-            position: 'relative',
-            zIndex: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            width: '100%',
-            height: '100%',
-            textAlign: 'center',
-          }}
-        >
+        <div className='relative z-[2] flex flex-col items-center w-full h-full text-center'>
           {/* Logo */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div className='flex flex-col items-center'>
             <RueiSelectEmblem />
-            <p
-              style={{
-                fontSize: 11.5,
-                color: 'rgba(255,255,255,0.42)',
-                letterSpacing: '0.26em',
-                textTransform: 'uppercase',
-                marginTop: 0,
-              }}
-            >
+            <p className='text-[11.5px] text-white/[.42] tracking-[.26em] uppercase mt-0'>
               Ruei Select · 代購賣家後台
             </p>
           </div>
 
           {/* Ornament */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 10,
-              margin: '24px 0',
-              width: '100%',
-              maxWidth: 280,
-            }}
-          >
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.18)' }} />
-            <div style={{ display: 'flex', gap: 5, alignItems: 'center' }}>
-              <div
-                style={{
-                  width: 3,
-                  height: 3,
-                  borderRadius: '50%',
-                  background: 'rgba(245,168,191,0.4)',
-                }}
-              />
-              <div
-                style={{
-                  width: 4,
-                  height: 4,
-                  borderRadius: '50%',
-                  background: 'rgba(245,168,191,0.7)',
-                }}
-              />
-              <div
-                style={{
-                  width: 3,
-                  height: 3,
-                  borderRadius: '50%',
-                  background: 'rgba(245,168,191,0.4)',
-                }}
-              />
+          <div className='flex items-center gap-2.5 my-6 w-full max-w-[280px]'>
+            <div className='flex-1 h-px bg-white/[.18]' />
+            <div className='flex gap-[5px] items-center'>
+              <div className='w-[3px] h-[3px] rounded-full bg-[rgba(245,168,191,0.4)]' />
+              <div className='w-1 h-1 rounded-full bg-[rgba(245,168,191,0.7)]' />
+              <div className='w-[3px] h-[3px] rounded-full bg-[rgba(245,168,191,0.4)]' />
             </div>
-            <div style={{ flex: 1, height: 1, background: 'rgba(255,255,255,0.18)' }} />
+            <div className='flex-1 h-px bg-white/[.18]' />
           </div>
 
-          <h1
-            style={{
-              fontFamily: "'Zen Maru Gothic', sans-serif",
-              fontSize: 27,
-              fontWeight: 700,
-              color: '#fff',
-              lineHeight: 1.5,
-              letterSpacing: '0.04em',
-              marginBottom: 10,
-            }}
-          >
-            選你所選，<span style={{ color: '#f5a8bf' }}>賣得輕鬆</span>。
+          <h1 className="[font-family:'Zen_Maru_Gothic',sans-serif] text-[27px] font-bold text-white leading-[1.5] tracking-[.04em] mb-2.5">
+            選你所選，<span className='text-[#f5a8bf]'>賣得輕鬆</span>。
           </h1>
 
           {/* Feature list */}
-          <ul
-            className='login-features'
-            style={{
-              margin: '15px 0 0',
-              listStyle: 'none',
-              width: '80%',
-              textAlign: 'left',
-              padding: 0,
-            }}
-          >
+          <ul className='mt-[15px] list-none w-4/5 text-left p-0 max-[800px]:hidden'>
             {FEATURES.map(({ icon, label }, i) => (
               <li
                 key={i}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 13,
-                  padding: '12px 0',
-                  borderTop: '1px solid rgba(255,255,255,0.08)',
-                  borderBottom:
-                    i === FEATURES.length - 1 ? '1px solid rgba(255,255,255,0.08)' : undefined,
-                }}
+                className={`flex items-center gap-[13px] py-3 border-t border-white/[.08] ${i === FEATURES.length - 1 ? 'border-b border-white/[.08]' : ''}`}
               >
-                <div
-                  style={{
-                    width: 28,
-                    height: 28,
-                    borderRadius: 8,
-                    background: 'rgba(255,255,255,0.12)',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexShrink: 0,
-                  }}
-                >
+                <div className='w-7 h-7 rounded-lg bg-white/[.12] border border-white/[.1] flex items-center justify-center shrink-0'>
                   <svg
                     viewBox='0 0 24 24'
                     fill='none'
                     stroke='#f5a8bf'
                     strokeWidth='2'
-                    style={{ width: 13, height: 13 }}
+                    className='w-[13px] h-[13px]'
                   >
                     {icon}
                   </svg>
                 </div>
-                <span style={{ fontSize: 18, color: 'rgba(255,255,255,0.78)' }}>{label}</span>
+                <span className='text-[18px] text-white/[.78]'>{label}</span>
               </li>
             ))}
           </ul>
 
-          <p
-            style={{
-              marginTop: 'auto',
-              fontSize: 11.5,
-              color: 'rgba(255,255,255,0.25)',
-              paddingTop: 26,
-            }}
-          >
+          <p className='mt-auto text-[11.5px] text-white/[.25] pt-[26px]'>
             © 2026 芮選系統 · 商家專屬後台
           </p>
         </div>
       </aside>
 
       {/* ── Right panel ── */}
-      <main
-        className='login-main'
-        style={{
-          width: '54%',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '60px 72px',
-          background: '#fcfff9',
-          position: 'relative',
-        }}
-      >
+      <main className='w-[54%] flex items-center justify-center py-[60px] px-[72px] bg-[#fcfff9] relative max-[800px]:w-full max-[800px]:min-h-0 max-[800px]:pt-10 max-[800px]:px-6 max-[800px]:pb-14 max-[480px]:pt-8 max-[480px]:px-5 max-[480px]:pb-12'>
         <div
+          className='absolute top-0 right-0 w-[220px] h-[220px] pointer-events-none'
           style={{
-            position: 'absolute',
-            top: 0,
-            right: 0,
-            width: 220,
-            height: 220,
             background:
               'radial-gradient(circle at top right, rgba(184,216,153,0.16) 0%, transparent 70%)',
-            pointerEvents: 'none',
           }}
         />
 
-        <div style={{ width: '100%', maxWidth: 400, position: 'relative', zIndex: 1 }}>
-          <p
-            style={{
-              fontSize: 16,
-              fontWeight: 500,
-              color: '#55a44a',
-              letterSpacing: '0.14em',
-              textTransform: 'uppercase',
-              marginBottom: 10,
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
+        <div className='w-full max-w-[400px] relative z-[1]'>
+          <p className='text-[16px] font-medium text-[#55a44a] tracking-[.14em] uppercase mb-2.5 flex items-center gap-2'>
             商家後台登入
-            <span style={{ flex: 1, height: 1, background: '#e0f0d0' }} />
+            <span className='flex-1 h-px bg-[#e0f0d0]' />
           </p>
-          <h2
-            style={{
-              fontFamily: "'Zen Maru Gothic', sans-serif",
-              fontSize: 40,
-              fontWeight: 700,
-              color: '#192e10',
-              lineHeight: 1.3,
-              marginBottom: 10,
-            }}
-          >
+          <h2 className="[font-family:'Zen_Maru_Gothic',sans-serif] text-[40px] font-bold text-[#192e10] leading-[1.3] mb-2.5">
             Hi，歡迎回來 👋
           </h2>
-          <p style={{ fontSize: 18, color: '#4a5e42', lineHeight: 1.85, marginBottom: 25 }}>
+          <p className='text-[18px] text-[#4a5e42] leading-[1.85] mb-[25px]'>
             使用你的 LINE 帳號快速登入。
             <br />
             首次登入會自動建立後台帳號，無需另外申請。
@@ -485,26 +333,7 @@ function AdminLoginPageContent() {
           <button
             onClick={handleLineLogin}
             disabled={isLoading}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 12,
-              width: '100%',
-              padding: '17px 28px',
-              background: isLoading ? '#009100' : '#00b900',
-              color: '#fff',
-              border: 'none',
-              borderRadius: 100,
-              fontSize: 16,
-              fontWeight: 700,
-              fontFamily: "'Noto Sans TC', sans-serif",
-              cursor: isLoading ? 'not-allowed' : 'pointer',
-              letterSpacing: '0.05em',
-              boxShadow: '0 6px 24px rgba(0,185,0,0.25)',
-              transition: 'all 0.2s ease',
-              opacity: isLoading ? 0.75 : 1,
-            }}
+            className={`flex items-center justify-center gap-3 w-full py-[17px] px-7 text-white border-0 rounded-full text-[16px] font-bold [font-family:'Noto_Sans_TC',sans-serif] tracking-[.05em] shadow-[0_6px_24px_rgba(0,185,0,0.25)] transition-all duration-200 ${isLoading ? 'bg-[#009100] cursor-not-allowed opacity-75' : 'bg-[#00b900] cursor-pointer'}`}
           >
             <LineIcon />
             {isLoading ? '登入中…' : '使用 LINE 帳號登入'}
@@ -512,42 +341,24 @@ function AdminLoginPageContent() {
 
           {/* Error state */}
           {state === 'error' && (
-            <div
-              style={{
-                display: 'flex',
-                gap: 10,
-                alignItems: 'flex-start',
-                marginTop: 16,
-                padding: '14px 16px',
-                background: '#fff0f5',
-                borderRadius: 10,
-              }}
-            >
+            <div className='flex gap-2.5 items-start mt-4 p-4 bg-[#fff0f5] rounded-[10px]'>
               <svg
                 viewBox='0 0 24 24'
                 fill='none'
                 stroke='#e8749d'
                 strokeWidth='2'
-                style={{ width: 15, height: 15, flexShrink: 0, marginTop: 2 }}
+                className='w-[15px] h-[15px] shrink-0 mt-0.5'
               >
                 <circle cx='12' cy='12' r='10' />
                 <line x1='12' y1='8' x2='12' y2='12' />
                 <circle cx='12' cy='16' r='0.5' fill='#e8749d' />
               </svg>
-              <p style={{ fontSize: 15, color: '#7a3050', lineHeight: 1.7, margin: 0 }}>
+              <p className='text-[15px] text-[#7a3050] leading-[1.7] m-0'>
                 {errorMessage}
                 <br />
                 <button
                   onClick={() => setState('idle')}
-                  style={{
-                    color: '#5a1a38',
-                    fontWeight: 700,
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    padding: 0,
-                    fontSize: 15,
-                  }}
+                  className='text-[#5a1a38] font-bold bg-transparent border-0 cursor-pointer p-0 text-[15px]'
                 >
                   重新登入
                 </button>
@@ -556,108 +367,49 @@ function AdminLoginPageContent() {
           )}
 
           {/* Feature pills */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginTop: 26 }}>
+          <div className='flex flex-wrap gap-2 mt-[26px]'>
             {['訂單管理', 'AI 文案', '匯率換算', '數據分析', '供應商管理'].map((label) => (
               <span
                 key={label}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 6,
-                  background: '#f2f8ec',
-                  border: '1px solid #e0f0d0',
-                  borderRadius: 20,
-                  padding: '5px 11px',
-                  fontSize: 14,
-                  color: '#4a5e42',
-                }}
+                className='inline-flex items-center gap-1.5 bg-[#f2f8ec] border border-[#e0f0d0] rounded-[20px] py-[5px] px-[11px] text-[14px] text-[#4a5e42]'
               >
-                <span
-                  style={{
-                    width: 5,
-                    height: 5,
-                    borderRadius: '50%',
-                    background: '#e8749d',
-                    flexShrink: 0,
-                    display: 'inline-block',
-                  }}
-                />
+                <span className='w-[5px] h-[5px] rounded-full bg-[#e8749d] shrink-0 inline-block' />
                 {label}
               </span>
             ))}
           </div>
 
           {/* Info note */}
-          <div
-            style={{
-              display: 'flex',
-              gap: 10,
-              alignItems: 'flex-start',
-              marginTop: 26,
-              padding: '14px 16px',
-              background: '#fff0f5',
-              borderRadius: 10,
-            }}
-          >
+          <div className='flex gap-2.5 items-start mt-[26px] p-4 bg-[#fff0f5] rounded-[10px]'>
             <svg
               viewBox='0 0 24 24'
               fill='none'
               stroke='#e8749d'
               strokeWidth='2'
-              style={{ width: 15, height: 15, flexShrink: 0, marginTop: 2 }}
+              className='w-[15px] h-[15px] shrink-0 mt-0.5'
             >
               <circle cx='12' cy='12' r='10' />
               <line x1='12' y1='8' x2='12' y2='12' />
               <circle cx='12' cy='16' r='0.5' fill='#e8749d' />
             </svg>
-            <p style={{ fontSize: 15, color: '#7a3050', lineHeight: 1.7, margin: 0 }}>
-              這是<strong style={{ color: '#5a1a38' }}>商家專屬</strong>
+            <p className='text-[15px] text-[#7a3050] leading-[1.7] m-0'>
+              這是<strong className='text-[#5a1a38]'>商家專屬</strong>
               後台。如果你是顧客，請透過商家提供的邀請連結進入。
             </p>
           </div>
 
-          <div style={{ marginTop: 34, textAlign: 'center', fontSize: 12.5, color: '#8a9a82' }}>
+          <div className='mt-[34px] text-center text-[12.5px] text-[#8a9a82]'>
             登入即代表同意{' '}
-            <a href='#' style={{ color: '#4a5e42' }}>
+            <a href='#' className='text-[#4a5e42]'>
               服務條款
             </a>{' '}
             與{' '}
-            <a href='#' style={{ color: '#4a5e42' }}>
+            <a href='#' className='text-[#4a5e42]'>
               隱私政策
             </a>
           </div>
         </div>
       </main>
-
-      {/* ── Mobile styles ── */}
-      <style>{`
-        @media (max-width: 800px) {
-          .login-page {
-            flex-direction: column !important;
-          }
-          .login-aside {
-            width: 100% !important;
-            min-height: auto !important;
-            padding: 36px 28px 28px !important;
-          }
-          .login-features {
-            display: none !important;
-          }
-          .login-main {
-            width: 100% !important;
-            min-height: auto !important;
-            padding: 40px 24px 56px !important;
-          }
-        }
-        @media (max-width: 480px) {
-          .login-aside {
-            padding: 28px 20px 24px !important;
-          }
-          .login-main {
-            padding: 32px 20px 48px !important;
-          }
-        }
-      `}</style>
     </div>
   )
 }

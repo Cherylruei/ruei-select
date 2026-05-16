@@ -12,10 +12,7 @@ export default async function CustomersPage({ searchParams }: CustomersPageProps
   return (
     <div>
       <div className='mb-6'>
-        <h1
-          className='text-2xl font-bold text-[var(--neutral-800)] tracking-wide mb-1.5'
-          style={{ fontFamily: 'var(--font-zen-maru-gothic)' }}
-        >
+        <h1 className='text-2xl font-bold text-[var(--neutral-800)] tracking-wide mb-1.5 [font-family:var(--font-zen-maru-gothic)]'>
           顧客管理
         </h1>
         <p className='text-sm text-[var(--neutral-500)]'>審核顧客申請、管理賣場會員名單。</p>

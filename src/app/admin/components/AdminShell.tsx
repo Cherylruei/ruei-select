@@ -35,7 +35,7 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
   const pageTitle = getPageTitle(pathname)
 
   return (
-    <div style={{ display: 'flex', minHeight: '100vh' }}>
+    <div className='flex min-h-screen'>
       <Sidebar
         displayName={displayName}
         avatarUrl={avatarUrl}
@@ -49,63 +49,19 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
       <div
         data-testid='sidebar-backdrop'
         onClick={() => setIsMobileOpen(false)}
-        style={{
-          display: isMobileOpen ? 'block' : 'none',
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(28,54,16,.4)',
-          backdropFilter: 'blur(3px)',
-          WebkitBackdropFilter: 'blur(3px)',
-          zIndex: 40,
-        }}
+        className={`fixed inset-0 bg-[rgba(28,54,16,0.4)] backdrop-blur-[3px] z-40 ${isMobileOpen ? 'block' : 'hidden'}`}
       />
 
       {/* Main content */}
       <div
-        style={{
-          flex: 1,
-          marginLeft: isCollapsed ? 64 : 220,
-          transition: 'margin-left 0.3s var(--ease-smooth)',
-          minWidth: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          minHeight: '100vh',
-        }}
-        className='admin-main'
+        className={`flex-1 min-w-0 flex flex-col min-h-screen [transition:margin-left_0.3s_var(--ease-smooth)] max-md:ml-0 ${isCollapsed ? 'ml-16' : 'ml-[220px]'}`}
       >
         {/* Topbar */}
-        <header
-          style={{
-            height: 60,
-            background: 'rgba(255,255,255,.88)',
-            backdropFilter: 'saturate(140%) blur(8px)',
-            WebkitBackdropFilter: 'saturate(140%) blur(8px)',
-            borderBottom: '1px solid var(--neutral-200)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 14,
-            padding: '0 24px',
-            position: 'sticky',
-            top: 0,
-            zIndex: 30,
-            flexShrink: 0,
-          }}
-        >
+        <header className='h-[60px] bg-white/[.88] backdrop-saturate-[140%] backdrop-blur-[8px] border-b border-[var(--neutral-200)] flex items-center gap-3.5 px-6 sticky top-0 z-30 shrink-0'>
           <button
             aria-label='開啟選單'
             onClick={() => setIsMobileOpen(true)}
-            style={{
-              display: 'none',
-              background: 'none',
-              border: '1px solid var(--neutral-200)',
-              borderRadius: 8,
-              width: 36,
-              height: 36,
-              placeItems: 'center',
-              cursor: 'pointer',
-              color: 'var(--forest-deep)',
-            }}
-            className='admin-hamburger'
+            className='hidden max-md:grid bg-transparent border border-[var(--neutral-200)] rounded-lg w-9 h-9 place-items-center cursor-pointer text-[var(--forest-deep)]'
           >
             <svg
               viewBox='0 0 24 24'
@@ -122,15 +78,7 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
             </svg>
           </button>
 
-          <div
-            style={{
-              fontSize: 13,
-              color: 'var(--neutral-500)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
+          <div className='text-[13px] text-[var(--neutral-500)] flex items-center gap-1.5'>
             <span>後台</span>
             <svg
               viewBox='0 0 24 24'
@@ -143,42 +91,15 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
             >
               <polyline points='9 18 15 12 9 6' />
             </svg>
-            <strong style={{ color: 'var(--neutral-800)', fontWeight: 500 }}>{pageTitle}</strong>
+            <strong className='text-[var(--neutral-800)] font-medium'>{pageTitle}</strong>
           </div>
 
-          <div style={{ flex: 1 }} />
+          <div className='flex-1' />
         </header>
 
         {/* Page content */}
-        <main
-          style={{
-            flex: 1,
-            padding: '28px 32px 56px',
-            maxWidth: 1400,
-            width: '100%',
-          }}
-        >
-          {children}
-        </main>
+        <main className='flex-1 px-8 pt-7 pb-14 max-w-[1400px] w-full'>{children}</main>
       </div>
-
-      <style>{`
-        @media (max-width: 767px) {
-          .admin-sidebar {
-            transform: translateX(-100%) !important;
-            width: 220px !important;
-          }
-          .admin-sidebar[data-mobile-open="true"] {
-            transform: translateX(0) !important;
-          }
-          .admin-main {
-            margin-left: 0 !important;
-          }
-          .admin-hamburger {
-            display: grid !important;
-          }
-        }
-      `}</style>
     </div>
   )
 }

@@ -35,28 +35,16 @@ export default async function StoreSettingsPage() {
 
   return (
     <div>
-      <div className='store-page-head'>
-        <h1 className='store-page-title'>賣場設定</h1>
-        <p className='store-page-sub'>管理賣場形象、邀請連結，掌握顧客看到的第一印象。</p>
+      <div className='mb-6'>
+        <h1 className='text-[26px] font-bold text-[var(--neutral-800)] tracking-wide mb-1.5 [font-family:var(--font-zen-maru-gothic)]'>
+          賣場設定
+        </h1>
+        <p className='text-[13.5px] text-[var(--neutral-500)]'>
+          管理賣場形象、邀請連結，掌握顧客看到的第一印象。
+        </p>
       </div>
 
       <StoreSettingsClient initialStore={store} appUrl={appUrl} />
-
-      <style>{`
-        .store-page-head { margin-bottom: 22px; }
-        .store-page-title {
-          font-family: var(--font-zen-maru-gothic), 'Zen Maru Gothic', sans-serif;
-          font-size: 26px;
-          font-weight: 700;
-          color: var(--neutral-800);
-          letter-spacing: .04em;
-          margin-bottom: 6px;
-        }
-        .store-page-sub {
-          font-size: 13.5px;
-          color: var(--neutral-500);
-        }
-      `}</style>
     </div>
   )
 }

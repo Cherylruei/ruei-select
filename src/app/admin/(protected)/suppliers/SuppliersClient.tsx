@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from 'react'
 import type { Supplier } from '@/types'
+import styles from './suppliers.module.css'
 
 interface Props {
   initialSuppliers: Supplier[]
@@ -138,72 +139,72 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
   return (
     <>
       {/* ── 新增廠商表單 ─────────────────────────────────────────────────── */}
-      <section className='sup-card'>
-        <div className='sup-card-head'>
-          <h2 className='sup-card-title'>新增廠商</h2>
+      <section className={styles.supCard}>
+        <div className={styles.supCardHead}>
+          <h2 className={styles.supCardTitle}>新增廠商</h2>
         </div>
-        <div className='sup-add-form'>
-          <div className='sup-form-row'>
-            <label htmlFor='newSupName' className='sup-form-label'>
-              廠商名稱<span className='sup-form-req'>*</span>
+        <div className={styles.supAddForm}>
+          <div className={styles.supFormRow}>
+            <label htmlFor='newSupName' className={styles.supFormLabel}>
+              廠商名稱<span className={styles.supFormReq}>*</span>
             </label>
             <input
               id='newSupName'
               type='text'
-              className='sup-input'
+              className={styles.supInput}
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               maxLength={30}
               placeholder='請輸入廠商名稱'
               disabled={isPending}
             />
-            <div className='sup-form-meta'>
-              <span className={newName.length > 30 ? 'sup-count-error' : 'sup-count'}>
+            <div className={styles.supFormMeta}>
+              <span className={newName.length > 30 ? styles.supCountError : styles.supCount}>
                 {newName.length} / 30
               </span>
             </div>
           </div>
-          <div className='sup-form-row'>
-            <label htmlFor='newSupNote' className='sup-form-label'>
+          <div className={styles.supFormRow}>
+            <label htmlFor='newSupNote' className={styles.supFormLabel}>
               備註
             </label>
             <input
               id='newSupNote'
               type='text'
-              className='sup-input'
+              className={styles.supInput}
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
               maxLength={100}
               placeholder='例：日本品牌，出貨週期 2 週'
               disabled={isPending}
             />
-            <div className='sup-form-meta'>
-              <span className={newNote.length > 100 ? 'sup-count-error' : 'sup-count'}>
+            <div className={styles.supFormMeta}>
+              <span className={newNote.length > 100 ? styles.supCountError : styles.supCount}>
                 {newNote.length} / 100
               </span>
             </div>
           </div>
-          <div className='sup-form-row'>
-            <label htmlFor='newSupWebsite' className='sup-form-label'>
+          <div className={styles.supFormRow}>
+            <label htmlFor='newSupWebsite' className={styles.supFormLabel}>
               賣場連結
             </label>
             <input
               id='newSupWebsite'
               type='url'
-              className='sup-input'
+              className={styles.supInput}
               value={newWebsiteUrl}
               onChange={(e) => setNewWebsiteUrl(e.target.value)}
               placeholder='https://example.com/store'
               disabled={isPending}
             />
-            <div className='sup-form-meta'>
-              <span className='sup-count'>廠商的官網或賣場頁面 URL</span>
+            <div className={styles.supFormMeta}>
+              <span className={styles.supCount}>廠商的官網或賣場頁面 URL</span>
             </div>
           </div>
-          <div className='sup-form-actions'>
+          <div className={styles.supFormActions}>
             <button
               type='button'
-              className='sup-btn sup-btn-primary'
+              className={`${styles.supBtn} ${styles.supBtnPrimary}`}
               onClick={handleAdd}
               disabled={isPending}
             >
@@ -226,15 +227,15 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
       </section>
 
       {/* ── 廠商列表 ─────────────────────────────────────────────────────── */}
-      <section className='sup-card'>
-        <div className='sup-card-head'>
-          <h2 className='sup-card-title'>廠商列表</h2>
-          <span className='sup-card-hint'>{suppliers.length} 個廠商</span>
+      <section className={styles.supCard}>
+        <div className={styles.supCardHead}>
+          <h2 className={styles.supCardTitle}>廠商列表</h2>
+          <span className={styles.supCardHint}>{suppliers.length} 個廠商</span>
         </div>
 
         {suppliers.length === 0 ? (
-          <div className='sup-empty'>
-            <div className='sup-empty-icon' aria-hidden='true'>
+          <div className={styles.supEmpty}>
+            <div className={styles.supEmptyIcon} aria-hidden='true'>
               <svg
                 viewBox='0 0 24 24'
                 width='28'
@@ -248,23 +249,23 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
                 <path d='M3 17l9 4 9-4' />
               </svg>
             </div>
-            <p className='sup-empty-text'>尚未新增廠商，點擊上方按鈕新增</p>
+            <p className={styles.supEmptyText}>尚未新增廠商，點擊上方按鈕新增</p>
           </div>
         ) : (
-          <ul className='sup-list' role='list'>
+          <ul className={styles.supList} role='list'>
             {suppliers.map((supplier) => (
-              <li key={supplier.id} className='sup-item'>
+              <li key={supplier.id} className={styles.supItem}>
                 {editState?.id === supplier.id ? (
                   /* ── 內嵌編輯模式 ── */
-                  <div className='sup-edit-form'>
-                    <div className='sup-form-row'>
-                      <label htmlFor={`edit-name-${supplier.id}`} className='sup-form-label'>
-                        廠商名稱<span className='sup-form-req'>*</span>
+                  <div className={styles.supEditForm}>
+                    <div className={styles.supFormRow}>
+                      <label htmlFor={`edit-name-${supplier.id}`} className={styles.supFormLabel}>
+                        廠商名稱<span className={styles.supFormReq}>*</span>
                       </label>
                       <input
                         id={`edit-name-${supplier.id}`}
                         type='text'
-                        className='sup-input'
+                        className={styles.supInput}
                         value={editState.name}
                         onChange={(e) =>
                           setEditState((prev) => prev && { ...prev, name: e.target.value })
@@ -274,14 +275,14 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
                         autoFocus
                       />
                     </div>
-                    <div className='sup-form-row'>
-                      <label htmlFor={`edit-note-${supplier.id}`} className='sup-form-label'>
+                    <div className={styles.supFormRow}>
+                      <label htmlFor={`edit-note-${supplier.id}`} className={styles.supFormLabel}>
                         備註
                       </label>
                       <input
                         id={`edit-note-${supplier.id}`}
                         type='text'
-                        className='sup-input'
+                        className={styles.supInput}
                         value={editState.note}
                         onChange={(e) =>
                           setEditState((prev) => prev && { ...prev, note: e.target.value })
@@ -290,14 +291,17 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
                         disabled={isPending}
                       />
                     </div>
-                    <div className='sup-form-row'>
-                      <label htmlFor={`edit-website-${supplier.id}`} className='sup-form-label'>
+                    <div className={styles.supFormRow}>
+                      <label
+                        htmlFor={`edit-website-${supplier.id}`}
+                        className={styles.supFormLabel}
+                      >
                         賣場連結
                       </label>
                       <input
                         id={`edit-website-${supplier.id}`}
                         type='url'
-                        className='sup-input'
+                        className={styles.supInput}
                         value={editState.website_url}
                         onChange={(e) =>
                           setEditState((prev) => prev && { ...prev, website_url: e.target.value })
@@ -306,10 +310,10 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
                         disabled={isPending}
                       />
                     </div>
-                    <div className='sup-edit-actions'>
+                    <div className={styles.supEditActions}>
                       <button
                         type='button'
-                        className='sup-btn sup-btn-ghost'
+                        className={`${styles.supBtn} ${styles.supBtnGhost}`}
                         onClick={cancelEdit}
                         disabled={isPending}
                       >
@@ -317,7 +321,7 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
                       </button>
                       <button
                         type='button'
-                        className='sup-btn sup-btn-primary'
+                        className={`${styles.supBtn} ${styles.supBtnPrimary}`}
                         onClick={handleSaveEdit}
                         disabled={isPending}
                       >
@@ -327,17 +331,19 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
                   </div>
                 ) : (
                   /* ── 顯示模式 ── */
-                  <div className='sup-item-inner'>
-                    <div className='sup-item-info'>
-                      <span className='sup-item-name'>{supplier.name}</span>
-                      <div className='sup-item-meta'>
-                        {supplier.note && <span className='sup-item-note'>{supplier.note}</span>}
+                  <div className={styles.supItemInner}>
+                    <div className={styles.supItemInfo}>
+                      <span className={styles.supItemName}>{supplier.name}</span>
+                      <div className={styles.supItemMeta}>
+                        {supplier.note && (
+                          <span className={styles.supItemNote}>{supplier.note}</span>
+                        )}
                         {supplier.website_url && (
                           <a
                             href={supplier.website_url}
                             target='_blank'
                             rel='noopener noreferrer'
-                            className='sup-item-link'
+                            className={styles.supItemLink}
                             onClick={(e) => e.stopPropagation()}
                           >
                             <svg
@@ -357,10 +363,10 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
                         )}
                       </div>
                     </div>
-                    <div className='sup-item-actions'>
+                    <div className={styles.supItemActions}>
                       <button
                         type='button'
-                        className='sup-icon-btn'
+                        className={styles.supIconBtn}
                         onClick={() => startEdit(supplier)}
                         disabled={isPending}
                         aria-label={`編輯 ${supplier.name}`}
@@ -381,7 +387,7 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
                       </button>
                       <button
                         type='button'
-                        className='sup-icon-btn sup-icon-btn-danger'
+                        className={`${styles.supIconBtn} ${styles.supIconBtnDanger}`}
                         onClick={() => setDeleteTarget(supplier)}
                         disabled={isPending}
                         aria-label={`刪除 ${supplier.name}`}
@@ -417,31 +423,22 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
           role='dialog'
           aria-modal='true'
           aria-labelledby='del-modal-title'
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 200,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'rgba(28,54,16,.4)',
-            backdropFilter: 'blur(3px)',
-          }}
+          className='fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(28,54,16,0.4)] backdrop-blur-[3px]'
           onClick={(e) => {
             if (e.target === e.currentTarget) setDeleteTarget(null)
           }}
         >
-          <div className='sup-modal'>
-            <h3 id='del-modal-title' className='sup-modal-title'>
+          <div className={styles.supModal}>
+            <h3 id='del-modal-title' className={styles.supModalTitle}>
               刪除廠商
             </h3>
-            <p className='sup-modal-body'>
+            <p className={styles.supModalBody}>
               確定刪除廠商「<strong>{deleteTarget.name}</strong>」？此動作無法復原。
             </p>
-            <div className='sup-modal-actions'>
+            <div className={styles.supModalActions}>
               <button
                 type='button'
-                className='sup-btn sup-btn-ghost'
+                className={`${styles.supBtn} ${styles.supBtnGhost}`}
                 onClick={() => setDeleteTarget(null)}
                 disabled={isPending}
               >
@@ -449,7 +446,7 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
               </button>
               <button
                 type='button'
-                className='sup-btn sup-btn-danger'
+                className={`${styles.supBtn} ${styles.supBtnDanger}`}
                 onClick={handleDelete}
                 disabled={isPending}
               >
@@ -465,267 +462,11 @@ export default function SuppliersClient({ initialSuppliers }: Props) {
         <div
           role='status'
           aria-live='polite'
-          className={`sup-toast ${toast.type === 'success' ? 'sup-toast-success' : 'sup-toast-error'}`}
+          className={`${styles.supToast} ${toast.type === 'success' ? styles.supToastSuccess : styles.supToastError}`}
         >
           {toast.message}
         </div>
       )}
-
-      <style>{`
-        .sup-card {
-          background: #fff;
-          border: 1px solid var(--neutral-200);
-          border-radius: var(--r-lg);
-          padding: 26px 28px;
-          margin-bottom: 22px;
-          box-shadow: var(--sh-xs);
-        }
-        .sup-card-head {
-          display: flex;
-          align-items: baseline;
-          justify-content: space-between;
-          margin-bottom: 18px;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-        .sup-card-title {
-          font-family: var(--font-zen-maru-gothic), 'Zen Maru Gothic', sans-serif;
-          font-size: 17px;
-          font-weight: 500;
-          color: var(--neutral-800);
-          letter-spacing: .04em;
-          display: flex;
-          align-items: center;
-          gap: 10px;
-        }
-        .sup-card-title::before {
-          content: '';
-          width: 4px; height: 16px;
-          background: var(--sage-500, #508a2c);
-          border-radius: 4px;
-          display: inline-block;
-        }
-        .sup-card-hint {
-          font-size: 12.5px;
-          color: var(--neutral-500);
-        }
-        .sup-add-form { display: flex; flex-direction: column; }
-        .sup-form-row { margin-bottom: 14px; }
-        .sup-form-label {
-          display: block;
-          font-size: 13px;
-          font-weight: 500;
-          color: var(--neutral-700);
-          margin-bottom: 6px;
-          letter-spacing: .03em;
-        }
-        .sup-form-req { color: var(--sakura, #e8749d); margin-left: 2px; }
-        .sup-input {
-          width: 100%;
-          padding: 10px 14px;
-          font-family: inherit;
-          font-size: 14px;
-          color: var(--neutral-800);
-          background: #fff;
-          border: 1px solid var(--neutral-200);
-          border-radius: var(--r-md);
-          outline: none;
-          transition: border-color .2s, box-shadow .2s;
-          box-sizing: border-box;
-        }
-        .sup-input:hover:not(:disabled) { border-color: var(--neutral-300); }
-        .sup-input:focus {
-          border-color: var(--sage-400, #6dab3d);
-          box-shadow: 0 0 0 3px rgba(109,171,61,.15);
-        }
-        .sup-input:disabled { background: var(--neutral-50); opacity: .7; }
-        .sup-form-meta {
-          display: flex;
-          justify-content: flex-end;
-          margin-top: 4px;
-          font-size: 11.5px;
-        }
-        .sup-count { color: var(--neutral-400); }
-        .sup-count-error { color: var(--sakura, #e8749d); }
-        .sup-form-actions {
-          display: flex;
-          justify-content: flex-end;
-          padding-top: 4px;
-        }
-        .sup-btn {
-          display: inline-flex;
-          align-items: center;
-          gap: 6px;
-          padding: 9px 18px;
-          font-family: inherit;
-          font-size: 14px;
-          font-weight: 500;
-          border-radius: var(--r-md);
-          cursor: pointer;
-          border: 1px solid transparent;
-          transition: background .15s, color .15s, transform .15s;
-          text-decoration: none;
-        }
-        .sup-btn:disabled { opacity: .55; cursor: not-allowed; }
-        .sup-btn-primary { background: var(--sage-600, #3d7020); color: #fff; box-shadow: 0 2px 8px rgba(61,112,32,.22); }
-        .sup-btn-primary:hover:not(:disabled) { background: var(--sage-700, #2c5218); transform: translateY(-1px); }
-        .sup-btn-ghost { background: transparent; color: var(--neutral-600); border-color: var(--neutral-200); }
-        .sup-btn-ghost:hover:not(:disabled) { background: var(--neutral-100); color: var(--neutral-800); }
-        .sup-btn-danger { background: #c0392b; color: #fff; }
-        .sup-btn-danger:hover:not(:disabled) { background: #a93226; transform: translateY(-1px); }
-
-        .sup-empty {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          padding: 36px 24px;
-          gap: 12px;
-        }
-        .sup-empty-icon {
-          width: 56px; height: 56px;
-          border-radius: 50%;
-          background: var(--neutral-100);
-          display: grid;
-          place-items: center;
-          color: var(--neutral-400);
-        }
-        .sup-empty-text {
-          font-size: 13.5px;
-          color: var(--neutral-500);
-          text-align: center;
-        }
-        .sup-list {
-          list-style: none;
-          margin: 0;
-          padding: 0;
-          display: flex;
-          flex-direction: column;
-          gap: 1px;
-        }
-        .sup-item {
-          border-bottom: 1px solid var(--neutral-100);
-        }
-        .sup-item:last-child { border-bottom: none; }
-        .sup-item-inner {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 12px;
-          padding: 14px 4px;
-        }
-        .sup-item-info {
-          display: flex;
-          flex-direction: column;
-          gap: 3px;
-          min-width: 0;
-        }
-        .sup-item-name {
-          font-size: 14px;
-          font-weight: 500;
-          color: var(--neutral-800);
-        }
-        .sup-item-meta {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-        .sup-item-note {
-          font-size: 12.5px;
-          color: var(--neutral-500);
-          white-space: nowrap;
-          overflow: hidden;
-          text-overflow: ellipsis;
-        }
-        .sup-item-link {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          font-size: 12.5px;
-          color: var(--sage-600, #3d7020);
-          text-decoration: none;
-          white-space: nowrap;
-        }
-        .sup-item-link:hover { text-decoration: underline; }
-        .sup-item-actions {
-          display: flex;
-          gap: 4px;
-          flex-shrink: 0;
-        }
-        .sup-icon-btn {
-          display: grid;
-          place-items: center;
-          width: 32px; height: 32px;
-          border-radius: var(--r-md);
-          border: 1px solid var(--neutral-200);
-          background: transparent;
-          color: var(--neutral-500);
-          cursor: pointer;
-          transition: background .15s, color .15s, border-color .15s;
-        }
-        .sup-icon-btn:hover:not(:disabled) { background: var(--neutral-100); color: var(--neutral-700); border-color: var(--neutral-300); }
-        .sup-icon-btn-danger:hover:not(:disabled) { background: #fdf0ee; color: #c0392b; border-color: #f5c6c0; }
-        .sup-icon-btn:disabled { opacity: .4; cursor: not-allowed; }
-        .sup-edit-form {
-          padding: 14px 4px;
-          display: flex;
-          flex-direction: column;
-        }
-        .sup-edit-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 8px;
-          margin-top: 8px;
-        }
-        .sup-modal {
-          background: #fff;
-          border-radius: var(--r-lg);
-          padding: 28px 28px 22px;
-          max-width: 400px;
-          width: 90%;
-          box-shadow: 0 8px 40px rgba(28,54,16,.18);
-        }
-        .sup-modal-title {
-          font-family: var(--font-zen-maru-gothic), 'Zen Maru Gothic', sans-serif;
-          font-size: 17px;
-          font-weight: 500;
-          color: var(--neutral-800);
-          margin-bottom: 12px;
-        }
-        .sup-modal-body {
-          font-size: 14px;
-          color: var(--neutral-600);
-          line-height: 1.65;
-          margin-bottom: 22px;
-        }
-        .sup-modal-actions {
-          display: flex;
-          justify-content: flex-end;
-          gap: 10px;
-        }
-        .sup-toast {
-          position: fixed;
-          bottom: 30px; left: 50%;
-          transform: translateX(-50%);
-          padding: 10px 20px;
-          border-radius: var(--r-full);
-          font-size: 13px;
-          font-weight: 500;
-          z-index: 300;
-          box-shadow: var(--sh-md, 0 4px 16px rgba(28,54,16,.11));
-          animation: supToastIn .25s ease-out;
-          white-space: nowrap;
-        }
-        .sup-toast-success { background: var(--sage-700, #2c5218); color: #fff; }
-        .sup-toast-error { background: #c0392b; color: #fff; }
-        @keyframes supToastIn {
-          from { opacity: 0; transform: translateX(-50%) translateY(12px); }
-          to { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        @media (max-width: 768px) {
-          .sup-card { padding: 20px 18px; }
-        }
-      `}</style>
     </>
   )
 }
