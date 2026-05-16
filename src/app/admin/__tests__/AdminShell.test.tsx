@@ -63,4 +63,22 @@ describe('AdminShell', () => {
 
     expect(screen.getByTestId('sidebar')).toHaveAttribute('data-mobile-open', 'false')
   })
+
+  it('closes mobile sidebar when a nav item is clicked', () => {
+    render(<AdminShell {...defaultProps} />)
+    fireEvent.click(screen.getByLabelText('開啟選單'))
+    expect(screen.getByTestId('sidebar')).toHaveAttribute('data-mobile-open', 'true')
+
+    fireEvent.click(screen.getByRole('link', { name: /賣場設定/ }))
+    expect(screen.getByTestId('sidebar')).toHaveAttribute('data-mobile-open', 'false')
+  })
+
+  it('closes mobile sidebar when sidebar logo is clicked', () => {
+    render(<AdminShell {...defaultProps} />)
+    fireEvent.click(screen.getByLabelText('開啟選單'))
+    expect(screen.getByTestId('sidebar')).toHaveAttribute('data-mobile-open', 'true')
+
+    fireEvent.click(screen.getByRole('link', { name: /芮選/ }))
+    expect(screen.getByTestId('sidebar')).toHaveAttribute('data-mobile-open', 'false')
+  })
 })

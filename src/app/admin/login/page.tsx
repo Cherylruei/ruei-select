@@ -225,6 +225,7 @@ function AdminLoginPageContent() {
 
   return (
     <div
+      className='login-page'
       style={{
         display: 'flex',
         minHeight: '100vh',
@@ -234,6 +235,7 @@ function AdminLoginPageContent() {
     >
       {/* ── Left panel ── */}
       <aside
+        className='login-aside'
         style={{
           width: '46%',
           background: 'var(--forest-base, #3a8838)',
@@ -355,6 +357,7 @@ function AdminLoginPageContent() {
 
           {/* Feature list */}
           <ul
+            className='login-features'
             style={{
               margin: '15px 0 0',
               listStyle: 'none',
@@ -419,6 +422,7 @@ function AdminLoginPageContent() {
 
       {/* ── Right panel ── */}
       <main
+        className='login-main'
         style={{
           width: '54%',
           display: 'flex',
@@ -628,9 +632,30 @@ function AdminLoginPageContent() {
       {/* ── Mobile styles ── */}
       <style>{`
         @media (max-width: 800px) {
-          div[style*="minHeight: '100vh'"] { flex-direction: column !important; }
-          aside { width: 100% !important; min-height: auto !important; padding: 44px 32px 36px !important; }
-          main { width: 100% !important; padding: 48px 32px 60px !important; }
+          .login-page {
+            flex-direction: column !important;
+          }
+          .login-aside {
+            width: 100% !important;
+            min-height: auto !important;
+            padding: 36px 28px 28px !important;
+          }
+          .login-features {
+            display: none !important;
+          }
+          .login-main {
+            width: 100% !important;
+            min-height: auto !important;
+            padding: 40px 24px 56px !important;
+          }
+        }
+        @media (max-width: 480px) {
+          .login-aside {
+            padding: 28px 20px 24px !important;
+          }
+          .login-main {
+            padding: 32px 20px 48px !important;
+          }
         }
       `}</style>
     </div>

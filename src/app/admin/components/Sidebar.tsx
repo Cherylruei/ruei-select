@@ -12,6 +12,7 @@ interface SidebarProps {
   isCollapsed: boolean
   isMobileOpen: boolean
   onToggle: () => void
+  onNavClick?: () => void
 }
 
 interface NavItem {
@@ -167,6 +168,7 @@ export default function Sidebar({
   isCollapsed,
   isMobileOpen,
   onToggle,
+  onNavClick,
 }: SidebarProps) {
   const pathname = usePathname()
   const firstChar = displayName.charAt(0)
@@ -197,7 +199,9 @@ export default function Sidebar({
       className='admin-sidebar'
     >
       {/* Header */}
-      <div
+      <Link
+        href='/admin'
+        onClick={onNavClick}
         style={{
           padding: '18px 16px 16px',
           display: 'flex',
@@ -205,6 +209,8 @@ export default function Sidebar({
           gap: 12,
           borderBottom: '1px solid rgba(255,255,255,.08)',
           flexShrink: 0,
+          textDecoration: 'none',
+          color: 'inherit',
         }}
       >
         <div style={{ flexShrink: 0, width: 40, height: 40 }}>
@@ -258,7 +264,7 @@ export default function Sidebar({
             RUEI SELECT
           </div>
         </div>
-      </div>
+      </Link>
 
       {/* Nav */}
       <ul
@@ -356,7 +362,12 @@ export default function Sidebar({
 
                 return (
                   <li key={item.href}>
-                    <Link href={item.href} style={navStyle} data-active={String(active)}>
+                    <Link
+                      href={item.href}
+                      style={navStyle}
+                      data-active={String(active)}
+                      onClick={onNavClick}
+                    >
                       {content}
                     </Link>
                   </li>

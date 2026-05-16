@@ -42,6 +42,7 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
         isCollapsed={isCollapsed}
         isMobileOpen={isMobileOpen}
         onToggle={() => setIsCollapsed((c) => !c)}
+        onNavClick={() => setIsMobileOpen(false)}
       />
 
       {/* Mobile backdrop */}

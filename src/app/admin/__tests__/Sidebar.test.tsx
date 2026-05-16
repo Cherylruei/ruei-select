@@ -18,6 +18,7 @@ const defaultProps = {
   isCollapsed: false,
   isMobileOpen: false,
   onToggle: vi.fn(),
+  onNavClick: vi.fn(),
 }
 
 beforeEach(() => {
@@ -104,6 +105,28 @@ describe('Sidebar', () => {
     it('renders a logout button', () => {
       render(<Sidebar {...defaultProps} />)
       expect(screen.getByRole('button', { name: /登出/ })).toBeInTheDocument()
+    })
+  })
+
+  describe('logo navigation', () => {
+    it('logo header links to /admin', () => {
+      render(<Sidebar {...defaultProps} />)
+      const logoLink = screen.getByRole('link', { name: /芮選/ })
+      expect(logoLink).toHaveAttribute('href', '/admin')
+    })
+
+    it('calls onNavClick when logo is clicked', () => {
+      const onNavClick = vi.fn()
+      render(<Sidebar {...defaultProps} onNavClick={onNavClick} />)
+      fireEvent.click(screen.getByRole('link', { name: /芮選/ }))
+      expect(onNavClick).toHaveBeenCalledOnce()
+    })
+
+    it('calls onNavClick when a nav item is clicked', () => {
+      const onNavClick = vi.fn()
+      render(<Sidebar {...defaultProps} onNavClick={onNavClick} />)
+      fireEvent.click(screen.getByRole('link', { name: /賣場設定/ }))
+      expect(onNavClick).toHaveBeenCalledOnce()
     })
   })
 })
