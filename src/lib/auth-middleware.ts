@@ -9,7 +9,11 @@ function isProtectedAdminRoute(pathname: string) {
 }
 
 function isProtectedStoreRoute(pathname: string) {
-  return pathname.match(/^\/store\/[^/]+/) !== null && !pathname.match(/^\/store\/[^/]+\/login$/)
+  return (
+    pathname.match(/^\/store\/[^/]+/) !== null &&
+    !pathname.match(/^\/store\/[^/]+\/login$/) &&
+    !pathname.match(/^\/store\/[^/]+\/join$/)
+  )
 }
 
 async function getAuthUser(request: NextRequest, response: NextResponse) {

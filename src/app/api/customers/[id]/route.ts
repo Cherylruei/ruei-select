@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
-import type { StoreMemberWithProduct, MemberStatus } from '@/types'
 
 function extractLineId(email: string | undefined): string | null {
   const match = email?.match(/^line_(.+)@internal\.rueiselect\.local$/)
   return match ? match[1] : null
 }
 
-const VALID_STATUSES: MemberStatus[] = ['pending', 'approved', 'rejected']
+type ReviewAction = 'approve' | 'reject'
+const VALID_ACTIONS: ReviewAction[] = ['approve', 'reject']
 
-export async function GET(request: NextRequest) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params
+
     const rhc = await createRouteHandlerClient()
     const {
       data: { user },
@@ -40,36 +42,46 @@ export async function GET(request: NextRequest) {
 
     if (!store) return NextResponse.json({ error: 'Store not found' }, { status: 404 })
 
-    const statusParam = request.nextUrl.searchParams.get('status')
-    const status = VALID_STATUSES.includes(statusParam as MemberStatus)
-      ? (statusParam as MemberStatus)
-      : null
+    const body = await request.json()
+    const action = body?.action as string | undefined
 
-    let query = serviceClient
-      .from('store_members')
-      .select('*, referring_product:products(name)')
-      .eq('store_id', store.id)
-
-    if (status) {
-      query = query.eq('status', status)
+    if (!VALID_ACTIONS.includes(action as ReviewAction)) {
+      return NextResponse.json(
+        { error: 'Invalid action. Must be approve or reject' },
+        { status: 400 }
+      )
     }
 
-    const { data: rows, error } = (await query.order('applied_at', { ascending: false })) as {
-      data: (Record<string, unknown> & { referring_product?: { name: string } | null })[] | null
+    const { data: member } = (await serviceClient
+      .from('store_members')
+      .select('id, store_id, status')
+      .eq('id', id)
+      .eq('store_id', store.id)
+      .maybeSingle()) as {
+      data: { id: string; store_id: string; status: string } | null
       error: unknown
     }
 
-    if (error) throw error
+    if (!member) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    const members: StoreMemberWithProduct[] = (rows ?? []).map((row) => {
-      const { referring_product, ...rest } = row
-      return {
-        ...(rest as unknown as StoreMemberWithProduct),
-        referring_product_name: referring_product?.name ?? null,
-      }
-    })
+    if (member.status !== 'pending') {
+      return NextResponse.json({ error: 'Member already reviewed' }, { status: 409 })
+    }
 
-    return NextResponse.json({ success: true, data: members })
+    const newStatus = action === 'approve' ? 'approved' : 'rejected'
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: updated, error: updateError } = (await (
+      serviceClient.from('store_members') as any
+    )
+      .update({ status: newStatus, reviewed_at: new Date().toISOString() })
+      .eq('id', id)
+      .select()
+      .single()) as { data: unknown; error: unknown }
+
+    if (updateError) throw updateError
+
+    return NextResponse.json({ success: true, data: updated })
   } catch {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }

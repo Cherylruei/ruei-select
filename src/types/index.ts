@@ -4,6 +4,7 @@
 
 export type UserRole = 'merchant' | 'customer'
 export type MemberStatus = 'pending' | 'approved' | 'rejected'
+export type MemberSource = 'invite_link' | 'public_page'
 export type Currency = 'TWD' | 'JPY' | 'GBP' | 'USD' | 'HKD'
 export type ProductStatus = 'active' | 'inactive' | 'soldout'
 export type OrderStatus =
@@ -54,11 +55,18 @@ export interface StoreMember {
   store_id: string
   user_id: string
   name: string
-  phone: string
+  phone: string | null
   line_id: string
   status: MemberStatus
+  source: MemberSource
+  referring_product_id: string | null
+  note: string | null
   applied_at: string
   reviewed_at: string | null
+}
+
+export interface StoreMemberWithProduct extends StoreMember {
+  referring_product_name: string | null
 }
 
 export interface ProductCategory {
