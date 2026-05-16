@@ -1,0 +1,976 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>芮選 · 新增商品</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; }
+
+      :root {
+        --sage-50:#f2f8ec; --sage-100:#e0f0d0; --sage-200:#b8dca0;
+        --sage-400:#6dab3d; --sage-500:#508a2c; --sage-600:#3d7020;
+        --sage-700:#2c5218; --sage-800:#1c3610;
+        --sakura-pale:#fff0f5; --sakura-100:#ffd8e8;
+        --sakura-mid:#f5a8bf; --sakura:#e8749d; --sakura-deep:#c42858;
+        --neutral-0:#fff; --neutral-50:#f6fbf0; --neutral-100:#edf5e8;
+        --neutral-200:#d8e8cc; --neutral-300:#b4c8a0; --neutral-400:#8a9a82;
+        --neutral-500:#647258; --neutral-600:#4a5e42; --neutral-700:#2a3e20; --neutral-800:#192e10;
+        --color-warning:#c4a828; --color-danger:#c4453d;
+        --r-sm:6px; --r-md:12px; --r-lg:18px; --r-xl:24px; --r-full:999px;
+        --sh-xs:0 1px 3px rgba(28,54,16,.07); --sh-sm:0 2px 8px rgba(28,54,16,.09);
+        --sh-md:0 4px 16px rgba(28,54,16,.11); --sh-lg:0 8px 32px rgba(28,54,16,.14);
+        --ease-smooth:cubic-bezier(.4,0,.2,1); --ease-bounce:cubic-bezier(.34,1.56,.64,1);
+        --sidebar-w:220px; --sidebar-min:64px; --topbar-h:60px;
+      }
+
+      body {
+        font-family: 'Noto Sans TC', sans-serif;
+        background: var(--neutral-50);
+        color: var(--neutral-800);
+        min-height: 100vh;
+        display: flex;
+      }
+
+      /* ── SIDEBAR ── */
+      .sidebar {
+        width: var(--sidebar-w);
+        flex-shrink: 0;
+        background: var(--sage-600);
+        background-image:
+          radial-gradient(ellipse 60% 50% at 85% 12%, rgba(109,171,61,.32) 0%, transparent 65%),
+          radial-gradient(ellipse 50% 60% at 10% 88%, rgba(28,54,16,.45) 0%, transparent 60%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        z-index: 50;
+        overflow: hidden;
+      }
+      .sb-head {
+        padding: 18px 16px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+      .sb-logo {
+        flex-shrink: 0;
+        width: 40px; height: 40px;
+        display: grid;
+        place-items: center;
+        filter: drop-shadow(0 2px 6px rgba(0,0,0,.18));
+      }
+      .sb-brand {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-weight: 700;
+        font-size: 19px;
+        letter-spacing: .12em;
+        white-space: nowrap;
+      }
+      .sb-brand-sub {
+        font-size: 10px;
+        color: rgba(255,255,255,.42);
+        letter-spacing: .22em;
+        white-space: nowrap;
+      }
+      .sb-nav {
+        list-style: none;
+        padding: 14px 10px;
+        flex: 1;
+        overflow-y: auto;
+      }
+      .sb-nav-section {
+        font-size: 10.5px;
+        color: rgba(255,255,255,.32);
+        letter-spacing: .22em;
+        text-transform: uppercase;
+        padding: 14px 12px 8px;
+        white-space: nowrap;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        color: rgba(255,255,255,.78);
+        text-decoration: none;
+        font-size: 14.5px;
+        transition: background .15s var(--ease-smooth), color .15s var(--ease-smooth);
+        white-space: nowrap;
+        margin-bottom: 2px;
+        cursor: pointer;
+      }
+      .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+      .nav-item.active {
+        background: rgba(255,255,255,.13);
+        color: #fff;
+        box-shadow: inset 3px 0 0 var(--sakura-mid);
+      }
+      .nav-item.disabled { opacity: .35; cursor: not-allowed; }
+      .nav-item.disabled:hover { background: transparent; }
+      .nav-icon {
+        flex-shrink: 0;
+        width: 20px; height: 20px;
+        display: grid;
+        place-items: center;
+      }
+      .nav-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+      .nav-label { flex: 1; }
+      .nav-badge {
+        background: var(--sakura);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: var(--r-full);
+        line-height: 1.4;
+      }
+      .nav-tag {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(255,255,255,.08);
+        color: rgba(255,255,255,.5);
+        font-weight: 500;
+      }
+      .sb-foot {
+        padding: 12px 10px;
+        border-top: 1px solid rgba(255,255,255,.08);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .sb-user { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+      .sb-avatar {
+        flex-shrink: 0;
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--sakura-mid), var(--sakura));
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 14px;
+        font-family: 'Zen Maru Gothic', sans-serif;
+        box-shadow: 0 2px 6px rgba(0,0,0,.2);
+      }
+      .sb-user-meta { line-height: 1.3; overflow: hidden; }
+      .sb-user-name { font-size: 13px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .sb-user-role { font-size: 11px; color: rgba(255,255,255,.45); white-space: nowrap; }
+      .sb-toggle {
+        flex-shrink: 0;
+        width: 30px; height: 30px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255,255,255,.08);
+        color: rgba(255,255,255,.7);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+      }
+      .sb-toggle svg { width: 16px; height: 16px; }
+
+      /* ── MAIN ── */
+      .main {
+        flex: 1;
+        margin-left: var(--sidebar-w);
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .topbar {
+        height: var(--topbar-h);
+        background: rgba(255,255,255,.88);
+        backdrop-filter: saturate(140%) blur(8px);
+        -webkit-backdrop-filter: saturate(140%) blur(8px);
+        border-bottom: 1px solid var(--neutral-200);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 28px;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+      }
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        color: var(--neutral-500);
+        text-decoration: none;
+        padding: 6px 10px;
+        border-radius: var(--r-md);
+        transition: background .15s, color .15s;
+      }
+      .back-link:hover { background: var(--neutral-100); color: var(--sage-700); }
+      .back-link svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+      .crumb {
+        font-size: 13px;
+        color: var(--neutral-500);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .crumb a { color: var(--neutral-500); text-decoration: none; }
+      .crumb a:hover { color: var(--sage-600); }
+      .crumb strong { color: var(--neutral-800); font-weight: 500; }
+      .crumb svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+      .topbar-spacer { flex: 1; }
+
+      /* ── CONTENT ── */
+      .content {
+        flex: 1;
+        padding: 28px 32px 64px;
+      }
+
+      .page-head {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+      .page-title {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--neutral-800);
+        letter-spacing: .04em;
+      }
+
+      /* ── TWO-COLUMN LAYOUT ── */
+      .form-layout {
+        display: grid;
+        grid-template-columns: 1fr 380px;
+        gap: 24px;
+        align-items: start;
+      }
+
+      /* ── SECTION CARD ── */
+      .section-card {
+        background: #fff;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-lg);
+        box-shadow: var(--sh-xs);
+        overflow: hidden;
+        margin-bottom: 18px;
+      }
+      .section-card:last-child { margin-bottom: 0; }
+      .section-head {
+        padding: 16px 20px 14px;
+        border-bottom: 1px solid var(--neutral-100);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .section-title {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--neutral-800);
+        letter-spacing: .02em;
+      }
+      .section-hint {
+        font-size: 12px;
+        color: var(--neutral-400);
+        font-weight: 400;
+      }
+      .section-body { padding: 18px 20px; }
+
+      /* Form controls */
+      .field { margin-bottom: 16px; }
+      .field:last-child { margin-bottom: 0; }
+      .field-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--neutral-600);
+        margin-bottom: 6px;
+        letter-spacing: .01em;
+      }
+      .field-label span {
+        font-size: 11px;
+        color: var(--neutral-400);
+        font-weight: 400;
+        margin-left: 4px;
+      }
+      .field-input, .field-select, .field-textarea {
+        width: 100%;
+        padding: 10px 14px;
+        font-family: inherit;
+        font-size: 14px;
+        color: var(--neutral-800);
+        background: #fff;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-md);
+        outline: none;
+        transition: border-color .2s, box-shadow .2s;
+        line-height: 1.5;
+      }
+      .field-input:focus, .field-select:focus, .field-textarea:focus {
+        border-color: var(--sage-400);
+        box-shadow: 0 0 0 3px rgba(109,171,61,.12);
+      }
+      .field-textarea {
+        resize: vertical;
+        min-height: 90px;
+      }
+      .field-textarea.raw {
+        background: var(--neutral-50);
+        color: var(--neutral-500);
+        font-size: 13px;
+        min-height: 80px;
+      }
+      .field-select {
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9a82' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 12px center;
+        padding-right: 36px;
+        cursor: pointer;
+      }
+
+      /* AI 優化完成提示條 */
+      .ai-success-bar {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 10px 14px;
+        background: var(--sage-50);
+        border: 1px solid var(--sage-200);
+        border-radius: var(--r-md);
+        margin-bottom: 14px;
+      }
+      .ai-success-bar .ai-icon {
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        background: var(--sage-500);
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .ai-success-bar .ai-icon svg {
+        width: 12px; height: 12px;
+        stroke: #fff;
+        fill: none;
+        stroke-width: 2.5;
+      }
+      .ai-success-bar .ai-text {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--sage-700);
+      }
+      .ai-caution {
+        font-size: 11.5px;
+        color: var(--neutral-400);
+        margin-top: 10px;
+        padding-top: 10px;
+        border-top: 1px solid var(--neutral-100);
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .ai-caution svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
+
+      /* 規格設定 */
+      .spec-card {
+        background: var(--neutral-50);
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-md);
+        padding: 14px 16px;
+        margin-bottom: 10px;
+      }
+      .spec-card:last-of-type { margin-bottom: 0; }
+      .spec-dim-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--neutral-600);
+        letter-spacing: .04em;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+      }
+      .spec-options { display: flex; flex-direction: column; gap: 8px; }
+      .spec-option-row {
+        display: grid;
+        grid-template-columns: 1fr 100px 100px;
+        gap: 8px;
+        align-items: center;
+      }
+      .spec-option-name {
+        font-size: 13.5px;
+        color: var(--neutral-700);
+        font-weight: 500;
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .spec-option-name::before {
+        content: '';
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        background: var(--sage-400);
+        flex-shrink: 0;
+      }
+      .spec-input {
+        padding: 7px 10px;
+        font-family: inherit;
+        font-size: 13px;
+        color: var(--neutral-800);
+        background: #fff;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-sm);
+        outline: none;
+        width: 100%;
+        transition: border-color .2s, box-shadow .2s;
+      }
+      .spec-input:focus {
+        border-color: var(--sage-400);
+        box-shadow: 0 0 0 3px rgba(109,171,61,.12);
+      }
+      .spec-price-label {
+        font-size: 11px;
+        color: var(--neutral-400);
+        text-align: right;
+        margin-top: 2px;
+      }
+
+      /* 匯率資訊 */
+      .currency-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 12px;
+        padding: 10px 12px;
+        background: rgba(61,112,32,.04);
+        border-radius: var(--r-md);
+        border: 1px solid var(--sage-100);
+      }
+      .currency-select {
+        appearance: none;
+        -webkit-appearance: none;
+        padding: 6px 28px 6px 10px;
+        font-family: inherit;
+        font-size: 13px;
+        color: var(--neutral-700);
+        background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238a9a82' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E") no-repeat right 8px center;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-sm);
+        outline: none;
+        cursor: pointer;
+        flex-shrink: 0;
+        min-width: 72px;
+      }
+      .currency-input {
+        padding: 6px 10px;
+        font-family: inherit;
+        font-size: 13px;
+        color: var(--neutral-800);
+        background: #fff;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-sm);
+        outline: none;
+        width: 80px;
+      }
+      .currency-rate {
+        font-size: 12px;
+        color: var(--sage-600);
+        flex: 1;
+        line-height: 1.4;
+      }
+
+      /* 新增規格 link */
+      .add-spec-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 13px;
+        color: var(--sage-600);
+        cursor: pointer;
+        text-decoration: none;
+        padding: 4px 0;
+        margin-top: 8px;
+        font-weight: 500;
+      }
+      .add-spec-link:hover { color: var(--sage-700); }
+      .add-spec-link svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+
+      /* Toggle */
+      .toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .toggle-label { font-size: 14px; color: var(--neutral-700); }
+      .toggle-desc { font-size: 12px; color: var(--neutral-400); margin-top: 2px; }
+      .toggle-switch {
+        position: relative;
+        flex-shrink: 0;
+        width: 44px; height: 24px;
+        cursor: pointer;
+      }
+      .toggle-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+      .toggle-track {
+        position: absolute;
+        inset: 0;
+        background: var(--sage-500);
+        border-radius: var(--r-full);
+        transition: background .2s;
+      }
+      .toggle-thumb {
+        position: absolute;
+        top: 3px; left: 22px;
+        width: 18px; height: 18px;
+        background: #fff;
+        border-radius: 50%;
+        box-shadow: 0 1px 4px rgba(0,0,0,.18);
+        transition: left .2s;
+      }
+
+      /* ── RIGHT COLUMN: 圖片上傳 ── */
+      .right-col { position: sticky; top: calc(var(--topbar-h) + 20px); }
+
+      .thumb-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        margin-bottom: 12px;
+      }
+      .thumb-item {
+        aspect-ratio: 1;
+        border-radius: var(--r-md);
+        position: relative;
+        overflow: hidden;
+      }
+      .thumb-item .thumb-img {
+        width: 100%; height: 100%;
+        display: block;
+        border-radius: var(--r-md);
+      }
+      .thumb-img-1 { background: linear-gradient(135deg, #ffd8e8 0%, #f5a8bf 100%); }
+      .thumb-img-2 { background: linear-gradient(135deg, #c8e8b0 0%, #8cc868 100%); }
+      .thumb-badge {
+        position: absolute;
+        bottom: 4px; left: 4px;
+        background: rgba(0,0,0,.45);
+        color: #fff;
+        font-size: 9px;
+        padding: 2px 5px;
+        border-radius: 4px;
+        font-weight: 500;
+        letter-spacing: .03em;
+      }
+      .thumb-del {
+        position: absolute;
+        top: 4px; right: 4px;
+        width: 20px; height: 20px;
+        border-radius: 50%;
+        background: rgba(0,0,0,.38);
+        color: #fff;
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        border: none;
+        transition: background .15s;
+      }
+      .thumb-del:hover { background: rgba(196,69,61,.75); }
+      .thumb-del svg { width: 10px; height: 10px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+
+      .upload-zone {
+        border: 2px dashed var(--neutral-200);
+        border-radius: var(--r-md);
+        padding: 22px 16px;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color .2s, background .2s;
+      }
+      .upload-zone:hover {
+        border-color: var(--sage-300, #a8c888);
+        background: var(--sage-50);
+      }
+      .upload-icon {
+        width: 36px; height: 36px;
+        margin: 0 auto 10px;
+        background: var(--neutral-100);
+        border-radius: var(--r-md);
+        display: grid;
+        place-items: center;
+      }
+      .upload-icon svg { width: 18px; height: 18px; stroke: var(--neutral-400); fill: none; stroke-width: 1.8; }
+      .upload-text {
+        font-size: 13px;
+        color: var(--neutral-500);
+        line-height: 1.5;
+      }
+      .upload-text strong { color: var(--sage-600); font-weight: 600; }
+      .upload-meta {
+        font-size: 11.5px;
+        color: var(--neutral-400);
+        margin-top: 6px;
+      }
+
+      /* ── FOOTER ACTIONS ── */
+      .form-footer {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 24px;
+        border-top: 1px solid var(--neutral-200);
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 11px 22px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: var(--r-md);
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: background .15s, color .15s, transform .15s, box-shadow .15s;
+        text-decoration: none;
+        line-height: 1;
+      }
+      .btn-sakura {
+        background: var(--sakura);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(232,116,157,.28);
+      }
+      .btn-sakura:hover {
+        background: var(--sakura-deep);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(232,116,157,.38);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--neutral-600);
+        border-color: var(--neutral-200);
+      }
+      .btn-ghost:hover { background: var(--neutral-100); color: var(--neutral-800); }
+    </style>
+  </head>
+  <body>
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-head">
+        <div class="sb-logo">
+          <svg width="40" height="40" viewBox="0 0 120 120" fill="none">
+            <circle cx="60" cy="60" r="57" stroke="rgba(255,255,255,.65)" stroke-width="1.8"/>
+            <circle cx="60" cy="60" r="57" fill="rgba(255,255,255,.08)"/>
+            <g transform="translate(60,60)">
+              <g transform="rotate(-45) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <g transform="rotate(45) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <g transform="rotate(135) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <g transform="rotate(235) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <circle r="2.2" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".9"/>
+              <circle r="1.1" fill="rgba(232,116,157,.82)"/>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <div class="sb-brand">芮選</div>
+          <div class="sb-brand-sub">RUEI SELECT</div>
+        </div>
+      </div>
+
+      <ul class="sb-nav">
+        <li class="sb-nav-section">主選單</li>
+        <li><a href="admin-dashboard.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>
+          <span class="nav-label">總覽</span>
+        </a></li>
+        <li><a href="admin-store.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5"/><path d="M3 9v11a1 1 0 001 1h16a1 1 0 001-1V9"/><path d="M3 9c0 2 1.5 3 3 3s3-1 3-3M9 9c0 2 1.5 3 3 3s3-1 3-3M15 9c0 2 1.5 3 3 3s3-1 3-3"/></svg></span>
+          <span class="nav-label">賣場設定</span>
+        </a></li>
+
+        <li class="sb-nav-section">管理</li>
+        <li><a href="admin-customers.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15 14c2.5 0 6 1.5 6 5"/></svg></span>
+          <span class="nav-label">顧客管理</span>
+          <span class="nav-badge">3</span>
+        </a></li>
+        <li><a href="admin-products.html" class="nav-item active">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></span>
+          <span class="nav-label">商品管理</span>
+        </a></li>
+        <li><span class="nav-item disabled">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14l-1 12H6L5 4z"/><path d="M5 4l-1-2H1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></span>
+          <span class="nav-label">訂單管理</span>
+          <span class="nav-tag">S3</span>
+        </span></li>
+        <li><a href="admin-suppliers.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg></span>
+          <span class="nav-label">供應商管理</span>
+        </a></li>
+      </ul>
+
+      <div class="sb-foot">
+        <div class="sb-user">
+          <div class="sb-avatar">芮</div>
+          <div class="sb-user-meta">
+            <div class="sb-user-name">Cheryl</div>
+            <div class="sb-user-role">商家管理員</div>
+          </div>
+        </div>
+        <button class="sb-toggle" aria-label="收合側邊欄">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <div class="main" id="main">
+      <header class="topbar">
+        <a href="admin-products.html" class="back-link">
+          <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+          返回
+        </a>
+        <div class="crumb">
+          <a href="admin-products.html">商品管理</a>
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          <strong>新增商品</strong>
+        </div>
+        <div class="topbar-spacer"></div>
+      </header>
+
+      <main class="content">
+        <div class="page-head">
+          <h1 class="page-title">新增商品</h1>
+        </div>
+
+        <div class="form-layout">
+          <!-- ── 左欄：主要資訊 ── -->
+          <div class="left-col">
+
+            <!-- 1. 廠商選擇 -->
+            <div class="section-card">
+              <div class="section-head">
+                <span class="section-title">廠商</span>
+              </div>
+              <div class="section-body">
+                <div class="field">
+                  <label class="field-label" for="supplier-select">選擇廠商</label>
+                  <select class="field-select" id="supplier-select">
+                    <option selected>Tokyo Beauty Lab</option>
+                    <option>京菓子堂</option>
+                    <option>Hokkaido Natural</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <!-- 2. 原始商品文 -->
+            <div class="section-card">
+              <div class="section-head">
+                <span class="section-title">原始商品文</span>
+                <span class="section-hint">貼入日文原文，AI 將自動翻譯並優化</span>
+              </div>
+              <div class="section-body">
+                <div class="field">
+                  <textarea class="field-textarea raw" rows="4" placeholder="貼入廠商原始商品說明（日文、英文均可）…">三重層和紙マスク 3枚入り。天然和紙素材使用、肌にやさしい使い心地。ヒアルロン酸・コラーゲン配合のエッセンスをたっぷり含浸。毎日のスキンケアに最適。25ml × 3枚（レギュラー）/ 50ml × 3枚（リッチ）</textarea>
+                </div>
+                <button class="btn btn-ghost" style="font-size:13px;padding:8px 14px;gap:5px;" type="button">
+                  <svg viewBox="0 0 24 24" style="width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2;"><path d="M12 2l3 7h7l-6 4 2 7-6-4-6 4 2-7-6-4h7z"/></svg>
+                  AI 優化文案
+                </button>
+              </div>
+            </div>
+
+            <!-- 3. AI 優化結果 -->
+            <div class="section-card">
+              <div class="section-head">
+                <span class="section-title">商品資訊</span>
+                <span class="section-hint">AI 已優化，可直接編輯</span>
+              </div>
+              <div class="section-body">
+                <!-- AI 完成提示條 -->
+                <div class="ai-success-bar">
+                  <div class="ai-icon">
+                    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+                  </div>
+                  <span class="ai-text">AI 優化完成 — 文案已根據原文自動生成</span>
+                </div>
+
+                <div class="field">
+                  <label class="field-label" for="product-name">商品名稱</label>
+                  <input class="field-input" id="product-name" type="text" value="日本和紙面膜三入組 · 深層補水保濕" />
+                </div>
+
+                <div class="field">
+                  <label class="field-label" for="product-desc">商品描述</label>
+                  <textarea class="field-textarea" id="product-desc" rows="5">採用天然三重層和紙材質，親膚不刺激，敷上後服貼感絕佳。精萃液中富含玻尿酸與膠原蛋白，一片等於 20 分鐘的水潤集中護理。無論是換季乾燥還是長途飛行後的急救保濕，都是代購賣場人氣首選。獨立包裝設計，方便旅行攜帶，也是送禮的溫柔心意。</textarea>
+                </div>
+
+                <div class="ai-caution">
+                  <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".8" fill="currentColor" stroke="none"/></svg>
+                  以上內容由 AI 根據原文生成，請確認後儲存
+                </div>
+              </div>
+            </div>
+
+            <!-- 4. 規格設定 -->
+            <div class="section-card">
+              <div class="section-head">
+                <span class="section-title">規格設定</span>
+                <span class="section-hint">AI 偵測到以下規格，請確認</span>
+              </div>
+              <div class="section-body">
+
+                <!-- 規格維度：容量 -->
+                <div class="spec-card">
+                  <div class="spec-dim-label">容量</div>
+                  <div class="spec-options">
+                    <!-- 規格選項 1 -->
+                    <div>
+                      <div class="spec-option-row">
+                        <div class="spec-option-name">25ml × 3片</div>
+                        <div>
+                          <input class="spec-input" type="text" value="NT$480" placeholder="售價" />
+                          <div class="spec-price-label">售價</div>
+                        </div>
+                        <div>
+                          <input class="spec-input" type="text" value="" placeholder="成本" />
+                          <div class="spec-price-label">成本（選填）</div>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- 規格選項 2 -->
+                    <div>
+                      <div class="spec-option-row">
+                        <div class="spec-option-name">50ml × 3片</div>
+                        <div>
+                          <input class="spec-input" type="text" value="NT$580" placeholder="售價" />
+                          <div class="spec-price-label">售價</div>
+                        </div>
+                        <div>
+                          <input class="spec-input" type="text" value="" placeholder="成本" />
+                          <div class="spec-price-label">成本（選填）</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 成本匯率 -->
+                <div class="currency-row">
+                  <span style="font-size:12.5px;color:var(--neutral-500);font-weight:500;flex-shrink:0;">成本幣別</span>
+                  <select class="currency-select">
+                    <option selected>JPY</option>
+                    <option>USD</option>
+                    <option>KRW</option>
+                    <option>TWD</option>
+                  </select>
+                  <input class="currency-input" type="text" value="1200" placeholder="金額" />
+                  <span class="currency-rate">今日匯率 0.217 &nbsp;≈&nbsp; <strong style="color:var(--sage-700);">NT$ 260</strong></span>
+                </div>
+
+                <a class="add-spec-link" href="#">
+                  <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  新增規格組合
+                </a>
+              </div>
+            </div>
+
+            <!-- 5. 是否公開 -->
+            <div class="section-card">
+              <div class="section-body">
+                <div class="toggle-row">
+                  <div>
+                    <div class="toggle-label" style="font-weight:500;">是否公開</div>
+                    <div class="toggle-desc">開啟後此商品可被搜尋引擎索引，並顯示於公開賣場頁面</div>
+                  </div>
+                  <label class="toggle-switch">
+                    <input type="checkbox" checked />
+                    <div class="toggle-track"></div>
+                    <div class="toggle-thumb"></div>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /left-col -->
+
+          <!-- ── 右欄：圖片上傳 ── -->
+          <div class="right-col">
+            <div class="section-card">
+              <div class="section-head">
+                <span class="section-title">商品圖片</span>
+                <span class="section-hint">最多 10 張</span>
+              </div>
+              <div class="section-body">
+                <!-- 已上傳縮圖 -->
+                <div class="thumb-grid">
+                  <div class="thumb-item">
+                    <div class="thumb-img thumb-img-1"></div>
+                    <span class="thumb-badge">主圖</span>
+                    <button class="thumb-del" aria-label="刪除圖片">
+                      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                  <div class="thumb-item">
+                    <div class="thumb-img thumb-img-2"></div>
+                    <button class="thumb-del" aria-label="刪除圖片">
+                      <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                    </button>
+                  </div>
+                </div>
+                <div style="font-size:11.5px;color:var(--neutral-400);margin-bottom:10px;">拖曳可調整排序順序</div>
+
+                <!-- 上傳更多 -->
+                <div class="upload-zone">
+                  <div class="upload-icon">
+                    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  </div>
+                  <div class="upload-text">
+                    拖曳圖片至此，或 <strong>點擊選擇</strong>
+                  </div>
+                  <div class="upload-meta">自動壓縮至 1200px &nbsp;·&nbsp; 最大 2MB &nbsp;·&nbsp; 支援 JPG、PNG、WebP</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 提示卡 -->
+            <div style="background:var(--sage-50);border:1px solid var(--sage-200);border-radius:var(--r-md);padding:14px 16px;margin-top:4px;">
+              <div style="font-size:12.5px;font-weight:600;color:var(--sage-700);margin-bottom:6px;display:flex;align-items:center;gap:6px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--sage-600)" stroke-width="2"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><circle cx="12" cy="16" r=".8" fill="var(--sage-600)" stroke="none"/></svg>
+                圖片小技巧
+              </div>
+              <ul style="font-size:12px;color:var(--neutral-500);line-height:1.8;padding-left:14px;">
+                <li>第一張圖會設為主圖，顯示於商品卡片</li>
+                <li>建議使用 1:1 正方形比例</li>
+                <li>白底或淺色背景轉換率更高</li>
+              </ul>
+            </div>
+          </div><!-- /right-col -->
+
+        </div><!-- /form-layout -->
+
+        <!-- 底部操作按鈕（橫跨全寬） -->
+        <div class="form-footer">
+          <button class="btn btn-ghost" type="button">儲存草稿</button>
+          <button class="btn btn-sakura" type="button">
+            <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;"><polyline points="20 6 9 17 4 12"/></svg>
+            儲存並上架
+          </button>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

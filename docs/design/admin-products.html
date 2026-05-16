@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>芮選 · 商品管理</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; }
+
+      :root {
+        --sage-50:#f2f8ec; --sage-100:#e0f0d0; --sage-200:#b8dca0;
+        --sage-400:#6dab3d; --sage-500:#508a2c; --sage-600:#3d7020;
+        --sage-700:#2c5218; --sage-800:#1c3610;
+        --sakura-pale:#fff0f5; --sakura-100:#ffd8e8;
+        --sakura-mid:#f5a8bf; --sakura:#e8749d; --sakura-deep:#c42858;
+        --neutral-0:#fff; --neutral-50:#f6fbf0; --neutral-100:#edf5e8;
+        --neutral-200:#d8e8cc; --neutral-300:#b4c8a0; --neutral-400:#8a9a82;
+        --neutral-500:#647258; --neutral-600:#4a5e42; --neutral-700:#2a3e20; --neutral-800:#192e10;
+        --color-warning:#c4a828; --color-danger:#c4453d;
+        --r-sm:6px; --r-md:12px; --r-lg:18px; --r-xl:24px; --r-full:999px;
+        --sh-xs:0 1px 3px rgba(28,54,16,.07); --sh-sm:0 2px 8px rgba(28,54,16,.09);
+        --sh-md:0 4px 16px rgba(28,54,16,.11); --sh-lg:0 8px 32px rgba(28,54,16,.14);
+        --ease-smooth:cubic-bezier(.4,0,.2,1); --ease-bounce:cubic-bezier(.34,1.56,.64,1);
+        --sidebar-w:220px; --sidebar-min:64px; --topbar-h:60px;
+      }
+
+      body {
+        font-family: 'Noto Sans TC', sans-serif;
+        background: var(--neutral-50);
+        color: var(--neutral-800);
+        min-height: 100vh;
+        display: flex;
+      }
+
+      /* ── SIDEBAR ── */
+      .sidebar {
+        width: var(--sidebar-w);
+        flex-shrink: 0;
+        background: var(--sage-600);
+        background-image:
+          radial-gradient(ellipse 60% 50% at 85% 12%, rgba(109,171,61,.32) 0%, transparent 65%),
+          radial-gradient(ellipse 50% 60% at 10% 88%, rgba(28,54,16,.45) 0%, transparent 60%);
+        color: #fff;
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0; left: 0; bottom: 0;
+        z-index: 50;
+        overflow: hidden;
+      }
+      .sb-head {
+        padding: 18px 16px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border-bottom: 1px solid rgba(255,255,255,.08);
+      }
+      .sb-logo {
+        flex-shrink: 0;
+        width: 40px; height: 40px;
+        display: grid;
+        place-items: center;
+        filter: drop-shadow(0 2px 6px rgba(0,0,0,.18));
+      }
+      .sb-brand {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-weight: 700;
+        font-size: 19px;
+        letter-spacing: .12em;
+        white-space: nowrap;
+      }
+      .sb-brand-sub {
+        font-size: 10px;
+        color: rgba(255,255,255,.42);
+        letter-spacing: .22em;
+        white-space: nowrap;
+      }
+      .sb-nav {
+        list-style: none;
+        padding: 14px 10px;
+        flex: 1;
+        overflow-y: auto;
+      }
+      .sb-nav-section {
+        font-size: 10.5px;
+        color: rgba(255,255,255,.32);
+        letter-spacing: .22em;
+        text-transform: uppercase;
+        padding: 14px 12px 8px;
+        white-space: nowrap;
+      }
+      .nav-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        color: rgba(255,255,255,.78);
+        text-decoration: none;
+        font-size: 14.5px;
+        transition: background .15s var(--ease-smooth), color .15s var(--ease-smooth);
+        white-space: nowrap;
+        margin-bottom: 2px;
+        cursor: pointer;
+      }
+      .nav-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+      .nav-item.active {
+        background: rgba(255,255,255,.13);
+        color: #fff;
+        box-shadow: inset 3px 0 0 var(--sakura-mid);
+      }
+      .nav-item.disabled { opacity: .35; cursor: not-allowed; }
+      .nav-item.disabled:hover { background: transparent; }
+      .nav-icon {
+        flex-shrink: 0;
+        width: 20px; height: 20px;
+        display: grid;
+        place-items: center;
+      }
+      .nav-icon svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.7; }
+      .nav-label { flex: 1; }
+      .nav-badge {
+        background: var(--sakura);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 2px 7px;
+        border-radius: var(--r-full);
+        line-height: 1.4;
+      }
+      .nav-tag {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: rgba(255,255,255,.08);
+        color: rgba(255,255,255,.5);
+        font-weight: 500;
+      }
+      .sb-foot {
+        padding: 12px 10px;
+        border-top: 1px solid rgba(255,255,255,.08);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .sb-user { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 0; }
+      .sb-avatar {
+        flex-shrink: 0;
+        width: 36px; height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--sakura-mid), var(--sakura));
+        display: grid;
+        place-items: center;
+        color: #fff;
+        font-weight: 700;
+        font-size: 14px;
+        font-family: 'Zen Maru Gothic', sans-serif;
+        box-shadow: 0 2px 6px rgba(0,0,0,.2);
+      }
+      .sb-user-meta { line-height: 1.3; overflow: hidden; }
+      .sb-user-name { font-size: 13px; font-weight: 500; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+      .sb-user-role { font-size: 11px; color: rgba(255,255,255,.45); white-space: nowrap; }
+      .sb-toggle {
+        flex-shrink: 0;
+        width: 30px; height: 30px;
+        border-radius: 8px;
+        border: none;
+        background: rgba(255,255,255,.08);
+        color: rgba(255,255,255,.7);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        transition: background .15s var(--ease-smooth);
+      }
+      .sb-toggle:hover { background: rgba(255,255,255,.16); color: #fff; }
+      .sb-toggle svg { width: 16px; height: 16px; }
+
+      /* ── MAIN ── */
+      .main {
+        flex: 1;
+        margin-left: var(--sidebar-w);
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+      }
+      .topbar {
+        height: var(--topbar-h);
+        background: rgba(255,255,255,.88);
+        backdrop-filter: saturate(140%) blur(8px);
+        -webkit-backdrop-filter: saturate(140%) blur(8px);
+        border-bottom: 1px solid var(--neutral-200);
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        padding: 0 28px;
+        position: sticky;
+        top: 0;
+        z-index: 30;
+      }
+      .crumb {
+        font-size: 13px;
+        color: var(--neutral-500);
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .crumb a { color: var(--neutral-500); text-decoration: none; }
+      .crumb a:hover { color: var(--sage-600); }
+      .crumb strong { color: var(--neutral-800); font-weight: 500; }
+      .crumb svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2; }
+      .topbar-spacer { flex: 1; }
+      .topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+      .content {
+        flex: 1;
+        padding: 28px 32px 56px;
+        max-width: 1140px;
+        width: 100%;
+      }
+
+      .page-head {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 18px;
+        margin-bottom: 22px;
+        flex-wrap: wrap;
+      }
+      .page-title-block { min-width: 0; }
+      .page-title {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--neutral-800);
+        letter-spacing: .04em;
+        margin-bottom: 4px;
+      }
+      .page-sub { font-size: 13.5px; color: var(--neutral-500); }
+
+      /* Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 10px 18px;
+        font-family: inherit;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: var(--r-md);
+        cursor: pointer;
+        border: 1px solid transparent;
+        transition: background .15s, color .15s, transform .15s, box-shadow .15s;
+        text-decoration: none;
+        line-height: 1;
+      }
+      .btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+      .btn-sakura {
+        background: var(--sakura);
+        color: #fff;
+        box-shadow: 0 2px 8px rgba(232,116,157,.28);
+      }
+      .btn-sakura:hover {
+        background: var(--sakura-deep);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(232,116,157,.38);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--neutral-600);
+        border-color: var(--neutral-200);
+      }
+      .btn-ghost:hover { background: var(--neutral-100); color: var(--neutral-800); }
+
+      /* Toolbar / filters */
+      .toolbar {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin-bottom: 18px;
+        flex-wrap: wrap;
+      }
+      .select-wrap {
+        position: relative;
+      }
+      .select-wrap select {
+        appearance: none;
+        -webkit-appearance: none;
+        padding: 9px 32px 9px 13px;
+        font-family: inherit;
+        font-size: 13.5px;
+        color: var(--neutral-700);
+        background: #fff;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-md);
+        outline: none;
+        cursor: pointer;
+        transition: border-color .2s, box-shadow .2s;
+      }
+      .select-wrap select:focus {
+        border-color: var(--sage-400);
+        box-shadow: 0 0 0 3px rgba(109,171,61,.15);
+      }
+      .select-wrap::after {
+        content: '';
+        position: absolute;
+        right: 11px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 0; height: 0;
+        border-left: 4px solid transparent;
+        border-right: 4px solid transparent;
+        border-top: 5px solid var(--neutral-400);
+        pointer-events: none;
+      }
+      .search-wrap {
+        position: relative;
+        flex: 1;
+        max-width: 340px;
+      }
+      .search-wrap svg {
+        position: absolute;
+        top: 50%; left: 12px;
+        transform: translateY(-50%);
+        width: 15px; height: 15px;
+        stroke: var(--neutral-400);
+        fill: none;
+        stroke-width: 2;
+        pointer-events: none;
+      }
+      .search-input {
+        width: 100%;
+        padding: 9px 14px 9px 38px;
+        font-family: inherit;
+        font-size: 13.5px;
+        color: var(--neutral-800);
+        background: #fff;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-md);
+        outline: none;
+        transition: border-color .2s, box-shadow .2s;
+      }
+      .search-input:focus {
+        border-color: var(--sage-400);
+        box-shadow: 0 0 0 3px rgba(109,171,61,.15);
+      }
+      .toolbar-spacer { flex: 1; }
+
+      /* Table */
+      .table-card {
+        background: #fff;
+        border: 1px solid var(--neutral-200);
+        border-radius: var(--r-lg);
+        overflow: hidden;
+        box-shadow: var(--sh-xs);
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      thead tr {
+        background: var(--neutral-100);
+        border-bottom: 1px solid var(--neutral-200);
+      }
+      thead th {
+        padding: 11px 18px;
+        font-size: 11.5px;
+        color: var(--neutral-500);
+        font-weight: 600;
+        letter-spacing: .05em;
+        text-transform: uppercase;
+        text-align: left;
+        white-space: nowrap;
+      }
+      thead th.col-center { text-align: center; }
+      thead th.col-right { text-align: right; }
+
+      tbody tr {
+        border-bottom: 1px solid var(--neutral-100);
+        transition: background .15s;
+        cursor: pointer;
+      }
+      tbody tr:last-child { border-bottom: none; }
+      tbody tr:hover { background: var(--sage-50); }
+      tbody tr.row-inactive { opacity: .6; }
+      tbody tr.row-inactive:hover { background: var(--neutral-100); }
+
+      tbody td {
+        padding: 14px 18px;
+        font-size: 14px;
+        color: var(--neutral-700);
+        vertical-align: middle;
+      }
+      tbody td.col-center { text-align: center; }
+      tbody td.col-right { text-align: right; }
+
+      /* Thumbnail placeholder */
+      .thumb {
+        width: 48px; height: 48px;
+        border-radius: var(--r-md);
+        flex-shrink: 0;
+        display: block;
+      }
+      .thumb-1 { background: linear-gradient(135deg, #ffd8e8 0%, #f5a8bf 100%); }
+      .thumb-2 { background: linear-gradient(135deg, #c8e8b0 0%, #8cc868 100%); }
+      .thumb-3 { background: linear-gradient(135deg, #d0e8f8 0%, #88b8e0 100%); }
+      .thumb-4 { background: linear-gradient(135deg, #e8e0f0 0%, #b8a8d0 100%); }
+
+      .product-cell { display: flex; align-items: center; gap: 13px; }
+      .product-info { min-width: 0; }
+      .product-name {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 14.5px;
+        font-weight: 500;
+        color: var(--neutral-800);
+        margin-bottom: 3px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 260px;
+      }
+      .product-supplier {
+        font-size: 12px;
+        color: var(--neutral-400);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .price {
+        font-weight: 500;
+        color: var(--sakura-deep);
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      /* Status badge */
+      .badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: var(--r-full);
+        font-size: 12px;
+        font-weight: 500;
+        white-space: nowrap;
+      }
+      .badge::before {
+        content: '';
+        width: 6px; height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+      }
+      .badge-active {
+        background: var(--sage-100);
+        color: var(--sage-700);
+      }
+      .badge-active::before { background: var(--sage-500); }
+      .badge-inactive {
+        background: var(--neutral-100);
+        color: var(--neutral-500);
+      }
+      .badge-inactive::before { background: var(--neutral-300); }
+
+      /* Public toggle display */
+      .public-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        padding: 3px 10px;
+        border-radius: var(--r-full);
+        font-size: 12px;
+        font-weight: 500;
+      }
+      .public-badge.on {
+        background: rgba(109,171,61,.12);
+        color: var(--sage-600);
+      }
+      .public-badge.off {
+        background: var(--neutral-100);
+        color: var(--neutral-400);
+      }
+
+      /* Action buttons */
+      .row-actions { display: flex; gap: 6px; justify-content: flex-end; }
+      .icon-btn {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        border: 1px solid var(--neutral-200);
+        background: #fff;
+        color: var(--neutral-500);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        transition: background .15s, color .15s, border-color .15s;
+      }
+      .icon-btn svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; }
+      .icon-btn:hover { background: var(--sage-50); color: var(--sage-600); border-color: var(--sage-200); }
+
+      /* Table footer */
+      .table-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 22px;
+        border-top: 1px solid var(--neutral-100);
+        background: var(--neutral-50);
+      }
+      .table-count {
+        font-size: 13px;
+        color: var(--neutral-500);
+      }
+      .pagination {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .page-btn {
+        width: 32px; height: 32px;
+        border-radius: 8px;
+        border: 1px solid var(--neutral-200);
+        background: #fff;
+        color: var(--neutral-600);
+        display: grid;
+        place-items: center;
+        cursor: pointer;
+        font-size: 13px;
+        font-family: inherit;
+        transition: background .15s, color .15s, border-color .15s;
+      }
+      .page-btn:hover { background: var(--sage-50); color: var(--sage-600); border-color: var(--sage-200); }
+      .page-btn.current {
+        background: var(--sage-600);
+        color: #fff;
+        border-color: var(--sage-600);
+        font-weight: 600;
+      }
+      .page-btn svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 2.2; }
+    </style>
+  </head>
+  <body>
+    <!-- ── SIDEBAR ── -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sb-head">
+        <div class="sb-logo">
+          <svg width="40" height="40" viewBox="0 0 120 120" fill="none">
+            <circle cx="60" cy="60" r="57" stroke="rgba(255,255,255,.65)" stroke-width="1.8"/>
+            <circle cx="60" cy="60" r="57" fill="rgba(255,255,255,.08)"/>
+            <g transform="translate(60,60)">
+              <g transform="rotate(-45) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <g transform="rotate(45) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <g transform="rotate(135) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <g transform="rotate(235) translate(0,-6)"><path d="M 0 2 C -1.5 -1 -8 -1 -8 -8 C -8 -14 -2.5 -17 0 -13 C 2.5 -17 8 -14 8 -8 C 8 -1 1.5 -1 0 2 Z" fill="none" stroke="rgba(255,255,255,.88)" stroke-width="1.5" stroke-linejoin="round"/></g>
+              <circle r="2.2" fill="none" stroke="rgba(255,255,255,.55)" stroke-width=".9"/>
+              <circle r="1.1" fill="rgba(232,116,157,.82)"/>
+            </g>
+          </svg>
+        </div>
+        <div>
+          <div class="sb-brand">芮選</div>
+          <div class="sb-brand-sub">RUEI SELECT</div>
+        </div>
+      </div>
+
+      <ul class="sb-nav">
+        <li class="sb-nav-section">主選單</li>
+        <li><a href="admin-dashboard.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>
+          <span class="nav-label">總覽</span>
+        </a></li>
+        <li><a href="admin-store.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9l1-5h16l1 5"/><path d="M3 9v11a1 1 0 001 1h16a1 1 0 001-1V9"/><path d="M3 9c0 2 1.5 3 3 3s3-1 3-3M9 9c0 2 1.5 3 3 3s3-1 3-3M15 9c0 2 1.5 3 3 3s3-1 3-3"/></svg></span>
+          <span class="nav-label">賣場設定</span>
+        </a></li>
+
+        <li class="sb-nav-section">管理</li>
+        <li><a href="admin-customers.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M3 20c0-3.5 2.7-6 6-6s6 2.5 6 6"/><circle cx="17" cy="9" r="2.5"/><path d="M15 14c2.5 0 6 1.5 6 5"/></svg></span>
+          <span class="nav-label">顧客管理</span>
+          <span class="nav-badge">3</span>
+        </a></li>
+        <li><a href="admin-products.html" class="nav-item active">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg></span>
+          <span class="nav-label">商品管理</span>
+        </a></li>
+        <li><span class="nav-item disabled">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M5 4h14l-1 12H6L5 4z"/><path d="M5 4l-1-2H1"/><circle cx="9" cy="20" r="1.5"/><circle cx="17" cy="20" r="1.5"/></svg></span>
+          <span class="nav-label">訂單管理</span>
+          <span class="nav-tag">S3</span>
+        </span></li>
+        <li><a href="admin-suppliers.html" class="nav-item">
+          <span class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 7l9-4 9 4-9 4-9-4z"/><path d="M3 12l9 4 9-4"/><path d="M3 17l9 4 9-4"/></svg></span>
+          <span class="nav-label">供應商管理</span>
+        </a></li>
+      </ul>
+
+      <div class="sb-foot">
+        <div class="sb-user">
+          <div class="sb-avatar">芮</div>
+          <div class="sb-user-meta">
+            <div class="sb-user-name">Cheryl</div>
+            <div class="sb-user-role">商家管理員</div>
+          </div>
+        </div>
+        <button class="sb-toggle" aria-label="收合側邊欄">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+      </div>
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <div class="main" id="main">
+      <header class="topbar">
+        <div class="crumb">
+          <a href="admin-dashboard.html">管理</a>
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          <strong>商品管理</strong>
+        </div>
+        <div class="topbar-spacer"></div>
+        <div class="topbar-actions">
+          <a href="admin-products-new.html" class="btn btn-sakura">
+            <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            新增商品
+          </a>
+        </div>
+      </header>
+
+      <main class="content">
+        <div class="page-head">
+          <div class="page-title-block">
+            <h1 class="page-title">商品管理</h1>
+            <p class="page-sub">管理賣場上架的所有商品，設定規格、價格與庫存狀態。</p>
+          </div>
+        </div>
+
+        <!-- 篩選列 -->
+        <div class="toolbar">
+          <div class="select-wrap">
+            <select aria-label="廠商篩選">
+              <option>所有廠商</option>
+              <option>Tokyo Beauty Lab</option>
+              <option>京菓子堂</option>
+              <option>Hokkaido Natural</option>
+            </select>
+          </div>
+          <div class="select-wrap">
+            <select aria-label="狀態篩選">
+              <option>上架中</option>
+              <option>全部狀態</option>
+              <option>下架</option>
+            </select>
+          </div>
+          <div class="search-wrap">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input class="search-input" type="text" placeholder="搜尋商品名稱或廠商…" />
+          </div>
+          <div class="toolbar-spacer"></div>
+        </div>
+
+        <!-- 商品表格 -->
+        <div class="table-card">
+          <table>
+            <thead>
+              <tr>
+                <th style="width:64px;padding-left:22px;">縮圖</th>
+                <th>商品名稱</th>
+                <th>售價範圍</th>
+                <th class="col-center">狀態</th>
+                <th class="col-center">公開</th>
+                <th class="col-right" style="padding-right:22px;">操作</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- 第 1 列 -->
+              <tr>
+                <td style="padding-left:22px;">
+                  <span class="thumb thumb-1"></span>
+                </td>
+                <td>
+                  <div class="product-cell">
+                    <div class="product-info">
+                      <div class="product-name">日本和紙面膜三入組</div>
+                      <div class="product-supplier">Tokyo Beauty Lab</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="price">NT$480 – 580</span></td>
+                <td class="col-center"><span class="badge badge-active">上架中</span></td>
+                <td class="col-center"><span class="public-badge on">● 公開</span></td>
+                <td class="col-right" style="padding-right:22px;">
+                  <div class="row-actions">
+                    <button class="icon-btn" aria-label="編輯商品">
+                      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- 第 2 列 -->
+              <tr>
+                <td style="padding-left:22px;">
+                  <span class="thumb thumb-2"></span>
+                </td>
+                <td>
+                  <div class="product-cell">
+                    <div class="product-info">
+                      <div class="product-name">京都抹茶手工餅乾禮盒</div>
+                      <div class="product-supplier">京菓子堂</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="price">NT$750</span></td>
+                <td class="col-center"><span class="badge badge-active">上架中</span></td>
+                <td class="col-center"><span class="public-badge off">○ 未公開</span></td>
+                <td class="col-right" style="padding-right:22px;">
+                  <div class="row-actions">
+                    <button class="icon-btn" aria-label="編輯商品">
+                      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- 第 3 列 -->
+              <tr>
+                <td style="padding-left:22px;">
+                  <span class="thumb thumb-3"></span>
+                </td>
+                <td>
+                  <div class="product-cell">
+                    <div class="product-info">
+                      <div class="product-name">北海道薰衣草護手霜</div>
+                      <div class="product-supplier">Hokkaido Natural</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="price">NT$320 – 360</span></td>
+                <td class="col-center"><span class="badge badge-active">上架中</span></td>
+                <td class="col-center"><span class="public-badge on">● 公開</span></td>
+                <td class="col-right" style="padding-right:22px;">
+                  <div class="row-actions">
+                    <button class="icon-btn" aria-label="編輯商品">
+                      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+
+              <!-- 第 4 列（下架，整列偏灰） -->
+              <tr class="row-inactive">
+                <td style="padding-left:22px;">
+                  <span class="thumb thumb-4"></span>
+                </td>
+                <td>
+                  <div class="product-cell">
+                    <div class="product-info">
+                      <div class="product-name">東京限定迪士尼馬克杯</div>
+                      <div class="product-supplier">Tokyo Beauty Lab</div>
+                    </div>
+                  </div>
+                </td>
+                <td><span class="price" style="color:var(--neutral-400);">NT$890</span></td>
+                <td class="col-center"><span class="badge badge-inactive">下架</span></td>
+                <td class="col-center"><span class="public-badge off">○ 未公開</span></td>
+                <td class="col-right" style="padding-right:22px;">
+                  <div class="row-actions">
+                    <button class="icon-btn" aria-label="編輯商品">
+                      <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- 表格底部分頁 -->
+          <div class="table-footer">
+            <span class="table-count">共 <strong>4</strong> 件商品</span>
+            <div class="pagination">
+              <button class="page-btn" aria-label="上一頁">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+              </button>
+              <button class="page-btn current">1</button>
+              <button class="page-btn" aria-label="下一頁">
+                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

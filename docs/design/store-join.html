@@ -1,0 +1,375 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>芮選精品 · 申請加入賣場</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; }
+
+      :root {
+        --sage-50:#f2f8ec; --sage-100:#e0f0d0; --sage-200:#b8dca0;
+        --sage-500:#508a2c; --sage-600:#3d7020; --sage-700:#2c5218;
+        --sakura-pale:#fff0f5; --sakura-100:#ffd8e8;
+        --sakura-mid:#f5a8bf; --sakura:#e8749d; --sakura-deep:#c42858;
+        --neutral-0:#fff; --neutral-50:#f6fbf0; --neutral-100:#edf5e8;
+        --neutral-200:#d8e8cc; --neutral-400:#8a9a82;
+        --neutral-500:#647258; --neutral-600:#4a5e42;
+        --neutral-700:#2a3e20; --neutral-800:#192e10;
+        --r-sm:6px; --r-md:12px; --r-lg:18px; --r-xl:24px; --r-full:999px;
+        --sh-sm:0 2px 8px rgba(28,54,16,.09); --sh-md:0 4px 16px rgba(28,54,16,.11);
+        --sh-cta:0 4px 14px rgba(232,116,157,.32);
+        --ease-smooth:cubic-bezier(.4,0,.2,1);
+      }
+
+      body {
+        font-family: 'Noto Sans TC', sans-serif;
+        background: var(--neutral-50);
+        color: var(--neutral-800);
+        min-height: 100vh;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 48px 16px 64px;
+      }
+
+      /* ── 外層容器 ── */
+      .page-wrapper {
+        width: 100%;
+        max-width: 480px;
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      /* ── 頂部 Header 區（漸層背景，圓角上半） ── */
+      .store-header {
+        background: var(--sage-600);
+        background-image:
+          radial-gradient(ellipse 70% 60% at 80% 15%, rgba(109,171,61,.42) 0%, transparent 65%),
+          radial-gradient(ellipse 50% 70% at 10% 90%, rgba(28,54,16,.48) 0%, transparent 60%);
+        border-radius: var(--r-xl) var(--r-xl) 0 0;
+        height: 120px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 0 24px;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* 裝飾圓環 */
+      .store-header::before {
+        content: '';
+        position: absolute;
+        width: 240px; height: 240px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,.07);
+        top: -100px; left: 50%; transform: translateX(-50%);
+      }
+      .store-header::after {
+        content: '';
+        position: absolute;
+        width: 160px; height: 160px;
+        border-radius: 50%;
+        border: 1px solid rgba(255,255,255,.05);
+        top: -60px; left: 50%; transform: translateX(-50%);
+      }
+
+      /* 頭像 */
+      .store-avatar {
+        width: 60px; height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f5a8bf 0%, #e8749d 60%, #c44878 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 24px;
+        font-weight: 700;
+        color: #fff;
+        border: 3px solid rgba(255,255,255,.6);
+        box-shadow: 0 4px 12px rgba(0,0,0,.18);
+        position: relative;
+        z-index: 2;
+        margin-bottom: 8px;
+      }
+
+      .store-name {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 17px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: .06em;
+        position: relative;
+        z-index: 2;
+        margin-bottom: 3px;
+      }
+
+      .store-tagline {
+        font-size: 12px;
+        color: rgba(255,255,255,.68);
+        letter-spacing: .04em;
+        position: relative;
+        z-index: 2;
+      }
+
+      /* ── 白色卡片主體 ── */
+      .form-card {
+        background: var(--neutral-0);
+        border-radius: 0 0 var(--r-xl) var(--r-xl);
+        box-shadow: var(--sh-md);
+        padding: 28px 28px 24px;
+      }
+
+      .form-card-title {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--neutral-800);
+        margin-bottom: 6px;
+      }
+
+      .form-card-desc {
+        font-size: 13px;
+        color: var(--neutral-500);
+        line-height: 1.6;
+        margin-bottom: 20px;
+      }
+
+      .divider {
+        height: 1px;
+        background: var(--neutral-200);
+        margin-bottom: 20px;
+      }
+
+      /* ── 表單欄位 ── */
+      .field-group {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .field-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--neutral-700);
+      }
+
+      .field-label .required {
+        color: var(--sakura);
+        font-size: 13px;
+      }
+
+      .field-label .optional-badge {
+        font-size: 11px;
+        color: var(--neutral-400);
+        background: var(--neutral-100);
+        border-radius: var(--r-full);
+        padding: 1px 8px;
+        font-weight: 400;
+      }
+
+      .field-input-wrap {
+        position: relative;
+      }
+
+      .field input,
+      .field textarea {
+        width: 100%;
+        font-family: 'Noto Sans TC', sans-serif;
+        font-size: 14px;
+        color: var(--neutral-800);
+        background: var(--neutral-50);
+        border: 1.5px solid var(--neutral-200);
+        border-radius: var(--r-md);
+        padding: 10px 14px;
+        outline: none;
+        transition: border-color .2s var(--ease-smooth), box-shadow .2s var(--ease-smooth);
+        line-height: 1.5;
+      }
+
+      .field input:focus,
+      .field textarea:focus {
+        border-color: var(--sage-500);
+        box-shadow: 0 0 0 3px rgba(80,138,44,.12);
+      }
+
+      .field textarea {
+        resize: none;
+        height: 88px;
+      }
+
+      /* 有選填 badge 的欄位需留右側空間 */
+      .field.has-badge input {
+        padding-right: 52px;
+      }
+
+      .field-right-badge {
+        position: absolute;
+        right: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 11px;
+        color: var(--neutral-400);
+        background: var(--neutral-100);
+        border-radius: var(--r-full);
+        padding: 2px 8px;
+        pointer-events: none;
+      }
+
+      /* 字數計算 */
+      .char-count {
+        font-size: 11px;
+        color: var(--neutral-400);
+        text-align: right;
+        margin-top: 4px;
+      }
+
+      /* ── CTA 按鈕 ── */
+      .btn-submit {
+        width: 100%;
+        height: 48px;
+        background: linear-gradient(135deg, #e8749d 0%, #d45a85 100%);
+        border: none;
+        border-radius: var(--r-full);
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: .06em;
+        cursor: pointer;
+        box-shadow: var(--sh-cta);
+        transition: transform .2s var(--ease-smooth), box-shadow .2s var(--ease-smooth);
+        margin-bottom: 14px;
+      }
+
+      .btn-submit:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(232,116,157,.42);
+      }
+
+      /* ── 底部提示小字 ── */
+      .form-hint {
+        font-size: 12px;
+        color: var(--neutral-400);
+        text-align: center;
+        line-height: 1.6;
+      }
+
+      /* ── 背景裝飾葉片 ── */
+      .bg-deco {
+        position: fixed;
+        pointer-events: none;
+        opacity: .06;
+      }
+      .bg-deco-tl {
+        top: -20px; left: -20px;
+        width: 160px;
+      }
+      .bg-deco-br {
+        bottom: -20px; right: -20px;
+        width: 140px;
+        transform: rotate(180deg);
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- 背景裝飾 -->
+    <svg class="bg-deco bg-deco-tl" viewBox="0 0 200 200" fill="none">
+      <ellipse cx="60" cy="80" rx="40" ry="60" fill="#3d7020" transform="rotate(-30 60 80)"/>
+      <ellipse cx="100" cy="60" rx="30" ry="50" fill="#3d7020" transform="rotate(20 100 60)"/>
+      <ellipse cx="40" cy="120" rx="25" ry="45" fill="#3d7020" transform="rotate(-50 40 120)"/>
+    </svg>
+    <svg class="bg-deco bg-deco-br" viewBox="0 0 200 200" fill="none">
+      <ellipse cx="60" cy="80" rx="40" ry="60" fill="#3d7020" transform="rotate(-30 60 80)"/>
+      <ellipse cx="100" cy="60" rx="30" ry="50" fill="#3d7020" transform="rotate(20 100 60)"/>
+      <ellipse cx="40" cy="120" rx="25" ry="45" fill="#3d7020" transform="rotate(-50 40 120)"/>
+    </svg>
+
+    <div class="page-wrapper">
+
+      <!-- 頂部賣場資訊 -->
+      <div class="store-header">
+        <div class="store-avatar">芮</div>
+        <div class="store-name">芮選精品</div>
+        <div class="store-tagline">邀請您加入賣場</div>
+      </div>
+
+      <!-- 申請表單卡片 -->
+      <div class="form-card">
+        <div class="form-card-title">填寫申請資料</div>
+        <div class="form-card-desc">審核通過後，您將可以瀏覽商品並下單</div>
+        <div class="divider"></div>
+
+        <div class="field-group">
+
+          <!-- 姓名 -->
+          <div class="field">
+            <label class="field-label">
+              姓名 <span class="required">*</span>
+            </label>
+            <input type="text" value="王小明" placeholder="請輸入您的姓名" />
+          </div>
+
+          <!-- LINE ID -->
+          <div class="field">
+            <label class="field-label">
+              LINE ID <span class="required">*</span>
+            </label>
+            <input type="text" value="@xiao_ming" placeholder="例：@your_line_id" />
+          </div>
+
+          <!-- 手機號碼（選填） -->
+          <div class="field has-badge">
+            <label class="field-label">
+              手機號碼
+              <span class="optional-badge">選填</span>
+            </label>
+            <div class="field-input-wrap">
+              <input type="tel" value="0912-345-678" placeholder="例：0912-345-678" />
+            </div>
+          </div>
+
+          <!-- 自我介紹（選填） -->
+          <div class="field">
+            <label class="field-label">
+              自我介紹
+              <span class="optional-badge">選填</span>
+            </label>
+            <textarea placeholder="告訴商家您是誰，或是如何認識這個賣場">朋友推薦的，很喜歡日本雜貨！</textarea>
+            <div class="char-count">17 / 100</div>
+          </div>
+
+        </div><!-- /.field-group -->
+
+        <!-- 送出按鈕 -->
+        <button class="btn-submit">送出申請</button>
+
+        <!-- 底部提示 -->
+        <div class="form-hint">送出後等待商家審核，審核結果將通知您</div>
+
+      </div><!-- /.form-card -->
+
+    </div><!-- /.page-wrapper -->
+
+  </body>
+</html>

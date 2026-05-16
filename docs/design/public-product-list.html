@@ -1,0 +1,558 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>芮選精品 · 日本英國代購選品</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      html, body { height: 100%; }
+
+      :root {
+        --sage-50:#f2f8ec; --sage-100:#e0f0d0; --sage-200:#b8dca0;
+        --sage-500:#508a2c; --sage-600:#3d7020; --sage-700:#2c5218;
+        --sakura-pale:#fff0f5; --sakura-100:#ffd8e8;
+        --sakura-mid:#f5a8bf; --sakura:#e8749d; --sakura-deep:#c42858;
+        --neutral-0:#fff; --neutral-50:#f6fbf0; --neutral-100:#edf5e8;
+        --neutral-200:#d8e8cc; --neutral-400:#8a9a82;
+        --neutral-500:#647258; --neutral-600:#4a5e42;
+        --neutral-700:#2a3e20; --neutral-800:#192e10;
+        --earth-600:#7a5c36; --earth-500:#9a7248;
+        --r-sm:6px; --r-md:12px; --r-lg:18px; --r-xl:24px; --r-full:999px;
+        --sh-sm:0 2px 8px rgba(28,54,16,.09); --sh-md:0 4px 16px rgba(28,54,16,.11);
+        --sh-cta:0 4px 14px rgba(232,116,157,.32);
+        --ease-smooth:cubic-bezier(.4,0,.2,1);
+        --cta-bar-h:76px;
+      }
+
+      body {
+        font-family: 'Noto Sans TC', sans-serif;
+        background: var(--neutral-50);
+        color: var(--neutral-800);
+        min-height: 100vh;
+        padding-bottom: var(--cta-bar-h);
+      }
+
+      /* ══════════════════════════════════════════
+         TOP HEADER
+      ══════════════════════════════════════════ */
+      .store-header {
+        background: var(--sage-600);
+        background-image:
+          radial-gradient(ellipse 65% 55% at 82% 10%, rgba(109,171,61,.38) 0%, transparent 65%),
+          radial-gradient(ellipse 45% 65% at 8% 92%, rgba(28,54,16,.46) 0%, transparent 60%);
+        position: sticky;
+        top: 0;
+        z-index: 40;
+        box-shadow: 0 2px 12px rgba(28,54,16,.18);
+      }
+
+      .header-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 0 32px;
+        height: 72px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+
+      .store-avatar {
+        width: 48px; height: 48px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #f5a8bf 0%, #e8749d 55%, #c44878 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #fff;
+        border: 2px solid rgba(255,255,255,.55);
+        box-shadow: 0 3px 10px rgba(0,0,0,.15);
+        flex-shrink: 0;
+      }
+
+      .store-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .store-name {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: .04em;
+        line-height: 1.2;
+      }
+
+      .store-subtitle {
+        font-size: 12px;
+        color: rgba(255,255,255,.62);
+        letter-spacing: .06em;
+      }
+
+      .btn-join-header {
+        flex-shrink: 0;
+        padding: 8px 18px;
+        border: 1.5px solid rgba(255,255,255,.7);
+        border-radius: var(--r-full);
+        background: transparent;
+        color: #fff;
+        font-family: 'Noto Sans TC', sans-serif;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        letter-spacing: .04em;
+        transition: background .2s var(--ease-smooth), border-color .2s var(--ease-smooth);
+        white-space: nowrap;
+      }
+
+      .btn-join-header:hover {
+        background: var(--sakura);
+        border-color: var(--sakura);
+      }
+
+      /* ══════════════════════════════════════════
+         CONTENT AREA
+      ══════════════════════════════════════════ */
+      .content {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 36px 32px;
+      }
+
+      .section-intro {
+        margin-bottom: 28px;
+      }
+
+      .section-intro h1 {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--neutral-800);
+        margin-bottom: 6px;
+        letter-spacing: .02em;
+      }
+
+      .section-intro p {
+        font-size: 14px;
+        color: var(--neutral-500);
+        line-height: 1.65;
+        max-width: 520px;
+      }
+
+      .section-intro p strong {
+        color: var(--sage-600);
+        font-weight: 600;
+      }
+
+      /* ── 商品 badge 說明列 ── */
+      .products-meta {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+
+      .meta-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        color: var(--neutral-500);
+        background: var(--neutral-100);
+        border-radius: var(--r-full);
+        padding: 4px 12px;
+      }
+
+      .meta-badge svg { width: 13px; height: 13px; flex-shrink: 0; }
+
+      /* ══════════════════════════════════════════
+         PRODUCT GRID
+      ══════════════════════════════════════════ */
+      .products-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+      }
+
+      @media (max-width: 640px) {
+        .products-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 12px;
+        }
+        .product-info { padding: 10px 12px 12px; }
+        .product-name { font-size: 13px; margin-bottom: 8px; }
+        .product-img-icon { font-size: 28px; }
+      }
+
+      .product-card {
+        background: var(--neutral-0);
+        border-radius: var(--r-lg);
+        box-shadow: var(--sh-sm);
+        overflow: hidden;
+        transition: transform .2s var(--ease-smooth), box-shadow .2s var(--ease-smooth);
+        cursor: pointer;
+      }
+
+      .product-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--sh-md);
+      }
+
+      /* 商品圖片占位 */
+      .product-img {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        position: relative;
+        overflow: hidden;
+      }
+
+      /* 每張卡片不同漸層 */
+      .product-card:nth-child(1) .product-img { background: linear-gradient(135deg, #fce4ec 0%, #f8bbd0 40%, #f48fb1 100%); }
+      .product-card:nth-child(2) .product-img { background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 40%, #a5d6a7 100%); }
+      .product-card:nth-child(3) .product-img { background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 40%, #90caf9 100%); }
+      .product-card:nth-child(4) .product-img { background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 40%, #ffe082 100%); }
+      .product-card:nth-child(5) .product-img { background: linear-gradient(135deg, #fce4ec 0%, #f3a0b4 40%, #e8749d 100%); }
+      .product-card:nth-child(6) .product-img { background: linear-gradient(135deg, #f3e5f5 0%, #ce93d8 40%, #ab47bc 80%, #8e24aa 100%); }
+
+      /* 圖片裡的裝飾圖示 */
+      .product-img-icon {
+        position: absolute;
+        top: 50%; left: 50%;
+        transform: translate(-50%, -50%);
+        font-size: 40px;
+        opacity: .45;
+        user-select: none;
+      }
+
+      /* 公開標示 badge */
+      .public-badge {
+        position: absolute;
+        top: 10px; left: 10px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--sage-700);
+        background: rgba(242,248,236,.88);
+        border: 1px solid var(--sage-100);
+        border-radius: var(--r-full);
+        padding: 2px 8px;
+        backdrop-filter: blur(4px);
+      }
+
+      /* 商品資訊 */
+      .product-info {
+        padding: 14px 16px 16px;
+      }
+
+      .product-supplier {
+        font-size: 11px;
+        color: var(--earth-500);
+        font-weight: 500;
+        letter-spacing: .04em;
+        margin-bottom: 5px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .product-name {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: var(--neutral-800);
+        line-height: 1.45;
+        margin-bottom: 10px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+
+      .product-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .product-price {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--sakura);
+        letter-spacing: .02em;
+      }
+
+      .product-price .unit {
+        font-size: 12px;
+        font-weight: 500;
+      }
+
+      .product-arrow {
+        width: 28px; height: 28px;
+        border-radius: 50%;
+        background: var(--neutral-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .2s var(--ease-smooth);
+      }
+
+      .product-card:hover .product-arrow {
+        background: var(--sage-100);
+      }
+
+      .product-arrow svg { width: 14px; height: 14px; color: var(--neutral-500); }
+
+      /* ══════════════════════════════════════════
+         FIXED BOTTOM CTA BAR
+      ══════════════════════════════════════════ */
+      .cta-bar {
+        position: fixed;
+        bottom: 0; left: 0; right: 0;
+        background: var(--sage-600);
+        background-image:
+          radial-gradient(ellipse 60% 80% at 90% 50%, rgba(109,171,61,.28) 0%, transparent 65%),
+          radial-gradient(ellipse 40% 80% at 5% 50%, rgba(28,54,16,.38) 0%, transparent 60%);
+        z-index: 50;
+        box-shadow: 0 -4px 20px rgba(28,54,16,.22);
+      }
+
+      .cta-bar-inner {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 12px 32px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        height: var(--cta-bar-h);
+      }
+
+      .cta-bar-text h3 {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 3px;
+      }
+
+      .cta-bar-text p {
+        font-size: 12px;
+        color: rgba(255,255,255,.62);
+        line-height: 1.5;
+      }
+
+      .btn-cta-bar {
+        flex-shrink: 0;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #e8749d 0%, #d45a85 100%);
+        border: none;
+        border-radius: var(--r-full);
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 14px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: .04em;
+        cursor: pointer;
+        box-shadow: var(--sh-cta);
+        white-space: nowrap;
+        transition: transform .2s var(--ease-smooth), box-shadow .2s var(--ease-smooth);
+      }
+
+      .btn-cta-bar:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 20px rgba(232,116,157,.42);
+      }
+    </style>
+  </head>
+  <body>
+
+    <!-- ── 頂部 Header ── -->
+    <header class="store-header">
+      <div class="header-inner">
+        <div class="header-left">
+          <div class="store-avatar">芮</div>
+          <div class="store-info">
+            <div class="store-name">芮選精品</div>
+            <div class="store-subtitle">日本 · 英國代購</div>
+          </div>
+        </div>
+        <button class="btn-join-header">申請加入賣場</button>
+      </div>
+    </header>
+
+    <!-- ── 主要內容 ── -->
+    <main class="content">
+
+      <div class="section-intro">
+        <h1>部分商品</h1>
+        <p>以下為部分商品，<strong>加入賣場後</strong>可瀏覽全部商品及下單</p>
+      </div>
+
+      <div class="products-meta">
+        <div class="meta-badge">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="8" cy="8" r="6.5"/>
+            <path d="M8 5v3.5l2 2"/>
+          </svg>
+          共 6 件商品
+        </div>
+        <div class="meta-badge">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+            <rect x="2.5" y="3.5" width="11" height="9" rx="1.5"/>
+            <path d="M5 3.5V2.5M11 3.5V2.5M2.5 7h11"/>
+          </svg>
+          每週更新選品
+        </div>
+      </div>
+
+      <!-- ── 商品網格 ── -->
+      <div class="products-grid">
+
+        <!-- 商品 1 -->
+        <div class="product-card">
+          <div class="product-img">
+            <div class="product-img-icon">🌸</div>
+          </div>
+          <div class="product-info">
+            <div class="product-supplier">🇯🇵 Tokyo Beauty Lab</div>
+            <div class="product-name">日本和紙面膜三入組 · 深層補水保濕</div>
+            <div class="product-footer">
+              <div class="product-price"><span class="unit">NT$</span> 480</div>
+              <div class="product-arrow">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 4l4 4-4 4"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 商品 2 -->
+        <div class="product-card">
+          <div class="product-img">
+            <div class="product-img-icon">🍵</div>
+          </div>
+          <div class="product-info">
+            <div class="product-supplier">🇯🇵 京都老舗菓子</div>
+            <div class="product-name">京都抹茶手工餅乾禮盒</div>
+            <div class="product-footer">
+              <div class="product-price"><span class="unit">NT$</span> 750</div>
+              <div class="product-arrow">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 4l4 4-4 4"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 商品 3 -->
+        <div class="product-card">
+          <div class="product-img">
+            <div class="product-img-icon">💜</div>
+          </div>
+          <div class="product-info">
+            <div class="product-supplier">🇯🇵 北海道原野</div>
+            <div class="product-name">北海道薰衣草護手霜 · 天然精油</div>
+            <div class="product-footer">
+              <div class="product-price"><span class="unit">NT$</span> 320</div>
+              <div class="product-arrow">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 4l4 4-4 4"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 商品 4 -->
+        <div class="product-card">
+          <div class="product-img">
+            <div class="product-img-icon">☕</div>
+          </div>
+          <div class="product-info">
+            <div class="product-supplier">🇯🇵 Tokyo Select</div>
+            <div class="product-name">東京限定馬克杯 · 富士山浮雕設計</div>
+            <div class="product-footer">
+              <div class="product-price"><span class="unit">NT$</span> 890</div>
+              <div class="product-arrow">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 4l4 4-4 4"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 商品 5 -->
+        <div class="product-card">
+          <div class="product-img">
+            <div class="product-img-icon">💄</div>
+          </div>
+          <div class="product-info">
+            <div class="product-supplier">🇰🇷 3CE Official</div>
+            <div class="product-name">日本 3CE 唇釉 · 霧面奶茶玫瑰色系</div>
+            <div class="product-footer">
+              <div class="product-price"><span class="unit">NT$</span> 380</div>
+              <div class="product-arrow">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 4l4 4-4 4"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 商品 6 -->
+        <div class="product-card">
+          <div class="product-img">
+            <div class="product-img-icon">🍓</div>
+          </div>
+          <div class="product-info">
+            <div class="product-supplier">🇯🇵 神戶老舖</div>
+            <div class="product-name">神戶草莓手工巧克力 · 禮盒裝</div>
+            <div class="product-footer">
+              <div class="product-price"><span class="unit">NT$</span> 560</div>
+              <div class="product-arrow">
+                <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M6 4l4 4-4 4"/>
+                </svg>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /.products-grid -->
+
+    </main>
+
+    <!-- ── 固定底部 CTA 欄 ── -->
+    <div class="cta-bar">
+      <div class="cta-bar-inner">
+        <div class="cta-bar-text">
+          <h3>想看更多商品嗎？</h3>
+          <p>加入賣場後可瀏覽全部商品、規格與下單</p>
+        </div>
+        <button class="btn-cta-bar">申請加入芮選精品 →</button>
+      </div>
+    </div>
+
+  </body>
+</html>
