@@ -71,7 +71,7 @@ scope：store / product / order / customer / shipping / auth / ui / db
 ## 5. 開發流程
 
 ```
-DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → Retro
+DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → KM
 ```
 
 | 步驟 | 說明 | 產出位置 |
@@ -83,7 +83,7 @@ DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → Retro
 | Code | feature 分支開發，遵守 Conventional Commits | — |
 | Verify | 見下方清單 | — |
 | Done | 通知 Cheryl review + 提供截圖 + 等待 merge | — |
-| Retro | 回顧記錄 | docs/sprint-retro/sprint{n}-retro.md |
+| KM | 將踩坑、架構決策、可複用知識寫入 km/ | km/bugs/ · km/decisions/ · km/learnings/ |
 
 ### Verify 清單
 
@@ -102,21 +102,21 @@ DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → Retro
 > 每個 feature 開始和完成時更新此區塊。
 
 ```
-目前 Sprint：   Sprint 1
-目前分支：      feature/sprint1-customers-frame
-上次 Retro：    尚未開始
+目前 Sprint：   Sprint 2
+目前分支：      （待開分支）
 
-Sprint 1 進度：
+Sprint 1 進度（已完成）：
 - [x] feature/sprint1-init-setup       DB migration + Supabase client + types + middleware
 - [x] feature/sprint1-line-auth        LINE 登入流程
 - [x] feature/sprint1-admin-layout     後台 Sidebar 框架 + Dashboard
 - [x] feature/sprint1-store-settings   賣場設定（含頭像上傳、邀請連結）
 - [x] feature/sprint1-suppliers        供應商管理
-- [ ] feature/sprint1-customers-frame  顧客審核框架（進行中）
+- [x] feature/sprint1-customers-frame  顧客審核框架
 
 Sprint 2 預計：
 - [ ] feature/sprint2-customers        顧客審核完整功能
-- [ ] feature/sprint2-products         商品管理
+- [ ] feature/sprint2-products         商品管理（含 is_public 開關）
+- [ ] feature/sprint2-public-discovery 公開商品頁 SEO/AEO + 陌生客申請流程
 - [ ] feature/sprint2-orders           訂單管理
 ```
 
@@ -135,8 +135,7 @@ ruei-select/
 │   ├── sdd/                  ← 系統架構（system-sdd.md + sprint delta）
 │   ├── dor/                  ← Sprint 需求定義
 │   ├── dod/                  ← Sprint 完成標準
-│   ├── design/               ← 設計稿（login / pages / design-system）
-│   └── sprint-retro/
+│   └── design/               ← 設計稿（login / pages / design-system）
 └── km/
     ├── bugs/                 ← 重要 bug 根因分析
     ├── decisions/            ← 架構決策紀錄（ADR）
