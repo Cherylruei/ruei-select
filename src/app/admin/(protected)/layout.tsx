@@ -1,11 +1,11 @@
 import { redirect } from 'next/navigation'
-import { getServerSession, getServerUserProfile } from '@/lib/auth/session'
+import { getServerUser, getServerUserProfile } from '@/lib/auth/session'
 import AdminShell from '../components/AdminShell'
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const session = await getServerSession()
+  const user = await getServerUser()
 
-  if (!session) {
+  if (!user) {
     redirect('/admin/login')
   }
 

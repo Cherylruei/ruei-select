@@ -1,14 +1,15 @@
 import { cache } from 'react'
 import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
 
-// getSession() 讀取 cookie 本地解析 JWT，不打 Supabase API
-// Middleware 已用 getUser() 完成安全驗證並更新 token，這裡直接信任 cookie
-export const getServerSession = cache(async () => {
+// Supabase 官方：server-side 必須用 getUser()，不能用 getSession()
+// getSession() 不保證能正確讀取 server 端 cookie，可能回傳 null 或過期 session
+// cache() 確保同一次 server render 內（layout + page）只打一次 Supabase API
+export const getServerUser = cache(async () => {
   const supabase = await createRouteHandlerClient()
   const {
-    data: { session },
-  } = await supabase.auth.getSession()
-  return session
+    data: { user },
+  } = await supabase.auth.getUser()
+  return user
 })
 
 function parseLineId(email: string | undefined): string | null {
@@ -16,10 +17,10 @@ function parseLineId(email: string | undefined): string | null {
   return match ? match[1] : null
 }
 
-// 從 session 取得 line_id，同一次 render 只解析一次
+// 從 user 取得 line_id，同一次 render 只解析一次
 export const getServerLineId = cache(async (): Promise<string | null> => {
-  const session = await getServerSession()
-  return parseLineId(session?.user.email)
+  const user = await getServerUser()
+  return parseLineId(user?.email)
 })
 
 // 查 users 表：id, display_name, avatar_url
