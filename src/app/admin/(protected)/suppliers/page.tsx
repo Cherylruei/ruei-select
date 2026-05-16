@@ -1,45 +1,24 @@
-import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
+import { getServerStore } from '@/lib/auth/session'
+import { createServiceClient } from '@/lib/supabase/server'
 import type { Supplier } from '@/types'
 import SuppliersClient from './SuppliersClient'
 
 export default async function SuppliersPage() {
-  const rhc = await createRouteHandlerClient()
-  const {
-    data: { user },
-  } = await rhc.auth.getUser()
+  const store = await getServerStore()
 
   let suppliers: Supplier[] = []
 
-  if (user?.email) {
-    const lineIdMatch = user.email.match(/^line_(.+)@internal\.rueiselect\.local$/)
-    if (lineIdMatch) {
-      const serviceClient = createServiceClient()
-      const { data: userData } = (await serviceClient
-        .from('users')
-        .select('id')
-        .eq('line_id', lineIdMatch[1])
-        .single()) as { data: { id: string } | null; error: unknown }
-
-      if (userData) {
-        const { data: storeData } = (await serviceClient
-          .from('stores')
-          .select('id')
-          .eq('owner_id', userData.id)
-          .maybeSingle()) as { data: { id: string } | null; error: unknown }
-
-        if (storeData) {
-          const { data: suppliersData } = (await serviceClient
-            .from('suppliers')
-            .select('*')
-            .eq('store_id', storeData.id)
-            .order('created_at', { ascending: false })) as {
-            data: Supplier[] | null
-            error: unknown
-          }
-          suppliers = suppliersData ?? []
-        }
-      }
+  if (store) {
+    const serviceClient = createServiceClient()
+    const { data } = (await serviceClient
+      .from('suppliers')
+      .select('*')
+      .eq('store_id', store.id)
+      .order('created_at', { ascending: false })) as {
+      data: Supplier[] | null
+      error: unknown
     }
+    suppliers = data ?? []
   }
 
   return (
