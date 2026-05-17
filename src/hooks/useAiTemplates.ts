@@ -33,6 +33,7 @@ export function useAiTemplates() {
   const [templates, setTemplates] = useState<AiTemplate[]>([])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTemplates(loadFromStorage())
   }, [])
 
