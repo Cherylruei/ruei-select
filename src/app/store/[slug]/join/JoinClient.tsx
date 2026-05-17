@@ -59,6 +59,14 @@ export default function JoinClient({ slug, storeName }: JoinClientProps) {
     if (liffInitialized.current) return
     liffInitialized.current = true
 
+    // dev mock：開發環境跳過 LIFF，直接顯示表單
+    if (process.env.NODE_ENV === 'development') {
+      setDisplayName('測試用戶')
+      setForm((prev) => ({ ...prev, name: '測試用戶' }))
+      setPageState('form')
+      return
+    }
+
     async function initAndLogin() {
       try {
         const liff = await initLiff()

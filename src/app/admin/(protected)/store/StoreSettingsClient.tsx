@@ -150,7 +150,7 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
 
   async function handleCopyLink() {
     if (!store) return
-    const link = `${appUrl}/store/${store.slug}`
+    const link = `${appUrl}/store/${store.slug}/join`
     try {
       await navigator.clipboard.writeText(link)
     } catch {
@@ -184,7 +184,7 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
     })
   }
 
-  const inviteLink = store ? `${appUrl}/store/${store.slug}` : null
+  const inviteLink = store ? `${appUrl}/store/${store.slug}/join` : null
   const avatarInitial = name.trim().slice(0, 1) || '芮'
 
   return (
