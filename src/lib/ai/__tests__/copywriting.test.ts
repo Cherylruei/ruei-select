@@ -5,15 +5,21 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 const mockCreate = vi.hoisted(() => vi.fn())
 
-vi.mock('@anthropic-ai/sdk', () => ({
-  default: class MockAnthropic {
-    messages = { create: mockCreate }
+vi.mock('groq-sdk', () => ({
+  default: class MockGroq {
+    chat = { completions: { create: mockCreate } }
   },
 }))
 
 beforeEach(() => {
   vi.clearAllMocks()
 })
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+function groqResponse(text: string) {
+  return { choices: [{ message: { content: text } }] }
+}
 
 // ── Tests ──────────────────────────────────────────────────────────────────────
 
@@ -24,9 +30,7 @@ describe('optimizeCopywriting', () => {
       description: '來自日本的高品質手提包，多色可選',
       detectedVariants: [{ dimension: '顏色', options: ['黑', '棕', '米白'] }],
     }
-    mockCreate.mockResolvedValue({
-      content: [{ type: 'text', text: JSON.stringify(mockResult) }],
-    })
+    mockCreate.mockResolvedValue(groqResponse(JSON.stringify(mockResult)))
 
     const { optimizeCopywriting } = await import('../copywriting')
     const result = await optimizeCopywriting('日系手提包 黑棕米白三色可選 高品質')
@@ -44,9 +48,7 @@ describe('optimizeCopywriting', () => {
       description: '商品描述',
       detectedVariants: [],
     }
-    mockCreate.mockResolvedValue({
-      content: [{ type: 'text', text: `\`\`\`json\n${JSON.stringify(mockResult)}\n\`\`\`` }],
-    })
+    mockCreate.mockResolvedValue(groqResponse(`\`\`\`json\n${JSON.stringify(mockResult)}\n\`\`\``))
 
     const { optimizeCopywriting } = await import('../copywriting')
     const result = await optimizeCopywriting('測試商品文字')
@@ -56,18 +58,16 @@ describe('optimizeCopywriting', () => {
   })
 
   it('AI 未回傳文字時拋出錯誤', async () => {
-    mockCreate.mockResolvedValue({
-      content: [{ type: 'image', source: { type: 'base64', media_type: 'image/png', data: '' } }],
-    })
+    mockCreate.mockResolvedValue({ choices: [{ message: { content: '' } }] })
 
     const { optimizeCopywriting } = await import('../copywriting')
     await expect(optimizeCopywriting('商品')).rejects.toThrow('AI 未回傳文字內容')
   })
 
   it('detectedVariants 缺失時回傳空陣列', async () => {
-    mockCreate.mockResolvedValue({
-      content: [{ type: 'text', text: JSON.stringify({ name: '商品', description: '描述' }) }],
-    })
+    mockCreate.mockResolvedValue(
+      groqResponse(JSON.stringify({ name: '商品', description: '描述' }))
+    )
 
     const { optimizeCopywriting } = await import('../copywriting')
     const result = await optimizeCopywriting('商品')

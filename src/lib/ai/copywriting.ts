@@ -1,7 +1,7 @@
-import Anthropic from '@anthropic-ai/sdk'
+import Groq from 'groq-sdk'
 import type { CopywritingResult } from '@/types'
 
-const client = new Anthropic({ apiKey: process.env.CLAUDE_API_KEY })
+const client = new Groq({ apiKey: process.env.GROQ_API_KEY })
 
 const SYSTEM_PROMPT = `你是台灣代購賣場的商品文案優化助手。
 
@@ -34,19 +34,18 @@ export async function optimizeCopywriting(
     ? `${baseContent}\n\n額外要求：${templateInstruction}`
     : baseContent
 
-  const message = await client.messages.create({
-    model: 'claude-haiku-4-5',
+  const completion = await client.chat.completions.create({
+    model: 'llama-3.3-70b-versatile',
     max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: userContent }],
+    messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'user', content: userContent },
+    ],
   })
 
-  const textBlock = message.content.find((b) => b.type === 'text')
-  if (!textBlock || textBlock.type !== 'text') {
-    throw new Error('AI 未回傳文字內容')
-  }
+  const raw = completion.choices[0]?.message?.content?.trim() ?? ''
+  if (!raw) throw new Error('AI 未回傳文字內容')
 
-  const raw = textBlock.text.trim()
   // 去除可能的 markdown code fence
   const jsonStr = raw.replace(/^```json?\s*/i, '').replace(/\s*```$/i, '')
   const result = JSON.parse(jsonStr) as CopywritingResult
