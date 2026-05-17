@@ -72,7 +72,8 @@ CREATE INDEX IF NOT EXISTS idx_products_public
 
 ALTER TABLE product_variants ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "variants_merchant_all" ON product_variants
+DROP POLICY IF EXISTS "variants_merchant_all" ON product_variants;
+CREATE POLICY "variants_merchant_all" ON product_variants
   FOR ALL
   USING (
     product_id IN (
@@ -81,7 +82,8 @@ CREATE POLICY IF NOT EXISTS "variants_merchant_all" ON product_variants
     )
   );
 
-CREATE POLICY IF NOT EXISTS "variants_public_select" ON product_variants
+DROP POLICY IF EXISTS "variants_public_select" ON product_variants;
+CREATE POLICY "variants_public_select" ON product_variants
   FOR SELECT TO anon
   USING (
     product_id IN (
@@ -96,7 +98,8 @@ CREATE POLICY IF NOT EXISTS "variants_public_select" ON product_variants
 
 ALTER TABLE product_images ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "images_merchant_all" ON product_images
+DROP POLICY IF EXISTS "images_merchant_all" ON product_images;
+CREATE POLICY "images_merchant_all" ON product_images
   FOR ALL
   USING (
     product_id IN (
@@ -105,7 +108,8 @@ CREATE POLICY IF NOT EXISTS "images_merchant_all" ON product_images
     )
   );
 
-CREATE POLICY IF NOT EXISTS "images_public_select" ON product_images
+DROP POLICY IF EXISTS "images_public_select" ON product_images;
+CREATE POLICY "images_public_select" ON product_images
   FOR SELECT TO anon
   USING (
     product_id IN (
@@ -118,7 +122,8 @@ CREATE POLICY IF NOT EXISTS "images_public_select" ON product_images
 
 -- ── RLS：products 補充 anon 公開讀取政策 ─────────────────────────
 
-CREATE POLICY IF NOT EXISTS "products_public_select" ON products
+DROP POLICY IF EXISTS "products_public_select" ON products;
+CREATE POLICY "products_public_select" ON products
   FOR SELECT TO anon
   USING (
     is_public = true
@@ -130,7 +135,8 @@ CREATE POLICY IF NOT EXISTS "products_public_select" ON products
 
 ALTER TABLE order_items ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "order_items_merchant_all" ON order_items
+DROP POLICY IF EXISTS "order_items_merchant_all" ON order_items;
+CREATE POLICY "order_items_merchant_all" ON order_items
   FOR ALL
   USING (
     order_id IN (
