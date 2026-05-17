@@ -37,8 +37,9 @@ export async function GET(request: NextRequest) {
     if (error) throw new Error(error.message)
 
     return NextResponse.json({ success: true, data: products ?? [] })
-  } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Internal server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
         description: body.description?.trim() || null,
         description_raw: body.description_raw?.trim() || null,
         category_id: body.category_id || null,
+        sell_price: null,
         is_public: body.is_public ?? false,
         status: 'active',
       })
@@ -128,8 +130,9 @@ export async function POST(request: NextRequest) {
       .single()) as { data: ProductRow | null; error: unknown }
 
     return NextResponse.json({ success: true, data: fullProduct }, { status: 201 })
-  } catch {
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : 'Internal server error'
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }
 

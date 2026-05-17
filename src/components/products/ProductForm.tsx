@@ -4,6 +4,8 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import VariantBuilder, { type DimensionDef, type VariantRow } from './VariantBuilder'
 import ImageUploader, { type UploadedImage } from './ImageUploader'
+import AiTemplateSelector from './AiTemplateSelector'
+import { useAiTemplates } from '@/hooks/useAiTemplates'
 import type { Product, ProductWithDetails, Supplier } from '@/types'
 
 interface Props {
@@ -41,6 +43,11 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
   // AI 狀態
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
+  const { templates, addTemplate, updateTemplate, deleteTemplate, setDefault } = useAiTemplates()
+
+  // 統一售價
+  const [defaultPrice, setDefaultPrice] = useState<number>(0)
 
   // 規格
   const initVariants: VariantRow[] = (product?.variants ?? []).map((v) => ({
@@ -73,17 +80,19 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
   }
 
   async function handleAiOptimize() {
-    if (!originalText.trim()) {
-      setAiError('請先填入廠商原始商品文')
-      return
-    }
     setAiLoading(true)
     setAiError(null)
+    const selectedTemplate = selectedTemplateId
+      ? (templates.find((t) => t.id === selectedTemplateId) ?? null)
+      : null
     try {
       const res = await fetch('/api/ai/copywriting', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ originalText }),
+        body: JSON.stringify({
+          originalText,
+          templateInstruction: selectedTemplate?.instruction,
+        }),
       })
       const body = await res.json()
       if (!res.ok) throw new Error(body.error || 'AI 優化失敗')
@@ -259,21 +268,32 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
       {/* 廠商原始商品文 */}
       <div className='flex flex-col gap-1.5'>
         <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
-          廠商原始商品文<span className='text-[var(--color-error)] ml-0.5'>*</span>
+          廠商原始商品文
+          <span className='text-[11px] text-[var(--neutral-400)] font-normal ml-1.5'>選填</span>
         </label>
         <textarea
           value={originalText}
           onChange={(e) => setOriginalText(e.target.value)}
           rows={6}
           disabled={isPending || aiLoading}
-          placeholder='貼入廠商提供的原始商品說明文字…'
+          placeholder='貼入廠商提供的原始商品說明文字（選填，AI 可在無原文的情況下依模板生成）'
           className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] resize-y focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+        />
+        <AiTemplateSelector
+          selectedId={selectedTemplateId}
+          onSelect={setSelectedTemplateId}
+          disabled={isPending || aiLoading}
+          templates={templates}
+          onAdd={addTemplate}
+          onUpdate={updateTemplate}
+          onDelete={deleteTemplate}
+          onSetDefault={setDefault}
         />
         <div className='flex items-center gap-3'>
           <button
             type='button'
             onClick={handleAiOptimize}
-            disabled={isPending || aiLoading || !originalText.trim()}
+            disabled={isPending || aiLoading}
             className='flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--forest-base)] text-[var(--forest-base)] text-[12.5px] font-medium hover:bg-[var(--forest-50)] transition-colors disabled:opacity-40'
           >
             {aiLoading ? (
@@ -333,12 +353,38 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
         {errors.variants && (
           <p className='text-[12px] text-[var(--color-error)] mb-1'>{errors.variants}</p>
         )}
+        {/* 統一售價設定 */}
+        <div className='flex items-center gap-3 border border-[var(--neutral-200)] rounded-xl p-3.5 bg-[var(--neutral-50)]'>
+          <label className='text-[12.5px] text-[var(--neutral-600)] shrink-0'>
+            統一售價（TWD）
+          </label>
+          <input
+            type='number'
+            min={0}
+            step='1'
+            value={defaultPrice || ''}
+            onChange={(e) => setDefaultPrice(e.target.value === '' ? 0 : Number(e.target.value))}
+            disabled={isPending}
+            placeholder='0'
+            className='border border-[var(--neutral-200)] rounded-lg px-3 py-1.5 text-[13px] bg-white w-32 focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+            aria-label='統一售價'
+          />
+          <button
+            type='button'
+            onClick={() => setVariants((prev) => prev.map((v) => ({ ...v, price: defaultPrice })))}
+            disabled={isPending || !defaultPrice}
+            className='px-3 py-1.5 rounded-lg border border-[var(--forest-base)] text-[var(--forest-base)] text-[12px] hover:bg-[var(--forest-50)] transition-colors disabled:opacity-40'
+          >
+            套用到所有規格
+          </button>
+        </div>
         <VariantBuilder
           dimensions={dimensions}
           variants={variants}
           onDimensionsChange={setDimensions}
           onVariantsChange={setVariants}
           disabled={isPending}
+          defaultPrice={defaultPrice || undefined}
         />
       </div>
 

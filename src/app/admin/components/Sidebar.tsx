@@ -106,16 +106,9 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
           </svg>
         ),
       },
-    ],
-  },
-  {
-    section: '即將推出',
-    items: [
       {
         href: '/admin/products',
         label: '商品管理',
-        tag: 'S2',
-        disabled: true,
         exact: false,
         icon: (
           <svg
@@ -131,6 +124,11 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
           </svg>
         ),
       },
+    ],
+  },
+  {
+    section: '即將推出',
+    items: [
       {
         href: '/admin/orders',
         label: '訂單管理',

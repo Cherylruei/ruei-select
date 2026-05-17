@@ -22,12 +22,23 @@ const SYSTEM_PROMPT = `你是台灣代購賣場的商品文案優化助手。
   ]
 }`
 
-export async function optimizeCopywriting(originalText: string): Promise<CopywritingResult> {
+export async function optimizeCopywriting(
+  originalText: string,
+  templateInstruction?: string
+): Promise<CopywritingResult> {
+  const hasText = originalText.trim().length > 0
+  const baseContent = hasText
+    ? `請優化以下商品文字：\n\n${originalText}`
+    : '請生成一份基本的商品文案範例，包含商品名稱、描述和常見規格維度。'
+  const userContent = templateInstruction
+    ? `${baseContent}\n\n額外要求：${templateInstruction}`
+    : baseContent
+
   const message = await client.messages.create({
     model: 'claude-haiku-4-5',
     max_tokens: 1024,
     system: SYSTEM_PROMPT,
-    messages: [{ role: 'user', content: `請優化以下商品文字：\n\n${originalText}` }],
+    messages: [{ role: 'user', content: userContent }],
   })
 
   const textBlock = message.content.find((b) => b.type === 'text')

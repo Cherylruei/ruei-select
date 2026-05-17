@@ -22,6 +22,7 @@ interface Props {
   onDimensionsChange: (dims: DimensionDef[]) => void
   onVariantsChange: (variants: VariantRow[]) => void
   disabled?: boolean
+  defaultPrice?: number
 }
 
 function cartesian(dims: DimensionDef[]): Record<string, string>[] {
@@ -41,6 +42,7 @@ export default function VariantBuilder({
   onDimensionsChange,
   onVariantsChange,
   disabled,
+  defaultPrice,
 }: Props) {
   const [newDimName, setNewDimName] = useState('')
   const [newDimOptions, setNewDimOptions] = useState('')
@@ -50,13 +52,13 @@ export default function VariantBuilder({
     const validDims = dimensions.filter((d) => d.name.trim() && d.options.length > 0)
     const combos = cartesian(validDims)
     if (combos.length === 0 || (combos.length === 1 && Object.keys(combos[0]).length === 0)) {
-      onVariantsChange([{ specs: {}, price: 0, cost: null, cost_currency: 'TWD' }])
+      onVariantsChange([{ specs: {}, price: defaultPrice ?? 0, cost: null, cost_currency: 'TWD' }])
       return
     }
     const existingMap = new Map(variants.map((v) => [specsKey(v.specs), v]))
     const newVariants: VariantRow[] = combos.map((specs) => {
       const existing = existingMap.get(specsKey(specs))
-      return existing ?? { specs, price: 0, cost: null, cost_currency: 'TWD' }
+      return existing ?? { specs, price: defaultPrice ?? 0, cost: null, cost_currency: 'TWD' }
     })
     onVariantsChange(newVariants)
     // eslint-disable-next-line react-hooks/exhaustive-deps
