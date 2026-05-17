@@ -71,9 +71,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const newStatus = action === 'approve' ? 'approved' : 'rejected'
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: updated, error: updateError } = (await (
-      serviceClient.from('store_members') as any
-    )
+    const membersTable = serviceClient.from('store_members') as any
+    const { data: updated, error: updateError } = (await membersTable
       .update({ status: newStatus, reviewed_at: new Date().toISOString() })
       .eq('id', id)
       .select()

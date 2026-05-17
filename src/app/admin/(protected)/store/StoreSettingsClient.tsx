@@ -27,9 +27,34 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
   const [showRegenModal, setShowRegenModal] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [isUploading, setIsUploading] = useState(false)
+  const [isTogglingPublic, setIsTogglingPublic] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const isLoading = isPending || isUploading
+
+  async function handleTogglePublicProducts() {
+    if (!store) return
+    const next = !store.allow_public_products
+    setIsTogglingPublic(true)
+    try {
+      const res = await fetch(`/api/store/${store.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ allow_public_products: next }),
+      })
+      const body = await res.json()
+      if (!res.ok) {
+        showToast(body.error || '更新失敗', 'error')
+        return
+      }
+      setStore(body.data as Store)
+      showToast(next ? '公開商品功能已開啟' : '公開商品功能已關閉', 'success')
+    } catch {
+      showToast('更新失敗，請稍後再試', 'error')
+    } finally {
+      setIsTogglingPublic(false)
+    }
+  }
 
   function showToast(message: string, type: ToastState['type']) {
     setToast({ message, type })
@@ -472,6 +497,54 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
               </div>
             </div>
             <span className={styles.storePreviewCaption}>↑ 縮小預覽 · 實際畫面更精緻</span>
+          </div>
+        </section>
+      )}
+
+      {/* ── Section 4: Public products feature ──────────────────────────────── */}
+      {store && (
+        <section className={styles.storeCard}>
+          <div className={styles.storeCardHead}>
+            <h2 className={styles.storeCardTitle}>公開商品功能</h2>
+          </div>
+          <div className='px-5 pb-5'>
+            <div className='flex items-start justify-between gap-4'>
+              <p className='text-[13px] text-[var(--neutral-500)] leading-relaxed max-w-[480px]'>
+                開啟後，設為公開的商品可被 Google 等搜尋引擎索引，陌生客可透過搜尋���到賣場。
+              </p>
+              <button
+                type='button'
+                role='switch'
+                aria-checked={store.allow_public_products}
+                disabled={isTogglingPublic}
+                onClick={handleTogglePublicProducts}
+                className={`relative flex-shrink-0 w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest-base)] ${
+                  store.allow_public_products
+                    ? 'bg-[var(--forest-base)]'
+                    : 'bg-[var(--neutral-300)]'
+                } ${isTogglingPublic ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
+                aria-label='開關公開商品功能'
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                    store.allow_public_products ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+            </div>
+            {store.allow_public_products && (
+              <div className='mt-3 flex items-center gap-2'>
+                <span className='text-[12px] text-[var(--forest-base)]'>公開商品頁：</span>
+                <a
+                  href={`/p/${store.slug}`}
+                  target='_blank'
+                  rel='noopener noreferrer'
+                  className='text-[12px] text-[var(--forest-base)] underline underline-offset-2'
+                >
+                  /p/{store.slug}
+                </a>
+              </div>
+            )}
           </div>
         </section>
       )}

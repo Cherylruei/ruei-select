@@ -5,7 +5,6 @@ import type {
   StoreMember,
   ProductCategory,
   Product,
-  ProductSpec,
   Order,
   Shipment,
   ShipmentOrder,
@@ -62,12 +61,6 @@ export interface Database {
         Row: Product
         Insert: InsertRow<Product>
         Update: UpdateRow<Product>
-        Relationships: Relationship[]
-      }
-      product_specs: {
-        Row: ProductSpec
-        Insert: Omit<ProductSpec, 'id'>
-        Update: Partial<Omit<ProductSpec, 'id'>>
         Relationships: Relationship[]
       }
       orders: {

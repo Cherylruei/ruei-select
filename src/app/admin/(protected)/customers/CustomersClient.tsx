@@ -38,6 +38,7 @@ export default function CustomersClient({ initialTab }: CustomersClientProps) {
   }, [])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMembers(activeTab)
   }, [activeTab, fetchMembers])
 

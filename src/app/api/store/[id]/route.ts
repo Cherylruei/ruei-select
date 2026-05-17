@@ -53,6 +53,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       name?: string
       description?: string | null
       avatar_url?: string | null
+      allow_public_products?: boolean
     }
 
     const name = body.name !== undefined ? body.name.trim() : store.name
@@ -79,6 +80,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       updated_at: new Date().toISOString(),
     }
     if (body.avatar_url !== undefined) updates.avatar_url = body.avatar_url
+    if (body.allow_public_products !== undefined)
+      updates.allow_public_products = body.allow_public_products
 
     const serviceClient = createServiceClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
