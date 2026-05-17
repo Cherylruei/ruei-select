@@ -1,7 +1,7 @@
 import Anthropic from '@anthropic-ai/sdk'
 import type { CopywritingResult } from '@/types'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const client = new Anthropic({ apiKey: process.env.CLAUDE_API_KEY })
 
 const SYSTEM_PROMPT = `你是台灣代購賣場的商品文案優化助手。
 
