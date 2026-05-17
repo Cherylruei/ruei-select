@@ -1,7 +1,11 @@
 import Groq from 'groq-sdk'
 import type { CopywritingResult } from '@/types'
 
-const client = new Groq({ apiKey: process.env.GROQ_API_KEY })
+function getClient(): Groq {
+  const apiKey = process.env.GROQ_API_KEY
+  if (!apiKey) throw new Error('GROQ_API_KEY 未設定，請在 .env.local 填入 Groq API Key')
+  return new Groq({ apiKey })
+}
 
 const SYSTEM_PROMPT = `你是台灣代購賣場的商品文案優化助手。
 
@@ -34,6 +38,7 @@ export async function optimizeCopywriting(
     ? `${baseContent}\n\n額外要求：${templateInstruction}`
     : baseContent
 
+  const client = getClient()
   const completion = await client.chat.completions.create({
     model: 'llama-3.3-70b-versatile',
     max_tokens: 1024,
@@ -47,7 +52,7 @@ export async function optimizeCopywriting(
   if (!raw) throw new Error('AI 未回傳文字內容')
 
   // 去除可能的 markdown code fence
-  const jsonStr = raw.replace(/^```json?\s*/i, '').replace(/\s*```$/i, '')
+  const jsonStr = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
   const result = JSON.parse(jsonStr) as CopywritingResult
 
   return {

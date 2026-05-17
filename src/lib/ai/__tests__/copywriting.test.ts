@@ -13,6 +13,7 @@ vi.mock('groq-sdk', () => ({
 
 beforeEach(() => {
   vi.clearAllMocks()
+  process.env.GROQ_API_KEY = 'test-key'
 })
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -42,7 +43,7 @@ describe('optimizeCopywriting', () => {
     expect(result.detectedVariants[0].options).toContain('黑')
   })
 
-  it('去除 markdown code fence 後正確解析 JSON', async () => {
+  it('去除 markdown code fence (含 json 標記) 後正確解析 JSON', async () => {
     const mockResult = {
       name: '測試商品',
       description: '商品描述',
@@ -55,6 +56,21 @@ describe('optimizeCopywriting', () => {
 
     expect(result.name).toBe('測試商品')
     expect(result.detectedVariants).toEqual([])
+  })
+
+  it('去除無語言標記的 markdown code fence 後正確解析 JSON', async () => {
+    const mockResult = {
+      name: '測試商品2',
+      description: '無語言標記描述',
+      detectedVariants: [{ dimension: '尺寸', options: ['S', 'M', 'L'] }],
+    }
+    mockCreate.mockResolvedValue(groqResponse(`\`\`\`\n${JSON.stringify(mockResult)}\n\`\`\``))
+
+    const { optimizeCopywriting } = await import('../copywriting')
+    const result = await optimizeCopywriting('測試商品文字')
+
+    expect(result.name).toBe('測試商品2')
+    expect(result.detectedVariants[0].options).toContain('M')
   })
 
   it('AI 未回傳文字時拋出錯誤', async () => {
