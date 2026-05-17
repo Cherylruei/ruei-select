@@ -51,9 +51,11 @@ export async function optimizeCopywriting(
   const raw = completion.choices[0]?.message?.content?.trim() ?? ''
   if (!raw) throw new Error('AI 未回傳文字內容')
 
-  // 去除可能的 markdown code fence
-  const jsonStr = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '')
-  const result = JSON.parse(jsonStr) as CopywritingResult
+  // 從回傳內容中提取 JSON 物件（容忍 code fence、前後多餘文字）
+  const start = raw.indexOf('{')
+  const end = raw.lastIndexOf('}')
+  if (start === -1 || end === -1) throw new Error('AI 回傳格式錯誤：找不到 JSON 物件')
+  const result = JSON.parse(raw.slice(start, end + 1)) as CopywritingResult
 
   return {
     name: result.name ?? '',

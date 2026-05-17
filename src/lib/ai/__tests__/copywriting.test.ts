@@ -43,13 +43,14 @@ describe('optimizeCopywriting', () => {
     expect(result.detectedVariants[0].options).toContain('黑')
   })
 
-  it('去除 markdown code fence (含 json 標記) 後正確解析 JSON', async () => {
+  it('JSON 前後有 markdown code fence 及多餘文字時仍正確解析', async () => {
     const mockResult = {
       name: '測試商品',
       description: '商品描述',
       detectedVariants: [],
     }
-    mockCreate.mockResolvedValue(groqResponse(`\`\`\`json\n${JSON.stringify(mockResult)}\n\`\`\``))
+    const withFenceAndTrailing = `以下是優化結果：\n\`\`\`json\n${JSON.stringify(mockResult)}\n\`\`\`\n希望對你有幫助！`
+    mockCreate.mockResolvedValue(groqResponse(withFenceAndTrailing))
 
     const { optimizeCopywriting } = await import('../copywriting')
     const result = await optimizeCopywriting('測試商品文字')
@@ -58,13 +59,13 @@ describe('optimizeCopywriting', () => {
     expect(result.detectedVariants).toEqual([])
   })
 
-  it('去除無語言標記的 markdown code fence 後正確解析 JSON', async () => {
+  it('JSON 後有多餘文字（無 code fence）時仍正確解析', async () => {
     const mockResult = {
       name: '測試商品2',
       description: '無語言標記描述',
       detectedVariants: [{ dimension: '尺寸', options: ['S', 'M', 'L'] }],
     }
-    mockCreate.mockResolvedValue(groqResponse(`\`\`\`\n${JSON.stringify(mockResult)}\n\`\`\``))
+    mockCreate.mockResolvedValue(groqResponse(`${JSON.stringify(mockResult)}\n\n以上為優化建議。`))
 
     const { optimizeCopywriting } = await import('../copywriting')
     const result = await optimizeCopywriting('測試商品文字')
