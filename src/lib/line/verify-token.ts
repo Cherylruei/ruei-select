@@ -4,6 +4,10 @@ interface LiffTokenPayload {
 }
 
 export async function verifyLiffToken(token: string): Promise<LiffTokenPayload | null> {
+  if (process.env.NODE_ENV === 'development' && token === 'dev-mock-token') {
+    return { lineId: 'U_dev_mock', displayName: '測試用戶' }
+  }
+
   try {
     const res = await fetch('https://api.line.me/v2/profile', {
       headers: { Authorization: `Bearer ${token}` },

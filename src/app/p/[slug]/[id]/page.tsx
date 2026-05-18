@@ -1,8 +1,13 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createServiceClient } from '@/lib/supabase/server'
-import type { Store, ProductWithDetails } from '@/types'
+import type { Store, ProductWithDetails, Product, ProductImage, ProductVariant } from '@/types'
 import PublicProductDetail from './PublicProductDetail'
+
+interface RelatedProduct extends Product {
+  product_images: ProductImage[]
+  variants: ProductVariant[]
+}
 
 export const revalidate = 3600
 
@@ -81,6 +86,19 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
+async function getRelatedProducts(storeId: string, currentId: string): Promise<RelatedProduct[]> {
+  const serviceClient = createServiceClient()
+  const { data } = await serviceClient
+    .from('products')
+    .select('*, product_images(*), variants:product_variants(*)')
+    .eq('store_id', storeId)
+    .eq('is_public', true)
+    .eq('status', 'active')
+    .neq('id', currentId)
+    .limit(4)
+  return (data as unknown as RelatedProduct[]) ?? []
+}
+
 export default async function PublicProductDetailPage({ params }: PageProps) {
   const { slug, id } = await params
   const store = await getPublicStore(slug)
@@ -88,6 +106,8 @@ export default async function PublicProductDetailPage({ params }: PageProps) {
 
   const product = await getPublicProduct(store.id, id)
   if (!product) notFound()
+
+  const relatedProducts = await getRelatedProducts(store.id, id)
 
   const minPrice = Math.min(...(product.variants ?? []).map((v) => v.price))
   const maxPrice = Math.max(...(product.variants ?? []).map((v) => v.price))
@@ -119,7 +139,7 @@ export default async function PublicProductDetailPage({ params }: PageProps) {
         type='application/ld+json'
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <PublicProductDetail store={store} product={product} />
+      <PublicProductDetail store={store} product={product} relatedProducts={relatedProducts} />
     </>
   )
 }

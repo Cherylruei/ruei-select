@@ -84,8 +84,8 @@ export default function CustomersClient({ initialTab }: CustomersClientProps) {
           className={[
             'fixed top-5 right-5 z-50 px-5 py-3 rounded-xl text-sm font-medium shadow-lg transition-all',
             toast.type === 'success'
-              ? 'bg-[var(--sage-500)] text-white'
-              : 'bg-[var(--color-danger)] text-white',
+              ? 'bg-[var(--forest-base)] text-white'
+              : 'bg-[var(--color-error)] text-white',
           ].join(' ')}
         >
           {toast.message}
@@ -115,7 +115,7 @@ export default function CustomersClient({ initialTab }: CustomersClientProps) {
                   className={[
                     'text-xs font-bold px-1.5 py-px rounded-full',
                     isActive
-                      ? 'bg-[var(--sakura)] text-white'
+                      ? 'bg-[var(--sakura-base)] text-white'
                       : 'bg-[var(--neutral-200)] text-[var(--neutral-500)]',
                   ].join(' ')}
                 >
@@ -187,7 +187,7 @@ function MemberCard({
   return (
     <div className='bg-white rounded-xl border border-[var(--neutral-200)] p-4 flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow'>
       {/* 頭像 */}
-      <div className='flex-shrink-0 w-11 h-11 rounded-full bg-gradient-to-br from-[var(--sage-200)] to-[var(--sage-400)] flex items-center justify-center text-white font-bold text-base [font-family:var(--font-zen-maru-gothic)]'>
+      <div className='flex-shrink-0 w-11 h-11 rounded-full bg-gradient-to-br from-[var(--forest-200)] to-[var(--forest-400)] flex items-center justify-center text-white font-bold text-base [font-family:var(--font-zen-maru-gothic)]'>
         {initials}
       </div>
 
@@ -233,7 +233,7 @@ function MemberCard({
         <button
           onClick={() => handle('approve')}
           disabled={isPending}
-          className='px-4 py-2 rounded-xl bg-[var(--sage-500)] text-white text-sm font-semibold hover:bg-[var(--sage-600)] disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5'
+          className='px-4 py-2 rounded-xl bg-[var(--forest-base)] text-white text-sm font-semibold hover:bg-[var(--forest-deep)] disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center gap-1.5'
         >
           {actionLoading === 'approve' ? <Spinner /> : null}
           通過
@@ -371,7 +371,7 @@ function SourceBadge({ source }: { source: string }) {
     )
   }
   return (
-    <span className='inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-[var(--sage-100,#e0f0d0)] text-[var(--sage-700,#2c5218)] border border-[var(--sage-200,#b8dca0)]'>
+    <span className='inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full bg-[var(--forest-50)] text-[var(--forest-deep)] border border-[var(--forest-200)]'>
       <svg
         viewBox='0 0 24 24'
         width='11'

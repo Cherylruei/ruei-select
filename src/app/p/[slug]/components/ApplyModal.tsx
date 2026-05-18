@@ -71,6 +71,7 @@ export default function ApplyModal({ storeSlug, storeName, productId, onClose }:
 
     // dev mock
     if (process.env.NODE_ENV === 'development') {
+      setLiffToken('dev-mock-token')
       setDisplayName('測試用戶')
       setForm((prev) => ({ ...prev, name: '測試用戶' }))
       setStep('form')
@@ -201,7 +202,7 @@ export default function ApplyModal({ storeSlug, storeName, productId, onClose }:
 function IntroStep({ onLogin }: { onLogin: () => void }) {
   return (
     <div className='flex flex-col items-center text-center gap-5 py-2'>
-      <div className='w-14 h-14 rounded-full bg-gradient-to-br from-[var(--sage-400)] to-[var(--sage-600)] flex items-center justify-center shadow-md'>
+      <div className='w-14 h-14 rounded-full bg-gradient-to-br from-[var(--forest-400)] to-[var(--forest-deep)] flex items-center justify-center shadow-md'>
         <svg
           viewBox='0 0 24 24'
           width='26'
@@ -306,7 +307,7 @@ function FormStep({
 
       <button
         type='submit'
-        className='w-full py-3 rounded-xl bg-[var(--sage-500)] hover:bg-[var(--sage-600)] text-white text-[13.5px] font-semibold transition-colors mt-1'
+        className='w-full py-3 rounded-xl bg-[var(--sakura-base)] hover:bg-[var(--sakura-deep)] text-white text-[13.5px] font-semibold transition-colors mt-1'
       >
         送出申請
       </button>
@@ -317,7 +318,7 @@ function FormStep({
 function LoadingStep() {
   return (
     <div className='flex flex-col items-center gap-4 py-6'>
-      <div className='w-10 h-10 rounded-full border-4 border-[var(--sage-200)] border-t-[var(--sage-500)] animate-spin' />
+      <div className='w-10 h-10 rounded-full border-4 border-[var(--forest-200)] border-t-[var(--forest-base)] animate-spin' />
       <p className='text-[13px] text-[var(--neutral-500)]'>送出中…</p>
     </div>
   )
@@ -346,7 +347,7 @@ function ResultStep({
           <path d='M20 6L9 17l-5-5' />
         </svg>
       ),
-      bg: 'from-[var(--sage-400)] to-[var(--sage-600)]',
+      bg: 'from-[var(--forest-400)] to-[var(--forest-deep)]',
       title: '申請已送出！',
       message: `商家收到後會盡快審核，通過後即可進入 ${storeName} 選購。`,
     },
@@ -367,7 +368,7 @@ function ResultStep({
           <path d='M22 11.08V12a10 10 0 1 1-5.93-9.14M22 4L12 14.01l-3-3' />
         </svg>
       ),
-      bg: 'from-[var(--sage-500)] to-[var(--sage-700)]',
+      bg: 'from-[var(--forest-500)] to-[var(--forest-deep)]',
       title: '您已是會員',
       message: `您已是 ${storeName} 的會員，請透過商家提供的連結進入賣場。`,
     },
@@ -445,6 +446,6 @@ function fieldInputClass(hasError: boolean) {
     'focus:outline-none focus:ring-2 transition-all',
     hasError
       ? 'border-red-400 focus:ring-[rgba(239,68,68,0.2)]'
-      : 'border-[var(--neutral-200)] focus:border-[var(--sage-400)] focus:ring-[rgba(109,171,61,0.2)]',
+      : 'border-[var(--neutral-200)] focus:border-[var(--forest-400)] focus:ring-[rgba(85,164,74,0.2)]',
   ].join(' ')
 }

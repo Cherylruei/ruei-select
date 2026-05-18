@@ -48,7 +48,7 @@ export default function PublicProductList({ store, products, categories }: Props
                 className='w-9 h-9 rounded-full object-cover border border-[var(--neutral-200)]'
               />
             ) : (
-              <div className='w-9 h-9 rounded-full bg-gradient-to-br from-[var(--sage-400)] to-[var(--sage-600)] flex items-center justify-center'>
+              <div className='w-9 h-9 rounded-full bg-gradient-to-br from-[var(--forest-400)] to-[var(--forest-deep)] flex items-center justify-center'>
                 <span className='text-white text-[13px] font-bold'>{store.name.charAt(0)}</span>
               </div>
             )}
@@ -59,7 +59,7 @@ export default function PublicProductList({ store, products, categories }: Props
           <button
             type='button'
             onClick={() => setShowApply(true)}
-            className='px-4 py-2 rounded-xl bg-[var(--sage-500)] hover:bg-[var(--sage-600)] text-white text-[12.5px] font-semibold transition-colors'
+            className='px-4 py-2 rounded-xl bg-[var(--forest-base)] hover:bg-[var(--forest-deep)] text-white text-[12.5px] font-semibold transition-colors'
           >
             申請加入
           </button>
@@ -75,8 +75,8 @@ export default function PublicProductList({ store, products, categories }: Props
               onClick={() => setSelectedCategoryId(null)}
               className={`px-3.5 py-1.5 rounded-full text-[12.5px] font-medium transition-colors ${
                 selectedCategoryId === null
-                  ? 'bg-[var(--sage-500)] text-white'
-                  : 'bg-white border border-[var(--neutral-200)] text-[var(--neutral-600)] hover:border-[var(--sage-400)] hover:text-[var(--sage-600)]'
+                  ? 'bg-[var(--forest-base)] text-white'
+                  : 'bg-white border border-[var(--neutral-200)] text-[var(--neutral-600)] hover:border-[var(--forest-400)] hover:text-[var(--forest-base)]'
               }`}
             >
               全部
@@ -88,8 +88,8 @@ export default function PublicProductList({ store, products, categories }: Props
                 onClick={() => setSelectedCategoryId(cat.id)}
                 className={`px-3.5 py-1.5 rounded-full text-[12.5px] font-medium transition-colors ${
                   selectedCategoryId === cat.id
-                    ? 'bg-[var(--sage-500)] text-white'
-                    : 'bg-white border border-[var(--neutral-200)] text-[var(--neutral-600)] hover:border-[var(--sage-400)] hover:text-[var(--sage-600)]'
+                    ? 'bg-[var(--forest-base)] text-white'
+                    : 'bg-white border border-[var(--neutral-200)] text-[var(--neutral-600)] hover:border-[var(--forest-400)] hover:text-[var(--forest-base)]'
                 }`}
               >
                 {cat.name}
@@ -178,6 +178,22 @@ export default function PublicProductList({ store, products, categories }: Props
           </>
         )}
       </main>
+
+      {/* 底部 CTA 欄 */}
+      <section className='bg-[var(--forest-deep)] py-4 px-4'>
+        <div className='max-w-4xl mx-auto flex items-center justify-between gap-4'>
+          <p className='text-[13px] text-[var(--forest-100)] leading-snug flex-1'>
+            想看更多商品嗎？加入賣場後可瀏覽全部商品、規格與下單
+          </p>
+          <button
+            type='button'
+            onClick={() => setShowApply(true)}
+            className='flex-shrink-0 px-5 py-2.5 rounded-full bg-[var(--sakura-base)] hover:bg-[var(--sakura-deep)] text-white text-[12.5px] font-semibold whitespace-nowrap transition-colors'
+          >
+            申請加入{store.name} →
+          </button>
+        </div>
+      </section>
 
       {showApply && (
         <ApplyModal

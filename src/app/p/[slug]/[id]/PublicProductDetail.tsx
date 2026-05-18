@@ -2,19 +2,25 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import type { Store, ProductWithDetails, ProductVariant } from '@/types'
+import type { Store, ProductWithDetails, ProductVariant, Product, ProductImage } from '@/types'
 import ApplyModal from '../components/ApplyModal'
+
+interface RelatedProduct extends Product {
+  product_images: ProductImage[]
+  variants: ProductVariant[]
+}
 
 interface Props {
   store: Store
   product: ProductWithDetails
+  relatedProducts?: RelatedProduct[]
 }
 
 function formatPrice(v: ProductVariant): string {
   return `NT$ ${v.price.toLocaleString()}`
 }
 
-export default function PublicProductDetail({ store, product }: Props) {
+export default function PublicProductDetail({ store, product, relatedProducts = [] }: Props) {
   const sortedImages = [...(product.product_images ?? [])].sort(
     (a, b) => a.sort_order - b.sort_order
   )
@@ -54,7 +60,7 @@ export default function PublicProductDetail({ store, product }: Props) {
           </Link>
           <Link
             href={`/p/${store.slug}`}
-            className='text-[14px] font-semibold text-[var(--neutral-800)] [font-family:var(--font-zen-maru-gothic)] hover:text-[var(--sage-600)] transition-colors'
+            className='text-[14px] font-semibold text-[var(--neutral-800)] [font-family:var(--font-zen-maru-gothic)] hover:text-[var(--forest-base)] transition-colors'
           >
             {store.name}
           </Link>
@@ -105,7 +111,7 @@ export default function PublicProductDetail({ store, product }: Props) {
                       onClick={() => setSelectedImage(img.url)}
                       className={`flex-shrink-0 w-14 h-14 rounded-lg overflow-hidden border-2 transition-colors ${
                         selectedImage === img.url
-                          ? 'border-[var(--sage-500)]'
+                          ? 'border-[var(--forest-base)]'
                           : 'border-[var(--neutral-200)] hover:border-[var(--neutral-400)]'
                       }`}
                     >
@@ -165,7 +171,7 @@ export default function PublicProductDetail({ store, product }: Props) {
                               disabled={!matchingVariant}
                               className={`px-3 py-1.5 rounded-lg border text-[12.5px] transition-colors ${
                                 isSelected
-                                  ? 'border-[var(--sage-500)] bg-[var(--forest-50)] text-[var(--sage-700)] font-medium'
+                                  ? 'border-[var(--forest-base)] bg-[var(--forest-50)] text-[var(--forest-deep)] font-medium'
                                   : matchingVariant
                                     ? 'border-[var(--neutral-200)] text-[var(--neutral-600)] hover:border-[var(--neutral-400)]'
                                     : 'border-[var(--neutral-100)] text-[var(--neutral-300)] cursor-not-allowed'
@@ -193,13 +199,13 @@ export default function PublicProductDetail({ store, product }: Props) {
               )}
 
               {/* CTA */}
-              <div className='mt-auto pt-2'>
+              <div className='pt-2 border-t border-[var(--neutral-100)]'>
                 <button
                   type='button'
                   onClick={() => setShowApply(true)}
-                  className='w-full py-3.5 rounded-xl bg-[var(--sage-500)] hover:bg-[var(--sage-600)] text-white text-[14px] font-semibold transition-colors shadow-sm'
+                  className='w-full py-3.5 rounded-xl bg-[var(--sakura-base)] hover:bg-[var(--sakura-deep)] text-white text-[14px] font-semibold transition-colors shadow-[var(--sh-cta)] hover:shadow-[var(--sh-cta-h)]'
                 >
-                  我有興趣・申請加入賣場
+                  我要下單
                 </button>
                 <p className='text-center text-[11.5px] text-[var(--neutral-400)] mt-2'>
                   成為會員後即可向商家下單
@@ -208,7 +214,86 @@ export default function PublicProductDetail({ store, product }: Props) {
             </div>
           </div>
         </div>
+        {/* 更多公開商品 */}
+        {relatedProducts.length > 0 && (
+          <div className='mt-6'>
+            <h2 className='text-[14px] font-semibold text-[var(--neutral-700)] mb-3 [font-family:var(--font-zen-maru-gothic)]'>
+              更多公開商品
+            </h2>
+            <div className='grid grid-cols-2 sm:grid-cols-4 gap-3'>
+              {relatedProducts.map((rp) => {
+                const thumb = [...(rp.product_images ?? [])].sort(
+                  (a, b) => a.sort_order - b.sort_order
+                )[0]?.url
+                const prices = (rp.variants ?? []).map((v) => v.price)
+                const minP = prices.length ? Math.min(...prices) : null
+                return (
+                  <Link
+                    key={rp.id}
+                    href={`/p/${store.slug}/${rp.id}`}
+                    className='bg-white rounded-xl border border-[var(--neutral-200)] overflow-hidden hover:shadow-md hover:-translate-y-0.5 transition-all group'
+                  >
+                    <div className='aspect-square bg-[var(--neutral-100)] overflow-hidden'>
+                      {thumb ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={thumb}
+                          alt={rp.name}
+                          className='w-full h-full object-cover group-hover:scale-105 transition-transform duration-300'
+                          loading='lazy'
+                        />
+                      ) : (
+                        <div className='w-full h-full flex items-center justify-center'>
+                          <svg
+                            viewBox='0 0 24 24'
+                            width='28'
+                            height='28'
+                            fill='none'
+                            stroke='currentColor'
+                            strokeWidth='1.2'
+                            className='text-[var(--neutral-300)]'
+                            aria-hidden='true'
+                          >
+                            <rect x='3' y='3' width='18' height='18' rx='2' />
+                            <circle cx='8.5' cy='8.5' r='1.5' />
+                            <polyline points='21 15 16 10 5 21' />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className='p-2.5'>
+                      <p className='text-[12.5px] font-medium text-[var(--neutral-800)] line-clamp-2 leading-snug mb-1'>
+                        {rp.name}
+                      </p>
+                      {minP !== null && (
+                        <p className='text-[12px] font-semibold text-[var(--sakura-base)]'>
+                          NT$ {minP.toLocaleString()}
+                        </p>
+                      )}
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+        )}
       </main>
+
+      {/* 底部 CTA 欄 */}
+      <section className='bg-[var(--forest-deep)] py-4 px-4'>
+        <div className='max-w-4xl mx-auto flex items-center justify-between gap-4'>
+          <p className='text-[13px] text-[var(--forest-100)] leading-snug flex-1'>
+            想看更多商品嗎？加入賣場後可瀏覽全部商品、規格與下單
+          </p>
+          <button
+            type='button'
+            onClick={() => setShowApply(true)}
+            className='flex-shrink-0 px-5 py-2.5 rounded-full bg-[var(--sakura-base)] hover:bg-[var(--sakura-deep)] text-white text-[12.5px] font-semibold whitespace-nowrap transition-colors'
+          >
+            申請加入{store.name} →
+          </button>
+        </div>
+      </section>
 
       {showApply && (
         <ApplyModal
