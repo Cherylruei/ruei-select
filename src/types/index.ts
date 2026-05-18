@@ -127,19 +127,10 @@ export interface ProductWithDetails extends Product {
 export interface Order {
   id: string
   store_id: string
-  customer_id: string
-  product_id: string
-  supplier_id: string | null
-  spec_selected: Record<string, string>
-  quantity: number
-  unit_price: number
-  unit_cost: number | null
-  total_amount: number
+  member_id: string
   status: OrderStatus
+  note: string | null
   ordered_at: string
-  cancelled_at: string | null
-  cancel_reason: string | null
-  created_at: string
   updated_at: string
 }
 

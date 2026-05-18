@@ -79,8 +79,8 @@ export interface Database {
       }
       orders: {
         Row: Order
-        Insert: InsertRow<Order>
-        Update: UpdateRow<Order>
+        Insert: Omit<Order, 'id'>
+        Update: Partial<Omit<Order, 'id'>>
         Relationships: Relationship[]
       }
       shipments: {
