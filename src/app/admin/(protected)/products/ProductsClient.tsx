@@ -36,6 +36,7 @@ export default function ProductsClient({ initialProducts, suppliers }: Props) {
   const [toast, setToast] = useState<ToastState | null>(null)
   const [isPending, startTransition] = useTransition()
   const [confirmDeactivate, setConfirmDeactivate] = useState<ProductRow | null>(null)
+  const [confirmDelete, setConfirmDelete] = useState<ProductRow | null>(null)
 
   function showToast(message: string, type: ToastState['type']) {
     setToast({ message, type })
@@ -113,6 +114,30 @@ export default function ProductsClient({ initialProducts, suppliers }: Props) {
         showToast('上架失敗，請稍後再試', 'error')
       }
     })
+  }
+
+  async function handleDelete(product: ProductRow) {
+    setConfirmDelete(null)
+    startTransition(async () => {
+      try {
+        const res = await fetch(`/api/products/${product.id}`, { method: 'DELETE' })
+        const body = await res.json()
+        if (!res.ok) {
+          showToast(body.error || '刪除失敗', 'error')
+          return
+        }
+        setProducts((prev) => prev.filter((p) => p.id !== product.id))
+        showToast('商品已刪除', 'success')
+      } catch {
+        showToast('刪除失敗，請稍後再試', 'error')
+      }
+    })
+  }
+
+  function formatEndsAt(endsAt: string): string {
+    const d = new Date(endsAt)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getMonth() + 1}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
   }
 
   return (
@@ -247,6 +272,18 @@ export default function ProductsClient({ initialProducts, suppliers }: Props) {
                       <p className='font-medium text-[var(--neutral-800)] line-clamp-1'>
                         {product.name}
                       </p>
+                      {product.ends_at && (
+                        <p
+                          className={`text-[11px] mt-0.5 ${
+                            new Date(product.ends_at) <= new Date()
+                              ? 'text-[var(--color-error)]'
+                              : 'text-[var(--neutral-400)]'
+                          }`}
+                        >
+                          截單：{formatEndsAt(product.ends_at)}
+                          {new Date(product.ends_at) <= new Date() && ' · 已截止'}
+                        </p>
+                      )}
                     </td>
                     <td className='px-4 py-3 hidden sm:table-cell text-[var(--neutral-500)]'>
                       {product.supplier?.name ?? '—'}
@@ -312,6 +349,14 @@ export default function ProductsClient({ initialProducts, suppliers }: Props) {
                             上架
                           </button>
                         )}
+                        <button
+                          type='button'
+                          onClick={() => setConfirmDelete(product)}
+                          disabled={isPending}
+                          className='px-2.5 py-1.5 rounded-lg text-[11.5px] border border-[var(--neutral-200)] text-[var(--color-error)] hover:bg-red-50 transition-colors disabled:opacity-60'
+                        >
+                          刪除
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -357,6 +402,47 @@ export default function ProductsClient({ initialProducts, suppliers }: Props) {
                 className='px-4 py-2 rounded-lg bg-[var(--color-error)] text-white text-[13px] font-medium hover:opacity-90 transition-colors'
               >
                 確定下架
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 刪除確認 */}
+      {confirmDelete && (
+        <div
+          role='dialog'
+          aria-modal='true'
+          aria-labelledby='delete-modal-title'
+          className='fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(28,54,16,0.4)] backdrop-blur-[3px]'
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setConfirmDelete(null)
+          }}
+        >
+          <div className='bg-white rounded-2xl p-6 w-[340px] shadow-xl'>
+            <h3
+              id='delete-modal-title'
+              className='text-[15px] font-semibold text-[var(--neutral-800)] mb-2'
+            >
+              確定刪除商品？
+            </h3>
+            <p className='text-[13px] text-[var(--neutral-500)] mb-5'>
+              「{confirmDelete.name}」刪除後無法復原，相關訂單資料將保留。
+            </p>
+            <div className='flex gap-2 justify-end'>
+              <button
+                type='button'
+                onClick={() => setConfirmDelete(null)}
+                className='px-4 py-2 rounded-lg border border-[var(--neutral-200)] text-[13px] text-[var(--neutral-600)] hover:bg-[var(--neutral-100)] transition-colors'
+              >
+                取消
+              </button>
+              <button
+                type='button'
+                onClick={() => void handleDelete(confirmDelete)}
+                className='px-4 py-2 rounded-lg bg-[var(--color-error)] text-white text-[13px] font-medium hover:opacity-90 transition-colors'
+              >
+                確定刪除
               </button>
             </div>
           </div>

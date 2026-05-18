@@ -38,6 +38,7 @@ interface ProductUpdateBody {
   description_raw?: string | null
   category_id?: string | null
   is_public?: boolean
+  ends_at?: string | null
   status?: 'active' | 'inactive'
   variants?: Array<{
     id?: string
@@ -80,6 +81,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     if (body.supplier_id !== undefined) updateFields.supplier_id = body.supplier_id || null
     if (body.category_id !== undefined) updateFields.category_id = body.category_id || null
     if (body.is_public !== undefined) updateFields.is_public = body.is_public
+    if (body.ends_at !== undefined) updateFields.ends_at = body.ends_at ?? null
     if (body.status !== undefined) updateFields.status = body.status
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

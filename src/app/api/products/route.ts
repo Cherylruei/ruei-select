@@ -50,6 +50,7 @@ interface ProductCreateBody {
   description_raw?: string | null
   category_id?: string | null
   is_public?: boolean
+  ends_at?: string | null
   variants?: Array<{
     specs: Record<string, string>
     price: number
@@ -84,6 +85,7 @@ export async function POST(request: NextRequest) {
         category_id: body.category_id || null,
         sell_price: null,
         is_public: body.is_public ?? false,
+        ends_at: body.ends_at ?? null,
         status: 'active',
       })
       .select()

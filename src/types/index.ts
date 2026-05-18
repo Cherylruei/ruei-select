@@ -108,6 +108,7 @@ export interface Product {
   sell_price: number | null // 無 variants 時的基本售價
   is_public: boolean
   status: ProductStatus
+  ends_at: string | null
   view_count: number
   created_at: string
   updated_at: string
