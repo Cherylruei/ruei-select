@@ -64,7 +64,7 @@ export default function CurrencyInput({
 
   return (
     <div className='flex flex-col gap-1.5'>
-      <div className='flex gap-2'>
+      <div className='flex gap-2 min-w-0'>
         <select
           value={currency}
           onChange={(e) => onCurrencyChange(e.target.value as Currency)}
@@ -87,7 +87,7 @@ export default function CurrencyInput({
           onChange={(e) => onValueChange(e.target.value === '' ? null : Number(e.target.value))}
           disabled={disabled}
           placeholder='成本（選填）'
-          className='flex-1 border border-[var(--neutral-200)] rounded-lg px-3 py-2 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+          className='flex-1 min-w-0 border border-[var(--neutral-200)] rounded-lg px-3 py-2 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
           aria-label='成本金額'
         />
       </div>

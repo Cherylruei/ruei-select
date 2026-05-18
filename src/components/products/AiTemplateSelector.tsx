@@ -106,7 +106,7 @@ export default function AiTemplateSelector({
         type='button'
         onClick={openAddModal}
         disabled={disabled}
-        className='text-[11.5px] text-[var(--forest-base)] hover:underline disabled:opacity-40'
+        className='text-[14px] text-[var(--forest-base)] hover:underline disabled:opacity-40'
       >
         管理模板
       </button>

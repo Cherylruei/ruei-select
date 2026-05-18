@@ -206,5 +206,6 @@ export interface CopywritingResult {
   detectedVariants: {
     dimension: string // e.g. "顏色"
     options: string[] // e.g. ["紅", "藍", "白"]
+    prices?: number[] // 與 options 對應的售價（有標價時才有）
   }[]
 }

@@ -2,7 +2,14 @@
 
 import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
-import VariantBuilder, { type DimensionDef, type VariantRow } from './VariantBuilder'
+import {
+  DimensionConfigurator,
+  VariantPricingTable,
+  cartesian,
+  specsKey,
+  type DimensionDef,
+  type VariantRow,
+} from './VariantBuilder'
 import ImageUploader, { type UploadedImage } from './ImageUploader'
 import AiTemplateSelector from './AiTemplateSelector'
 import { useAiTemplates } from '@/hooks/useAiTemplates'
@@ -33,23 +40,26 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
-  // 基本資訊
+  function toDatetimeLocal(isoString: string): string {
+    const d = new Date(isoString)
+    const pad = (n: number) => String(n).padStart(2, '0')
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  }
+
   const [supplierId, setSupplierId] = useState(product?.supplier_id ?? '')
   const [originalText, setOriginalText] = useState(product?.description_raw ?? '')
   const [name, setName] = useState(product?.name ?? '')
   const [description, setDescription] = useState(product?.description ?? '')
   const [isPublic, setIsPublic] = useState(product?.is_public ?? false)
+  const [endsAt, setEndsAt] = useState(product?.ends_at ? toDatetimeLocal(product.ends_at) : '')
 
-  // AI 狀態
   const [aiLoading, setAiLoading] = useState(false)
   const [aiError, setAiError] = useState<string | null>(null)
   const [selectedTemplateId, setSelectedTemplateId] = useState<string | null>(null)
   const { templates, addTemplate, updateTemplate, deleteTemplate, setDefault } = useAiTemplates()
 
-  // 統一售價
   const [defaultPrice, setDefaultPrice] = useState<number>(0)
 
-  // 規格
   const initVariants: VariantRow[] = (product?.variants ?? []).map((v) => ({
     specs: v.specs,
     price: v.price,
@@ -63,7 +73,6 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
       : [{ specs: {}, price: 0, cost: null, cost_currency: 'TWD' }]
   )
 
-  // 圖片
   const [images, setImages] = useState<UploadedImage[]>(
     (product?.product_images ?? [])
       .sort((a, b) => a.sort_order - b.sort_order)
@@ -73,6 +82,37 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
 
   const [toast, setToast] = useState<ToastState | null>(null)
   const [errors, setErrors] = useState<Record<string, string>>({})
+
+  function buildVariants(
+    newDims: DimensionDef[],
+    existingVariants: VariantRow[],
+    fallbackPrice: number,
+    priceMap?: Map<string, number> | null
+  ): VariantRow[] {
+    const validDims = newDims.filter((d) => d.name.trim() && d.options.length > 0)
+    const combos = cartesian(validDims)
+    if (combos.length === 0 || (combos.length === 1 && Object.keys(combos[0]).length === 0)) {
+      return [{ specs: {}, price: fallbackPrice || 0, cost: null, cost_currency: 'TWD' }]
+    }
+    const existingMap = new Map(existingVariants.map((v) => [specsKey(v.specs), v]))
+    return combos.map((specs) => {
+      const existing = existingMap.get(specsKey(specs))
+      const aiPrice = priceMap?.get(specsKey(specs))
+      return (
+        existing ?? {
+          specs,
+          price: aiPrice ?? fallbackPrice ?? 0,
+          cost: null,
+          cost_currency: 'TWD',
+        }
+      )
+    })
+  }
+
+  function handleDimensionsChange(newDims: DimensionDef[]) {
+    setDimensions(newDims)
+    setVariants(buildVariants(newDims, variants, defaultPrice))
+  }
 
   function showToast(message: string, type: ToastState['type']) {
     setToast({ message, type })
@@ -103,12 +143,33 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
 
       if (detectedVariants && detectedVariants.length > 0) {
         const newDims: DimensionDef[] = detectedVariants.map(
-          (dv: { dimension: string; options: string[] }) => ({
+          (dv: { dimension: string; options: string[]; prices?: number[] }) => ({
             name: dv.dimension,
             options: dv.options,
           })
         )
+        let priceMap: Map<string, number> | null = null
+        const hasPrices = detectedVariants.some(
+          (dv: { prices?: number[] }) => dv.prices && dv.prices.length > 0
+        )
+        if (hasPrices) {
+          priceMap = new Map<string, number>()
+          for (const dv of detectedVariants as {
+            dimension: string
+            options: string[]
+            prices?: number[]
+          }[]) {
+            if (!dv.prices) continue
+            dv.options.forEach((opt, i) => {
+              const price = dv.prices![i]
+              if (price != null && price > 0) {
+                priceMap!.set(specsKey({ [dv.dimension]: opt }), price)
+              }
+            })
+          }
+        }
         setDimensions(newDims)
+        setVariants(buildVariants(newDims, variants, defaultPrice, priceMap))
       }
       showToast('AI 優化完成！請確認並調整內容', 'success')
     } catch (err) {
@@ -129,6 +190,7 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
   }
 
   async function uploadPendingImages(productId: string): Promise<UploadedImage[]> {
+    const { default: imageCompression } = await import('browser-image-compression')
     const result: UploadedImage[] = []
     for (const img of images) {
       if (img.id) {
@@ -139,9 +201,13 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
         result.push(img)
         continue
       }
-      // 上傳 file
+      const compressed = await imageCompression(img.file, {
+        maxSizeMB: 2,
+        maxWidthOrHeight: 1200,
+        useWebWorker: true,
+      })
       const formData = new FormData()
-      formData.append('image', img.file)
+      formData.append('image', compressed, compressed.name || 'product.jpg')
       formData.append('productId', productId)
       formData.append('storeId', storeId)
       const res = await fetch('/api/products/upload-image', { method: 'POST', body: formData })
@@ -169,13 +235,14 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
               description: description.trim() || null,
               description_raw: originalText.trim() || null,
               is_public: isPublic,
+              ends_at: endsAt ? new Date(endsAt).toISOString() : null,
               variants: variants.map((v) => ({
                 specs: v.specs,
                 price: v.price,
                 cost: v.cost,
                 cost_currency: v.cost_currency,
               })),
-              images: [], // 先建立商品，再上傳圖片
+              images: [],
             }),
           })
           const body = await res.json()
@@ -185,7 +252,6 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
           }
           savedProduct = body.data as Product
 
-          // 上傳圖片
           const uploadedImages = await uploadPendingImages(savedProduct.id)
           if (uploadedImages.length > 0) {
             await fetch(`/api/products/${savedProduct.id}`, {
@@ -209,6 +275,7 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
               description: description.trim() || null,
               description_raw: originalText.trim() || null,
               is_public: isPublic,
+              ends_at: endsAt ? new Date(endsAt).toISOString() : null,
               variants: variants.map((v) => ({
                 specs: v.specs,
                 price: v.price,
@@ -241,154 +308,237 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
   }
 
   return (
-    <div className='flex flex-col gap-6 max-w-3xl'>
-      {/* 廠商選擇 */}
-      <div className='flex flex-col gap-1.5'>
-        <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
-          廠商<span className='text-[var(--color-error)] ml-0.5'>*</span>
-        </label>
-        <select
-          value={supplierId}
-          onChange={(e) => setSupplierId(e.target.value)}
-          disabled={isPending}
-          className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60 max-w-xs'
-        >
-          <option value=''>請選擇廠商</option>
-          {suppliers.map((s) => (
-            <option key={s.id} value={s.id}>
-              {s.name}
-            </option>
-          ))}
-        </select>
-        {errors.supplierId && (
-          <p className='text-[12px] text-[var(--color-error)]'>{errors.supplierId}</p>
-        )}
-      </div>
-
-      {/* 廠商原始商品文 */}
-      <div className='flex flex-col gap-1.5'>
-        <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
-          廠商原始商品文
-          <span className='text-[11px] text-[var(--neutral-400)] font-normal ml-1.5'>選填</span>
-        </label>
-        <textarea
-          value={originalText}
-          onChange={(e) => setOriginalText(e.target.value)}
-          rows={6}
-          disabled={isPending || aiLoading}
-          placeholder='貼入廠商提供的原始商品說明文字（選填，AI 可在無原文的情況下依模板生成）'
-          className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] resize-y focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
-        />
-        <AiTemplateSelector
-          selectedId={selectedTemplateId}
-          onSelect={setSelectedTemplateId}
-          disabled={isPending || aiLoading}
-          templates={templates}
-          onAdd={addTemplate}
-          onUpdate={updateTemplate}
-          onDelete={deleteTemplate}
-          onSetDefault={setDefault}
-        />
-        <div className='flex items-center gap-3'>
-          <button
-            type='button'
-            onClick={handleAiOptimize}
-            disabled={isPending || aiLoading}
-            className='flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--forest-base)] text-[var(--forest-base)] text-[12.5px] font-medium hover:bg-[var(--forest-50)] transition-colors disabled:opacity-40'
-          >
-            {aiLoading ? (
-              <span className='w-3 h-3 border-2 border-[var(--forest-base)] border-t-transparent rounded-full animate-spin' />
-            ) : (
-              <svg
-                viewBox='0 0 24 24'
-                width='14'
-                height='14'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-                aria-hidden='true'
-              >
-                <polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2' />
-              </svg>
-            )}
-            {aiLoading ? 'AI 優化中…' : 'AI 優化文案'}
-          </button>
-          {aiError && <p className='text-[12px] text-[var(--color-error)]'>{aiError}</p>}
-        </div>
-      </div>
-
-      {/* 商品名稱 */}
-      <div className='flex flex-col gap-1.5'>
-        <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
-          商品名稱<span className='text-[var(--color-error)] ml-0.5'>*</span>
-        </label>
-        <input
-          type='text'
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          disabled={isPending}
-          placeholder='請輸入商品名稱'
-          maxLength={100}
-          className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
-        />
-        {errors.name && <p className='text-[12px] text-[var(--color-error)]'>{errors.name}</p>}
-      </div>
-
-      {/* 商品描述 */}
-      <div className='flex flex-col gap-1.5'>
-        <label className='text-[13px] font-medium text-[var(--neutral-700)]'>商品描述</label>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={4}
-          disabled={isPending}
-          placeholder='商品描述（選填）'
-          className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] resize-y focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
-        />
-      </div>
-
-      {/* 商品規格 */}
-      <div className='flex flex-col gap-1.5'>
-        <label className='text-[13px] font-medium text-[var(--neutral-700)]'>商品規格與定價</label>
-        {errors.variants && (
-          <p className='text-[12px] text-[var(--color-error)] mb-1'>{errors.variants}</p>
-        )}
-        {/* 統一售價設定 */}
-        <div className='flex items-center gap-3 border border-[var(--neutral-200)] rounded-xl p-3.5 bg-[var(--neutral-50)]'>
-          <label className='text-[12.5px] text-[var(--neutral-600)] shrink-0'>
-            統一售價（TWD）
+    <div className='flex flex-col gap-6 w-full max-w-5xl'>
+      {/* Row 1: 廠商選擇 | 截單日期 + 設為公開 */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6'>
+        {/* 廠商選擇 */}
+        <div className='flex flex-col gap-1.5'>
+          <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
+            廠商<span className='text-[var(--color-error)] ml-0.5'>*</span>
           </label>
-          <input
-            type='number'
-            min={0}
-            step='1'
-            value={defaultPrice || ''}
-            onChange={(e) => setDefaultPrice(e.target.value === '' ? 0 : Number(e.target.value))}
+          <select
+            value={supplierId}
+            onChange={(e) => setSupplierId(e.target.value)}
             disabled={isPending}
-            placeholder='0'
-            className='border border-[var(--neutral-200)] rounded-lg px-3 py-1.5 text-[13px] bg-white w-32 focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
-            aria-label='統一售價'
-          />
-          <button
-            type='button'
-            onClick={() => setVariants((prev) => prev.map((v) => ({ ...v, price: defaultPrice })))}
-            disabled={isPending || !defaultPrice}
-            className='px-3 py-1.5 rounded-lg border border-[var(--forest-base)] text-[var(--forest-base)] text-[12px] hover:bg-[var(--forest-50)] transition-colors disabled:opacity-40'
+            className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60 max-w-xs'
           >
-            套用到所有規格
-          </button>
+            <option value=''>請選擇廠商</option>
+            {suppliers.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+          {errors.supplierId && (
+            <p className='text-[12px] text-[var(--color-error)]'>{errors.supplierId}</p>
+          )}
         </div>
-        <VariantBuilder
-          dimensions={dimensions}
-          variants={variants}
-          onDimensionsChange={setDimensions}
-          onVariantsChange={setVariants}
-          disabled={isPending}
-          defaultPrice={defaultPrice || undefined}
-        />
+
+        {/* 截單日期 + 設為公開 */}
+        <div className='flex flex-wrap items-start gap-4'>
+          <div className='flex flex-col gap-1.5 flex-1 min-w-[180px]'>
+            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
+              截單日期
+              <span className='text-[11px] text-[var(--neutral-400)] font-normal ml-1.5'>
+                選填，到期後自動從公開頁下架
+              </span>
+            </label>
+            <div className='flex items-center gap-2'>
+              <input
+                type='datetime-local'
+                value={endsAt}
+                onChange={(e) => setEndsAt(e.target.value)}
+                disabled={isPending}
+                className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+              />
+              {endsAt && (
+                <button
+                  type='button'
+                  onClick={() => setEndsAt('')}
+                  disabled={isPending}
+                  className='text-[12px] text-[var(--neutral-400)] hover:text-[var(--color-error)] transition-colors shrink-0'
+                >
+                  清除
+                </button>
+              )}
+            </div>
+            {endsAt && new Date(endsAt) <= new Date() && (
+              <p className='text-[12px] text-[var(--color-error)]'>
+                截單日期已過，商品將不顯示於公開頁
+              </p>
+            )}
+          </div>
+
+          <div className='flex flex-col gap-1.5'>
+            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>設為公開</label>
+            <div className='flex items-center gap-2.5 pt-1'>
+              <button
+                type='button'
+                role='switch'
+                aria-checked={isPublic}
+                onClick={() => setIsPublic(!isPublic)}
+                disabled={isPending}
+                className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest-base)] ${
+                  isPublic ? 'bg-[var(--forest-base)]' : 'bg-[var(--neutral-300)]'
+                } disabled:opacity-60 cursor-pointer`}
+                aria-label='設為公開'
+              >
+                <span
+                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
+                    isPublic ? 'translate-x-5' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+              <span className='text-[12.5px] text-[var(--neutral-500)]'>可被搜尋引擎索引</span>
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* 商品圖片 */}
+      {/* Row 2: AI 文案區 | 商品名稱 + 描述 */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-start'>
+        {/* AI 文案區 */}
+        <div className='flex flex-col gap-3'>
+          <div className='flex flex-col gap-2'>
+            <AiTemplateSelector
+              selectedId={selectedTemplateId}
+              onSelect={setSelectedTemplateId}
+              disabled={isPending || aiLoading}
+              templates={templates}
+              onAdd={addTemplate}
+              onUpdate={updateTemplate}
+              onDelete={deleteTemplate}
+              onSetDefault={setDefault}
+            />
+            <div className='flex items-center gap-3'>
+              <button
+                type='button'
+                onClick={handleAiOptimize}
+                disabled={isPending || aiLoading}
+                className='flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--forest-base)] text-[var(--forest-base)] text-[12.5px] font-medium hover:bg-[var(--forest-50)] transition-colors disabled:opacity-40'
+              >
+                {aiLoading ? (
+                  <span className='w-3 h-3 border-2 border-[var(--forest-base)] border-t-transparent rounded-full animate-spin' />
+                ) : (
+                  <svg
+                    viewBox='0 0 24 24'
+                    width='14'
+                    height='14'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    aria-hidden='true'
+                  >
+                    <polygon points='13 2 3 14 12 14 11 22 21 10 12 10 13 2' />
+                  </svg>
+                )}
+                {aiLoading ? 'AI 優化中…' : 'AI 優化文案'}
+              </button>
+              {aiError && <p className='text-[12px] text-[var(--color-error)]'>{aiError}</p>}
+            </div>
+          </div>
+          <div className='flex flex-col gap-1.5'>
+            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
+              原始商品文
+              <span className='text-[11px] text-[var(--neutral-400)] font-normal ml-1.5'>選填</span>
+            </label>
+            <textarea
+              value={originalText}
+              onChange={(e) => setOriginalText(e.target.value)}
+              rows={9}
+              disabled={isPending || aiLoading}
+              placeholder='貼入廠商提供的原始商品說明文字（選填，AI 可在無原文的情況下依模板生成）'
+              className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] resize-y focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+            />
+          </div>
+        </div>
+
+        {/* 商品名稱 + 描述 */}
+        <div className='flex flex-col gap-4'>
+          <div className='flex flex-col gap-1.5'>
+            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
+              商品名稱<span className='text-[var(--color-error)] ml-0.5'>*</span>
+            </label>
+            <input
+              type='text'
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={isPending}
+              placeholder='請輸入商品名稱'
+              maxLength={100}
+              className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+            />
+            {errors.name && <p className='text-[12px] text-[var(--color-error)]'>{errors.name}</p>}
+          </div>
+          <div className='flex flex-col gap-1.5'>
+            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>商品描述</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={9}
+              disabled={isPending}
+              placeholder='商品描述（選填）'
+              className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] resize-y focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Row 3: 規格設定 | 規格組合定價 */}
+      <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-start'>
+        {/* 商品規格與定價 */}
+        <div className='flex flex-col gap-3'>
+          <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
+            商品規格與定價
+          </label>
+          {errors.variants && (
+            <p className='text-[12px] text-[var(--color-error)]'>{errors.variants}</p>
+          )}
+          <div className='flex items-center gap-3 border border-[var(--neutral-200)] rounded-xl p-3.5 bg-[var(--neutral-50)]'>
+            <label className='text-[12.5px] text-[var(--neutral-600)] shrink-0'>
+              統一售價（TWD）
+            </label>
+            <input
+              type='number'
+              min={0}
+              step='1'
+              value={defaultPrice || ''}
+              onChange={(e) => setDefaultPrice(e.target.value === '' ? 0 : Number(e.target.value))}
+              disabled={isPending}
+              placeholder='0'
+              className='border border-[var(--neutral-200)] rounded-lg px-3 py-1.5 text-[13px] bg-white w-28 focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+              aria-label='統一售價'
+            />
+            <button
+              type='button'
+              onClick={() =>
+                setVariants((prev) => prev.map((v) => ({ ...v, price: defaultPrice })))
+              }
+              disabled={isPending || !defaultPrice}
+              className='px-3 py-1.5 rounded-lg border border-[var(--forest-base)] text-[var(--forest-base)] text-[12px] hover:bg-[var(--forest-50)] transition-colors disabled:opacity-40'
+            >
+              套用到所有規格
+            </button>
+          </div>
+          <DimensionConfigurator
+            dimensions={dimensions}
+            onDimensionsChange={handleDimensionsChange}
+            disabled={isPending}
+          />
+        </div>
+
+        {/* 規格組合定價 */}
+        <div className='flex flex-col gap-3'>
+          <label className='text-[13px] font-medium text-[var(--neutral-700)]'>規格組合定價</label>
+          <VariantPricingTable
+            variants={variants}
+            onVariantsChange={setVariants}
+            disabled={isPending}
+          />
+        </div>
+      </div>
+
+      {/* Row 4: 商品圖片 */}
       <div className='flex flex-col gap-1.5'>
         <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
           商品圖片（最多 10 張）
@@ -403,30 +553,8 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
         />
       </div>
 
-      {/* 是否公開 */}
-      <div className='flex items-center gap-3'>
-        <button
-          type='button'
-          role='switch'
-          aria-checked={isPublic}
-          onClick={() => setIsPublic(!isPublic)}
-          disabled={isPending}
-          className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest-base)] ${
-            isPublic ? 'bg-[var(--forest-base)]' : 'bg-[var(--neutral-300)]'
-          } disabled:opacity-60 cursor-pointer`}
-          aria-label='設為公開'
-        >
-          <span
-            className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-              isPublic ? 'translate-x-5' : 'translate-x-0'
-            }`}
-          />
-        </button>
-        <span className='text-[13px] text-[var(--neutral-600)]'>設為公開（可被搜尋引擎索引）</span>
-      </div>
-
-      {/* 動作按鈕 */}
-      <div className='flex items-center gap-3 pt-2'>
+      {/* Row 5: 取消 / 建立商品 */}
+      <div className='flex items-center justify-end gap-3 pt-2'>
         <button
           type='button'
           onClick={() => router.back()}
