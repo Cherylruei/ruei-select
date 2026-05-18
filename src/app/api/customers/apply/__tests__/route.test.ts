@@ -168,6 +168,92 @@ describe('POST /api/customers/apply', () => {
     expect(body.code).toBe('already_approved')
   })
 
+  it('returns 400 when referring_product_id does not belong to the store', async () => {
+    mockVerifyLiffToken.mockResolvedValue({ lineId: 'U_customer1', displayName: '王小明' })
+    mockServiceFrom.mockImplementation((table: string) => {
+      if (table === 'stores')
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: MOCK_STORE, error: null }),
+        }
+      if (table === 'products')
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }), // 不屬於此賣場
+        }
+      return {}
+    })
+
+    const { POST } = await import('../route')
+    const res = await POST(
+      makeRequest({ ...VALID_BODY, source: 'public_page', referring_product_id: 'other-prod-id' })
+    )
+    expect(res.status).toBe(400)
+    const body = await res.json()
+    expect(body.error).toContain('賣場')
+  })
+
+  it('successfully creates a pending member for public_page source with referring_product_id', async () => {
+    mockVerifyLiffToken.mockResolvedValue({ lineId: 'U_customer1', displayName: '王小明' })
+    const newMember = {
+      id: 'member-new',
+      store_id: 'store-1',
+      user_id: 'user-cust-1',
+      name: '王小明',
+      phone: '0912345678',
+      line_id: 'user_line_id',
+      status: 'pending',
+      source: 'public_page',
+      referring_product_id: 'prod-1',
+      note: '我是一個愛好代購的人',
+      applied_at: '2026-05-16T00:00:00Z',
+      reviewed_at: null,
+    }
+    mockServiceFrom.mockImplementation((table: string) => {
+      if (table === 'stores')
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: MOCK_STORE, error: null }),
+        }
+      if (table === 'products')
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: { id: 'prod-1' }, error: null }),
+        }
+      if (table === 'users')
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: MOCK_USER, error: null }),
+          upsert: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: MOCK_USER, error: null }),
+        }
+      if (table === 'store_members')
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnThis(),
+          maybeSingle: vi.fn().mockResolvedValue({ data: null, error: null }),
+          insert: vi.fn().mockReturnThis(),
+          single: vi.fn().mockResolvedValue({ data: newMember, error: null }),
+        }
+      return {}
+    })
+
+    const { POST } = await import('../route')
+    const res = await POST(
+      makeRequest({ ...VALID_BODY, source: 'public_page', referring_product_id: 'prod-1' })
+    )
+    expect(res.status).toBe(201)
+    const body = await res.json()
+    expect(body.success).toBe(true)
+    expect(body.data.source).toBe('public_page')
+    expect(body.data.referring_product_id).toBe('prod-1')
+  })
+
   it('successfully creates a pending member for invite_link source', async () => {
     mockVerifyLiffToken.mockResolvedValue({ lineId: 'U_customer1', displayName: '王小明' })
     const newMember = {

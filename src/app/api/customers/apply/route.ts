@@ -57,6 +57,20 @@ export async function POST(request: NextRequest) {
 
     if (!store) return NextResponse.json({ error: 'Store not found' }, { status: 404 })
 
+    // 驗證 public_page 申請的 referring_product_id 必須屬於同一賣場
+    if (source === 'public_page' && referring_product_id) {
+      const { data: product } = (await serviceClient
+        .from('products')
+        .select('id')
+        .eq('id', referring_product_id)
+        .eq('store_id', store.id)
+        .maybeSingle()) as { data: { id: string } | null; error: unknown }
+
+      if (!product) {
+        return NextResponse.json({ error: '商品不屬於此賣場' }, { status: 400 })
+      }
+    }
+
     // 取得或建立用戶（以 LINE userId 識別）
     const { data: existingUser } = (await serviceClient
       .from('users')
