@@ -1,6 +1,6 @@
 import { getServerStore } from '@/lib/auth/session'
 import { createServiceClient } from '@/lib/supabase/server'
-import type { Product, ProductVariant, ProductImage, Supplier } from '@/types'
+import type { Product, ProductVariant, ProductImage, Supplier, ProductCategory } from '@/types'
 import ProductsClient from './ProductsClient'
 
 interface ProductRow extends Product {
@@ -14,11 +14,12 @@ export default async function ProductsPage() {
 
   let products: ProductRow[] = []
   let suppliers: Supplier[] = []
+  let categories: ProductCategory[] = []
 
   if (store) {
     const serviceClient = createServiceClient()
 
-    const [productsResult, suppliersResult] = await Promise.all([
+    const [productsResult, suppliersResult, categoriesResult] = await Promise.all([
       serviceClient
         .from('products')
         .select(
@@ -36,10 +37,16 @@ export default async function ProductsPage() {
         .select('id, name')
         .eq('store_id', store.id)
         .order('name', { ascending: true }),
+      serviceClient
+        .from('product_categories')
+        .select('*')
+        .eq('store_id', store.id)
+        .order('sort_order', { ascending: true }),
     ])
 
     products = (productsResult.data ?? []) as ProductRow[]
     suppliers = (suppliersResult.data ?? []) as Supplier[]
+    categories = (categoriesResult.data ?? []) as ProductCategory[]
   }
 
   return (
@@ -53,7 +60,11 @@ export default async function ProductsPage() {
         </p>
       </div>
 
-      <ProductsClient initialProducts={products} suppliers={suppliers} />
+      <ProductsClient
+        initialProducts={products}
+        suppliers={suppliers}
+        initialCategories={categories}
+      />
     </div>
   )
 }

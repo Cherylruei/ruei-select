@@ -2,7 +2,7 @@ import { getServerStore } from '@/lib/auth/session'
 import { createServiceClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import type { Supplier } from '@/types'
+import type { Supplier, ProductCategory } from '@/types'
 import ProductForm from '@/components/products/ProductForm'
 
 export default async function NewProductPage() {
@@ -10,13 +10,21 @@ export default async function NewProductPage() {
   if (!store) redirect('/admin/login')
 
   const serviceClient = createServiceClient()
-  const { data } = await serviceClient
-    .from('suppliers')
-    .select('id, name')
-    .eq('store_id', store.id)
-    .order('name', { ascending: true })
+  const [suppliersResult, categoriesResult] = await Promise.all([
+    serviceClient
+      .from('suppliers')
+      .select('id, name')
+      .eq('store_id', store.id)
+      .order('name', { ascending: true }),
+    serviceClient
+      .from('product_categories')
+      .select('*')
+      .eq('store_id', store.id)
+      .order('sort_order', { ascending: true }),
+  ])
 
-  const suppliers = (data ?? []) as Supplier[]
+  const suppliers = (suppliersResult.data ?? []) as Supplier[]
+  const categories = (categoriesResult.data ?? []) as ProductCategory[]
 
   return (
     <div>
@@ -36,7 +44,7 @@ export default async function NewProductPage() {
         </h1>
       </div>
 
-      <ProductForm mode='new' suppliers={suppliers} storeId={store.id} />
+      <ProductForm mode='new' suppliers={suppliers} categories={categories} storeId={store.id} />
     </div>
   )
 }

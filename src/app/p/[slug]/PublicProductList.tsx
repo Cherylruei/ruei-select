@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import type { Store, Product, ProductVariant, ProductImage } from '@/types'
+import type { Store, Product, ProductVariant, ProductImage, ProductCategory } from '@/types'
 import ApplyModal from './components/ApplyModal'
 
 interface PublicProduct extends Product {
@@ -13,6 +13,7 @@ interface PublicProduct extends Product {
 interface Props {
   store: Store
   products: PublicProduct[]
+  categories: ProductCategory[]
 }
 
 function getPriceRange(variants: ProductVariant[]): string {
@@ -24,8 +25,14 @@ function getPriceRange(variants: ProductVariant[]): string {
   return `NT$ ${min.toLocaleString()} ~ ${max.toLocaleString()}`
 }
 
-export default function PublicProductList({ store, products }: Props) {
+export default function PublicProductList({ store, products, categories }: Props) {
   const [showApply, setShowApply] = useState(false)
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
+
+  const visibleProducts =
+    selectedCategoryId === null
+      ? products
+      : products.filter((p) => p.category_id === selectedCategoryId)
 
   return (
     <div className='min-h-screen bg-[var(--neutral-50)]'>
@@ -61,7 +68,37 @@ export default function PublicProductList({ store, products }: Props) {
 
       {/* 主體 */}
       <main className='max-w-4xl mx-auto px-4 py-6'>
-        {products.length === 0 ? (
+        {categories.length > 0 && (
+          <div className='flex gap-2 flex-wrap mb-5'>
+            <button
+              type='button'
+              onClick={() => setSelectedCategoryId(null)}
+              className={`px-3.5 py-1.5 rounded-full text-[12.5px] font-medium transition-colors ${
+                selectedCategoryId === null
+                  ? 'bg-[var(--sage-500)] text-white'
+                  : 'bg-white border border-[var(--neutral-200)] text-[var(--neutral-600)] hover:border-[var(--sage-400)] hover:text-[var(--sage-600)]'
+              }`}
+            >
+              全部
+            </button>
+            {categories.map((cat) => (
+              <button
+                key={cat.id}
+                type='button'
+                onClick={() => setSelectedCategoryId(cat.id)}
+                className={`px-3.5 py-1.5 rounded-full text-[12.5px] font-medium transition-colors ${
+                  selectedCategoryId === cat.id
+                    ? 'bg-[var(--sage-500)] text-white'
+                    : 'bg-white border border-[var(--neutral-200)] text-[var(--neutral-600)] hover:border-[var(--sage-400)] hover:text-[var(--sage-600)]'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {visibleProducts.length === 0 ? (
           <div className='text-center py-20'>
             <svg
               viewBox='0 0 24 24'
@@ -81,9 +118,11 @@ export default function PublicProductList({ store, products }: Props) {
           </div>
         ) : (
           <>
-            <p className='text-[13px] text-[var(--neutral-400)] mb-4'>{products.length} 件商品</p>
+            <p className='text-[13px] text-[var(--neutral-400)] mb-4'>
+              {visibleProducts.length} 件商品
+            </p>
             <div className='grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3'>
-              {products.map((product) => {
+              {visibleProducts.map((product) => {
                 const thumb = product.product_images?.sort((a, b) => a.sort_order - b.sort_order)[0]
                   ?.url
                 const price = getPriceRange(product.variants ?? [])

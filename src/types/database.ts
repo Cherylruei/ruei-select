@@ -5,6 +5,8 @@ import type {
   StoreMember,
   ProductCategory,
   Product,
+  ProductVariant,
+  ProductImage,
   Order,
   Shipment,
   ShipmentOrder,
@@ -61,6 +63,18 @@ export interface Database {
         Row: Product
         Insert: InsertRow<Product>
         Update: UpdateRow<Product>
+        Relationships: Relationship[]
+      }
+      product_variants: {
+        Row: ProductVariant
+        Insert: InsertRow<ProductVariant>
+        Update: UpdateRow<ProductVariant>
+        Relationships: Relationship[]
+      }
+      product_images: {
+        Row: ProductImage
+        Insert: InsertRow<ProductImage>
+        Update: UpdateRow<ProductImage>
         Relationships: Relationship[]
       }
       orders: {

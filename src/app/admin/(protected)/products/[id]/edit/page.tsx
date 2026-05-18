@@ -2,7 +2,7 @@ import { getServerStore } from '@/lib/auth/session'
 import { createServiceClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import type { Supplier, ProductWithDetails } from '@/types'
+import type { Supplier, ProductWithDetails, ProductCategory } from '@/types'
 import ProductForm from '@/components/products/ProductForm'
 
 interface EditProductPageProps {
@@ -16,23 +16,34 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
 
   const serviceClient = createServiceClient()
 
-  const { data: productData } = (await serviceClient
-    .from('products')
-    .select('*, variants:product_variants(*), product_images(*), supplier:suppliers(id, name)')
-    .eq('id', id)
-    .eq('store_id', store.id)
-    .single()) as unknown as { data: ProductWithDetails | null }
+  const [productResult, suppliersResult, categoriesResult] = (await Promise.all([
+    serviceClient
+      .from('products')
+      .select('*, variants:product_variants(*), product_images(*), supplier:suppliers(id, name)')
+      .eq('id', id)
+      .eq('store_id', store.id)
+      .single(),
+    serviceClient
+      .from('suppliers')
+      .select('id, name')
+      .eq('store_id', store.id)
+      .order('name', { ascending: true }),
+    serviceClient
+      .from('product_categories')
+      .select('*')
+      .eq('store_id', store.id)
+      .order('sort_order', { ascending: true }),
+  ])) as [
+    { data: unknown; error: unknown },
+    { data: unknown; error: unknown },
+    { data: unknown; error: unknown },
+  ]
 
-  if (!productData) notFound()
+  if (!productResult.data) notFound()
 
-  const { data: suppliersData } = (await serviceClient
-    .from('suppliers')
-    .select('id, name')
-    .eq('store_id', store.id)
-    .order('name', { ascending: true })) as unknown as { data: Supplier[] | null }
-
-  const product = productData
-  const suppliers = suppliersData ?? []
+  const product = productResult.data as unknown as ProductWithDetails
+  const suppliers = (suppliersResult.data ?? []) as Supplier[]
+  const categories = (categoriesResult.data ?? []) as ProductCategory[]
 
   return (
     <div>
@@ -53,7 +64,13 @@ export default async function EditProductPage({ params }: EditProductPageProps) 
         <p className='text-[13.5px] text-[var(--neutral-500)] mt-1'>{product.name}</p>
       </div>
 
-      <ProductForm mode='edit' product={product} suppliers={suppliers} storeId={store.id} />
+      <ProductForm
+        mode='edit'
+        product={product}
+        suppliers={suppliers}
+        categories={categories}
+        storeId={store.id}
+      />
     </div>
   )
 }

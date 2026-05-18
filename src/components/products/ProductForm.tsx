@@ -13,12 +13,13 @@ import {
 import ImageUploader, { type UploadedImage } from './ImageUploader'
 import AiTemplateSelector from './AiTemplateSelector'
 import { useAiTemplates } from '@/hooks/useAiTemplates'
-import type { Product, ProductWithDetails, Supplier } from '@/types'
+import type { Product, ProductWithDetails, Supplier, ProductCategory } from '@/types'
 
 interface Props {
   mode: 'new' | 'edit'
   product?: ProductWithDetails
   suppliers: Supplier[]
+  categories: ProductCategory[]
   storeId: string
 }
 
@@ -36,7 +37,7 @@ function extractDimensions(variants: VariantRow[]): DimensionDef[] {
   }))
 }
 
-export default function ProductForm({ mode, product, suppliers, storeId }: Props) {
+export default function ProductForm({ mode, product, suppliers, categories, storeId }: Props) {
   const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
@@ -47,6 +48,7 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
   }
 
   const [supplierId, setSupplierId] = useState(product?.supplier_id ?? '')
+  const [categoryId, setCategoryId] = useState(product?.category_id ?? '')
   const [originalText, setOriginalText] = useState(product?.description_raw ?? '')
   const [name, setName] = useState(product?.name ?? '')
   const [description, setDescription] = useState(product?.description ?? '')
@@ -225,17 +227,20 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
       try {
         let savedProduct: Product
 
+        const endsAtIso = endsAt ? new Date(endsAt).toISOString() : null
+
         if (mode === 'new') {
           const res = await fetch('/api/products', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              supplier_id: supplierId,
+              supplier_id: supplierId || null,
+              category_id: categoryId || null,
               name: name.trim(),
               description: description.trim() || null,
               description_raw: originalText.trim() || null,
               is_public: isPublic,
-              ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+              ends_at: endsAtIso,
               variants: variants.map((v) => ({
                 specs: v.specs,
                 price: v.price,
@@ -270,12 +275,13 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
             method: 'PATCH',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              supplier_id: supplierId,
+              supplier_id: supplierId || null,
+              category_id: categoryId || null,
               name: name.trim(),
               description: description.trim() || null,
               description_raw: originalText.trim() || null,
               is_public: isPublic,
-              ends_at: endsAt ? new Date(endsAt).toISOString() : null,
+              ends_at: endsAtIso,
               variants: variants.map((v) => ({
                 specs: v.specs,
                 price: v.price,
@@ -309,28 +315,49 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
 
   return (
     <div className='flex flex-col gap-6 w-full max-w-5xl'>
-      {/* Row 1: 廠商選擇 | 截單日期 + 設為公開 */}
+      {/* Row 1: 廠商＋分類 | 截單日期 + 設為公開 */}
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6'>
-        {/* 廠商選擇 */}
-        <div className='flex flex-col gap-1.5'>
-          <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
-            廠商<span className='text-[var(--color-error)] ml-0.5'>*</span>
-          </label>
-          <select
-            value={supplierId}
-            onChange={(e) => setSupplierId(e.target.value)}
-            disabled={isPending}
-            className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60 max-w-xs'
-          >
-            <option value=''>請選擇廠商</option>
-            {suppliers.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-              </option>
-            ))}
-          </select>
-          {errors.supplierId && (
-            <p className='text-[12px] text-[var(--color-error)]'>{errors.supplierId}</p>
+        {/* 廠商選擇 + 分類選擇 */}
+        <div className='flex flex-row gap-4'>
+          <div className='flex flex-col gap-1.5 flex-1 min-w-0'>
+            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
+              廠商<span className='text-[var(--color-error)] ml-0.5'>*</span>
+            </label>
+            <select
+              value={supplierId}
+              onChange={(e) => setSupplierId(e.target.value)}
+              disabled={isPending}
+              className='w-full border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+            >
+              <option value=''>請選擇廠商</option>
+              {suppliers.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+            {errors.supplierId && (
+              <p className='text-[12px] text-[var(--color-error)]'>{errors.supplierId}</p>
+            )}
+          </div>
+
+          {categories.length > 0 && (
+            <div className='flex flex-col gap-1.5 flex-1 min-w-0'>
+              <label className='text-[13px] font-medium text-[var(--neutral-700)]'>分類</label>
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                disabled={isPending}
+                className='w-full border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+              >
+                <option value=''>不指定分類</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
           )}
         </div>
 
@@ -340,14 +367,21 @@ export default function ProductForm({ mode, product, suppliers, storeId }: Props
             <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
               截單日期
               <span className='text-[11px] text-[var(--neutral-400)] font-normal ml-1.5'>
-                選填，到期後自動從公開頁下架
+                選填，預設 23:59
               </span>
             </label>
             <div className='flex items-center gap-2'>
               <input
                 type='datetime-local'
                 value={endsAt}
-                onChange={(e) => setEndsAt(e.target.value)}
+                onChange={(e) => {
+                  const val = e.target.value
+                  if (val && val.endsWith('T00:00')) {
+                    setEndsAt(val.slice(0, 10) + 'T23:59')
+                  } else {
+                    setEndsAt(val)
+                  }
+                }}
                 disabled={isPending}
                 className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
               />

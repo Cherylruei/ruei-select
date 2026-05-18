@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import type { Metadata } from 'next'
 import { createServiceClient } from '@/lib/supabase/server'
-import type { Store, Product, ProductVariant, ProductImage } from '@/types'
+import type { Store, Product, ProductVariant, ProductImage, ProductCategory } from '@/types'
 import PublicProductList from './PublicProductList'
 
 export const revalidate = 3600
@@ -38,6 +38,16 @@ async function getPublicProducts(storeId: string): Promise<PublicProduct[]> {
   return (data ?? []) as PublicProduct[]
 }
 
+async function getPublicCategories(storeId: string): Promise<ProductCategory[]> {
+  const serviceClient = createServiceClient()
+  const { data } = await serviceClient
+    .from('product_categories')
+    .select('*')
+    .eq('store_id', storeId)
+    .order('sort_order', { ascending: true })
+  return (data ?? []) as ProductCategory[]
+}
+
 export async function generateStaticParams() {
   const serviceClient = createServiceClient()
   const { data } = await serviceClient
@@ -68,7 +78,10 @@ export default async function PublicStorePage({ params }: PageProps) {
   const store = await getPublicStore(slug)
   if (!store) notFound()
 
-  const products = await getPublicProducts(store.id)
+  const [products, categories] = await Promise.all([
+    getPublicProducts(store.id),
+    getPublicCategories(store.id),
+  ])
 
-  return <PublicProductList store={store} products={products} />
+  return <PublicProductList store={store} products={products} categories={categories} />
 }
