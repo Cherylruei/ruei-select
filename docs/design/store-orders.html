@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>芮選 · 顧客訂單查詢設計稿（Sprint 3）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sage-50:#f2f8ec; --sage-100:#e0f0d0; --sage-200:#b8dca0;
+      --sage-400:#6dab3d; --sage-500:#508a2c; --sage-600:#3d7020; --sage-700:#2c5218; --sage-800:#1c3610;
+      --sakura-pale:#fff0f5; --sakura-100:#ffd8e8; --sakura-mid:#f5a8bf;
+      --sakura:#e8749d; --sakura-deep:#c42858;
+      --neutral-0:#fff; --neutral-50:#f6fbf0; --neutral-100:#edf5e8;
+      --neutral-200:#d8e8cc; --neutral-300:#b4c8a0; --neutral-400:#8a9a82;
+      --neutral-500:#647258; --neutral-600:#4a5e42; --neutral-700:#2a3e20; --neutral-800:#192e10;
+
+      /* 顧客端 5 種狀態顏色 */
+      --status-ordered-bg:rgba(59,130,246,.1);   --status-ordered-border:rgba(59,130,246,.3);   --status-ordered-text:#2563eb;
+      --status-arrived-bg:rgba(80,138,44,.1);    --status-arrived-border:rgba(80,138,44,.3);    --status-arrived-text:#3d7020;
+      --status-shipped-bg:rgba(28,54,16,.12);    --status-shipped-border:rgba(28,54,16,.35);    --status-shipped-text:#1c3610;
+      --status-completed-bg:rgba(138,154,130,.1);--status-completed-border:rgba(138,154,130,.3);--status-completed-text:#647258;
+      --status-cancelled-bg:rgba(196,69,61,.1);  --status-cancelled-border:rgba(196,69,61,.3);  --status-cancelled-text:#c4453d;
+
+      --r-sm:6px; --r-md:12px; --r-lg:18px; --r-xl:24px; --r-full:999px;
+      --sh-xs:0 1px 3px rgba(28,54,16,.07); --sh-sm:0 2px 8px rgba(28,54,16,.09);
+    }
+
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: #141f0f;
+      background-image:
+        radial-gradient(ellipse 60% 40% at 10% 15%, rgba(61,112,32,.25) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 35% at 90% 80%, rgba(28,54,16,.35) 0%, transparent 55%);
+      min-height: 100vh;
+      padding: 48px 40px 80px;
+    }
+
+    .showcase-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 48px; gap: 24px; flex-wrap: wrap; }
+    .showcase-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 26px; font-weight: 700; color: #fff; letter-spacing: .05em; }
+    .showcase-sub { font-size: 14px; color: rgba(255,255,255,.45); margin-top: 6px; }
+    .showcase-badge { padding: 5px 14px; border-radius: var(--r-full); background: rgba(80,138,44,.25); border: 1px solid rgba(80,138,44,.4); color: var(--sage-200); font-size: 12px; font-weight: 500; letter-spacing: .06em; white-space: nowrap; align-self: center; }
+
+    .section { margin-bottom: 56px; }
+    .section-label { font-size: 11px; font-weight: 500; color: rgba(255,255,255,.35); letter-spacing: .18em; text-transform: uppercase; margin-bottom: 20px; padding-left: 4px; display: flex; align-items: center; gap: 10px; }
+    .section-label::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.07); }
+
+    .frames-row { display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap; }
+    .frame-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .frame-caption { font-size: 12px; color: rgba(255,255,255,.4); letter-spacing: .08em; text-align: center; }
+
+    /* ── Phone frame ── */
+    .phone {
+      width: 375px; background: var(--neutral-0); border-radius: 36px; overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 24px 64px rgba(0,0,0,.5);
+      display: flex; flex-direction: column;
+    }
+    .phone.tall { min-height: 820px; }
+    .phone.short { min-height: 580px; }
+
+    .status-bar { height: 44px; flex-shrink: 0; background: var(--sage-600); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; }
+    .status-time { font-size: 14px; font-weight: 600; color: #fff; }
+    .status-icons svg { width: 16px; height: 16px; fill: #fff; opacity: .85; }
+
+    .page-header {
+      height: 52px; flex-shrink: 0;
+      background: linear-gradient(180deg, var(--sage-600) 0%, var(--sage-500) 100%);
+      display: flex; align-items: center; padding: 0 16px;
+    }
+    .page-header-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 17px; font-weight: 700; color: #fff; letter-spacing: .04em; }
+
+    /* Filter bar */
+    .filter-bar {
+      display: flex; align-items: center; gap: 8px;
+      padding: 10px 14px; background: #fff;
+      border-bottom: 1px solid var(--neutral-100);
+      flex-shrink: 0;
+    }
+    .filter-label { font-size: 12px; color: var(--neutral-500); white-space: nowrap; }
+    .filter-select {
+      flex: 1; height: 34px; padding: 0 10px;
+      border: 1px solid var(--neutral-200); border-radius: var(--r-sm);
+      font-family: 'Noto Sans TC', sans-serif; font-size: 13px;
+      color: var(--neutral-700); background: var(--neutral-50);
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238a9a82' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+      padding-right: 28px;
+    }
+    .filter-select:focus { outline: none; border-color: var(--sage-400); }
+    .filter-count { font-size: 12px; color: var(--neutral-400); white-space: nowrap; }
+
+    /* Content */
+    .phone-content { flex: 1; overflow-y: auto; background: #fff; }
+
+    /* Status badge — 顧客端 5 種 */
+    .status-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: var(--r-full);
+      font-size: 11px; font-weight: 600; white-space: nowrap;
+      border-width: 1px; border-style: solid;
+    }
+    .status-badge.ordered   { background: var(--status-ordered-bg);   border-color: var(--status-ordered-border);   color: var(--status-ordered-text); }
+    .status-badge.arrived   { background: var(--status-arrived-bg);   border-color: var(--status-arrived-border);   color: var(--status-arrived-text); }
+    .status-badge.shipped   { background: var(--status-shipped-bg);   border-color: var(--status-shipped-border);   color: var(--status-shipped-text); }
+    .status-badge.completed { background: var(--status-completed-bg); border-color: var(--status-completed-border); color: var(--status-completed-text); }
+    .status-badge.cancelled { background: var(--status-cancelled-bg); border-color: var(--status-cancelled-border); color: var(--status-cancelled-text); }
+
+    /* Order card */
+    .order-list { padding: 12px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .order-card { background: #fff; border-radius: var(--r-lg); padding: 14px; box-shadow: var(--sh-sm); }
+    .order-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; margin-bottom: 10px; }
+    .order-card-left { display: flex; gap: 12px; align-items: flex-start; flex: 1; min-width: 0; }
+    .order-thumb { width: 60px; height: 60px; border-radius: var(--r-md); display: grid; place-items: center; font-size: 24px; flex-shrink: 0; }
+    .order-product-info { flex: 1; min-width: 0; }
+    .order-product-name { font-size: 14px; font-weight: 600; color: var(--neutral-800); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .order-variant-text { font-size: 12px; color: var(--neutral-500); margin-top: 3px; }
+    .order-price-qty { font-size: 13px; color: var(--neutral-600); margin-top: 4px; }
+    .order-price-qty strong { color: var(--sakura); font-weight: 700; }
+    .order-card-bottom { display: flex; justify-content: space-between; align-items: center; padding-top: 10px; border-top: 1px solid var(--neutral-100); }
+    .order-time { font-size: 11px; color: var(--neutral-400); }
+
+    /* Empty state */
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 40px 24px; text-align: center; }
+    .empty-icon { font-size: 48px; }
+    .empty-title { font-family: 'Zen Maru Gothic', sans-serif; font-size: 17px; font-weight: 700; color: var(--neutral-700); }
+    .empty-sub { font-size: 13px; color: var(--neutral-400); line-height: 1.7; }
+    .btn-go-shop { padding: 12px 28px; border-radius: var(--r-full); background: var(--sage-600); border: none; color: #fff; font-family: 'Noto Sans TC', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; letter-spacing: .05em; margin-top: 6px; box-shadow: 0 4px 12px rgba(61,112,32,.3); }
+
+    /* Bottom nav — 3 tabs */
+    .bottom-nav { height: 64px; background: #fff; border-top: 1px solid var(--neutral-200); display: flex; align-items: stretch; flex-shrink: 0; }
+    .nav-tab { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; border: none; background: none; }
+    .nav-tab svg { width: 22px; height: 22px; stroke-width: 1.7; }
+    .nav-tab-label { font-size: 11px; font-weight: 500; letter-spacing: .04em; }
+    .nav-tab.active svg { stroke: var(--sage-600); }
+    .nav-tab.active .nav-tab-label { color: var(--sage-600); }
+    .nav-tab:not(.active) svg { stroke: var(--neutral-400); }
+    .nav-tab:not(.active) .nav-tab-label { color: var(--neutral-400); }
+
+    /* Status legend */
+    .status-legend { background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08); border-radius: 16px; padding: 24px 28px; margin-bottom: 48px; }
+    .legend-title { font-size: 12px; font-weight: 500; color: rgba(255,255,255,.4); letter-spacing: .15em; text-transform: uppercase; margin-bottom: 16px; }
+    .legend-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 10px; }
+    .legend-item { display: flex; align-items: center; gap: 10px; }
+    .legend-badge { padding: 4px 10px; border-radius: var(--r-full); font-size: 11px; font-weight: 600; border: 1px solid; white-space: nowrap; }
+    .legend-desc { font-size: 12px; color: rgba(255,255,255,.4); }
+    .legend-map { font-size: 11px; color: rgba(255,255,255,.25); }
+  </style>
+</head>
+<body>
+
+<div class="showcase-header">
+  <div>
+    <div class="showcase-title">顧客訂單查詢</div>
+    <div class="showcase-sub">store-orders · Sprint 3 Design · 訂單列表（顧客端 5 種狀態）+ 下拉篩選</div>
+  </div>
+  <div class="showcase-badge">Sprint 3</div>
+</div>
+
+<!-- Status legend — 顧客端 5 種顯示狀態 -->
+<div class="status-legend">
+  <div class="legend-title">顧客端訂單狀態對照（DB → 顧客顯示）</div>
+  <div class="legend-grid">
+    <div class="legend-item">
+      <span class="legend-badge" style="background:var(--status-ordered-bg);border-color:var(--status-ordered-border);color:var(--status-ordered-text);">已訂購</span>
+      <span class="legend-desc">← DB: <span class="legend-map">pending_purchase / ordered</span></span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-badge" style="background:var(--status-arrived-bg);border-color:var(--status-arrived-border);color:var(--status-arrived-text);">已到貨</span>
+      <span class="legend-desc">← DB: <span class="legend-map">allocated / settled</span></span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-badge" style="background:var(--status-shipped-bg);border-color:var(--status-shipped-border);color:var(--status-shipped-text);">已出貨</span>
+      <span class="legend-desc">← DB: <span class="legend-map">shipped</span></span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-badge" style="background:var(--status-completed-bg);border-color:var(--status-completed-border);color:var(--status-completed-text);">已完成</span>
+      <span class="legend-desc">← DB: <span class="legend-map">completed</span></span>
+    </div>
+    <div class="legend-item">
+      <span class="legend-badge" style="background:var(--status-cancelled-bg);border-color:var(--status-cancelled-border);color:var(--status-cancelled-text);">已取消</span>
+      <span class="legend-desc">← DB: <span class="legend-map">cancelled</span></span>
+    </div>
+  </div>
+</div>
+
+<!-- ─────────────── Section 1: Order List ─────────────── -->
+<div class="section">
+  <div class="section-label">訂單列表（顧客端）</div>
+  <div class="frames-row">
+
+    <!-- Frame: 全部訂單（下拉選「全部」） -->
+    <div class="frame-wrap">
+      <div class="phone tall">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons"><svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z"/></svg></div>
+        </div>
+        <div class="page-header">
+          <div class="page-header-title">我的訂單</div>
+        </div>
+        <!-- 下拉篩選 -->
+        <div class="filter-bar">
+          <span class="filter-label">狀態</span>
+          <select class="filter-select">
+            <option selected>全部</option>
+            <option>已訂購</option>
+            <option>已到貨</option>
+            <option>已出貨</option>
+            <option>已完成</option>
+            <option>已取消</option>
+          </select>
+          <span class="filter-count">共 5 筆</span>
+        </div>
+        <div class="phone-content">
+          <div class="order-list">
+
+            <!-- 已訂購（DB: pending_purchase） -->
+            <div class="order-card">
+              <div class="order-card-top">
+                <div class="order-card-left">
+                  <div class="order-thumb" style="background:linear-gradient(135deg,#ffd8e8,#ffb0cc);">🌸</div>
+                  <div class="order-product-info">
+                    <div class="order-product-name">韓國 COSRX 蝸牛精華液 96%</div>
+                    <div class="order-variant-text">容量：50ml</div>
+                    <div class="order-price-qty">1 件 × <strong>NT$ 520</strong></div>
+                  </div>
+                </div>
+                <span class="status-badge ordered">已訂購</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time">2026/05/19 14:23</span>
+              </div>
+            </div>
+
+            <!-- 已到貨（DB: allocated） -->
+            <div class="order-card">
+              <div class="order-card-top">
+                <div class="order-card-left">
+                  <div class="order-thumb" style="background:linear-gradient(135deg,#e0f0d0,#b8dca0);">🍃</div>
+                  <div class="order-product-info">
+                    <div class="order-product-name">日本 LANEIGE 水庫水面膜三入組</div>
+                    <div class="order-variant-text">顏色：粉紅｜入數：三入組</div>
+                    <div class="order-price-qty">2 件 × <strong>NT$ 1,360</strong></div>
+                  </div>
+                </div>
+                <span class="status-badge arrived">已到貨</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time">2026/05/15 10:08</span>
+              </div>
+            </div>
+
+            <!-- 已出貨 -->
+            <div class="order-card">
+              <div class="order-card-top">
+                <div class="order-card-left">
+                  <div class="order-thumb" style="background:linear-gradient(135deg,#d0e8f5,#a0c8e8);">💄</div>
+                  <div class="order-product-info">
+                    <div class="order-product-name">日本 CANMAKE 腮紅 N13</div>
+                    <div class="order-variant-text">顏色：玫瑰棕</div>
+                    <div class="order-price-qty">1 件 × <strong>NT$ 280</strong></div>
+                  </div>
+                </div>
+                <span class="status-badge shipped">已出貨</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time">2026/05/08 16:45</span>
+              </div>
+            </div>
+
+            <!-- 已完成 -->
+            <div class="order-card">
+              <div class="order-card-top">
+                <div class="order-card-left">
+                  <div class="order-thumb" style="background:linear-gradient(135deg,#f5e8d0,#e8c898);">🎨</div>
+                  <div class="order-product-info">
+                    <div class="order-product-name">韓國 3CE 霧面唇彩</div>
+                    <div class="order-variant-text">色號：#301 玫瑰紅</div>
+                    <div class="order-price-qty">1 件 × <strong>NT$ 320</strong></div>
+                  </div>
+                </div>
+                <span class="status-badge completed">已完成</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time">2026/04/28 11:20</span>
+              </div>
+            </div>
+
+            <!-- 已取消 -->
+            <div class="order-card">
+              <div class="order-card-top">
+                <div class="order-card-left">
+                  <div class="order-thumb" style="background:var(--neutral-100);">💧</div>
+                  <div class="order-product-info">
+                    <div class="order-product-name" style="color:var(--neutral-400);">台灣玻尿酸精萃保濕乳液</div>
+                    <div class="order-variant-text">容量：150ml</div>
+                    <div class="order-price-qty" style="color:var(--neutral-400);">1 件 × <span style="color:var(--neutral-400);font-weight:700;">NT$ 450</span></div>
+                  </div>
+                </div>
+                <span class="status-badge cancelled">已取消</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time">2026/04/20 09:05</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span class="nav-tab-label">我的帳戶</span>
+          </button>
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <span class="nav-tab-label">商品</span>
+          </button>
+          <button class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            <span class="nav-tab-label">我的訂單</span>
+          </button>
+        </div>
+      </div>
+      <div class="frame-caption">全部訂單（5 種顧客狀態）<br>下拉篩選：全部</div>
+    </div>
+
+    <!-- Frame: 篩選「已到貨」 -->
+    <div class="frame-wrap">
+      <div class="phone tall">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons"><svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z"/></svg></div>
+        </div>
+        <div class="page-header">
+          <div class="page-header-title">我的訂單</div>
+        </div>
+        <div class="filter-bar">
+          <span class="filter-label">狀態</span>
+          <select class="filter-select" style="border-color:var(--sage-400);color:var(--sage-600);font-weight:600;">
+            <option>全部</option>
+            <option>已訂購</option>
+            <option selected>已到貨</option>
+            <option>已出貨</option>
+            <option>已完成</option>
+            <option>已取消</option>
+          </select>
+          <span class="filter-count">共 2 筆</span>
+        </div>
+        <div class="phone-content">
+          <div class="order-list">
+
+            <!-- 已到貨 1 -->
+            <div class="order-card">
+              <div class="order-card-top">
+                <div class="order-card-left">
+                  <div class="order-thumb" style="background:linear-gradient(135deg,#e0f0d0,#b8dca0);">🍃</div>
+                  <div class="order-product-info">
+                    <div class="order-product-name">日本 LANEIGE 水庫水面膜三入組</div>
+                    <div class="order-variant-text">顏色：粉紅｜入數：三入組</div>
+                    <div class="order-price-qty">2 件 × <strong>NT$ 1,360</strong></div>
+                  </div>
+                </div>
+                <span class="status-badge arrived">已到貨</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time">2026/05/15 10:08</span>
+              </div>
+            </div>
+
+            <!-- 已到貨 2 -->
+            <div class="order-card">
+              <div class="order-card-top">
+                <div class="order-card-left">
+                  <div class="order-thumb" style="background:linear-gradient(135deg,#e0f0d0,#b8dca0);">🌿</div>
+                  <div class="order-product-info">
+                    <div class="order-product-name">日本和紙面膜 天然保濕</div>
+                    <div class="order-variant-text">尺寸：標準</div>
+                    <div class="order-price-qty">1 件 × <strong>NT$ 360</strong></div>
+                  </div>
+                </div>
+                <span class="status-badge arrived">已到貨</span>
+              </div>
+              <div class="order-card-bottom">
+                <span class="order-time">2026/05/12 09:30</span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span class="nav-tab-label">我的帳戶</span>
+          </button>
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <span class="nav-tab-label">商品</span>
+          </button>
+          <button class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            <span class="nav-tab-label">我的訂單</span>
+          </button>
+        </div>
+      </div>
+      <div class="frame-caption">下拉篩選：已到貨<br>顯示 2 筆符合訂單</div>
+    </div>
+
+    <!-- Frame: 空狀態 -->
+    <div class="frame-wrap">
+      <div class="phone short">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons"><svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z"/></svg></div>
+        </div>
+        <div class="page-header">
+          <div class="page-header-title">我的訂單</div>
+        </div>
+        <div class="filter-bar">
+          <span class="filter-label">狀態</span>
+          <select class="filter-select">
+            <option selected>全部</option>
+            <option>已訂購</option>
+            <option>已到貨</option>
+            <option>已出貨</option>
+            <option>已完成</option>
+            <option>已取消</option>
+          </select>
+          <span class="filter-count">共 0 筆</span>
+        </div>
+        <div class="phone-content" style="display:flex;flex-direction:column;">
+          <div class="empty-state">
+            <div class="empty-icon">🛍️</div>
+            <div class="empty-title">目前尚無訂單</div>
+            <div class="empty-sub">快去選購喜歡的商品吧！</div>
+            <button class="btn-go-shop">去逛商品</button>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span class="nav-tab-label">我的帳戶</span>
+          </button>
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <span class="nav-tab-label">商品</span>
+          </button>
+          <button class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            <span class="nav-tab-label">我的訂單</span>
+          </button>
+        </div>
+      </div>
+      <div class="frame-caption">空狀態<br>無訂單時顯示</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
