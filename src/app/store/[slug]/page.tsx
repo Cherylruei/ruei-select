@@ -21,7 +21,7 @@ export default function StoreHomePage() {
 
     async function load() {
       try {
-        let token = 'dev-token'
+        let token = 'dev-mock-token'
 
         if (process.env.NODE_ENV !== 'development') {
           const liff = await initLiff()

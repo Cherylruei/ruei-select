@@ -33,6 +33,38 @@ export async function verifyStoreAccess(
   liffToken: string,
   slug: string
 ): Promise<StoreAuthSuccess | StoreAuthFailure> {
+  // 開發環境 bypass：略過 LIFF 驗證，直接查詢 DB 中的真實賣場
+  if (process.env.NODE_ENV === 'development' && liffToken === 'dev-mock-token') {
+    const db = createServiceClient()
+    const { data: store } = (await db
+      .from('stores')
+      .select('id, name, avatar_url, slug')
+      .eq('slug', slug)
+      .maybeSingle()) as { data: StoreRow | null; error: unknown }
+
+    if (!store) return { error: 'STORE_NOT_FOUND' }
+
+    return {
+      result: {
+        status: 'approved',
+        store: {
+          id: store.id,
+          name: store.name,
+          avatar_url: store.avatar_url,
+          slug: store.slug,
+          line_official_account_url: null,
+        },
+        member: {
+          id: 'dev-member-id',
+          name: '開發測試用戶',
+          phone: null,
+          line_id: 'U_dev_mock',
+          created_at: new Date().toISOString(),
+        },
+      },
+    }
+  }
+
   const profile = await verifyLiffToken(liffToken)
   if (!profile) return { error: 'INVALID_TOKEN' }
 

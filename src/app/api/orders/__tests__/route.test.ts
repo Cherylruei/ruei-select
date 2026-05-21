@@ -181,12 +181,10 @@ describe('POST /api/orders', () => {
           return {
             select: vi.fn().mockReturnThis(),
             eq: vi.fn().mockReturnThis(),
-            maybeSingle: vi
-              .fn()
-              .mockResolvedValue({
-                data: { id: 'prod-1', store_id: 'store-1', status: 'active' },
-                error: null,
-              }),
+            maybeSingle: vi.fn().mockResolvedValue({
+              data: { id: 'prod-1', store_id: 'store-1', status: 'active' },
+              error: null,
+            }),
           }
         }
         return {
