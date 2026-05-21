@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>芮選 · 顧客前台首頁設計稿（Sprint 3）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --sage-50:#f2f8ec; --sage-100:#e0f0d0; --sage-200:#b8dca0;
+      --sage-300:#8ec870; --sage-400:#6dab3d; --sage-500:#508a2c;
+      --sage-600:#3d7020; --sage-700:#2c5218; --sage-800:#1c3610;
+      --sakura-pale:#fff0f5; --sakura-100:#ffd8e8; --sakura-200:#ffb0cc;
+      --sakura-mid:#f5a8bf; --sakura:#e8749d; --sakura-deep:#c42858;
+      --neutral-0:#fff; --neutral-50:#f6fbf0; --neutral-100:#edf5e8;
+      --neutral-200:#d8e8cc; --neutral-300:#b4c8a0; --neutral-400:#8a9a82;
+      --neutral-500:#647258; --neutral-600:#4a5e42; --neutral-700:#2a3e20; --neutral-800:#192e10;
+      --earth-400:#c49a60; --earth-500:#9a7248; --earth-600:#7a5c36;
+      --r-sm:6px; --r-md:12px; --r-lg:18px; --r-xl:24px; --r-full:999px;
+      --sh-xs:0 1px 3px rgba(28,54,16,.07); --sh-sm:0 2px 8px rgba(28,54,16,.09);
+      --sh-md:0 4px 16px rgba(28,54,16,.11); --sh-lg:0 8px 32px rgba(28,54,16,.14);
+    }
+
+    /* ── Showcase wrapper ── */
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background: #141f0f;
+      background-image:
+        radial-gradient(ellipse 60% 40% at 10% 15%, rgba(61,112,32,.25) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 35% at 90% 80%, rgba(28,54,16,.35) 0%, transparent 55%);
+      min-height: 100vh;
+      padding: 48px 40px 80px;
+    }
+
+    .showcase-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 48px; gap: 24px; flex-wrap: wrap;
+    }
+    .showcase-title {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 26px; font-weight: 700; color: #fff;
+      letter-spacing: .05em;
+    }
+    .showcase-sub { font-size: 14px; color: rgba(255,255,255,.45); margin-top: 6px; letter-spacing: .03em; }
+    .showcase-badge {
+      padding: 5px 14px; border-radius: var(--r-full);
+      background: rgba(80,138,44,.25); border: 1px solid rgba(80,138,44,.4);
+      color: var(--sage-200); font-size: 12px; font-weight: 500; letter-spacing: .06em;
+      white-space: nowrap; align-self: center;
+    }
+
+    .section { margin-bottom: 56px; }
+    .section-label {
+      font-size: 11px; font-weight: 500; color: rgba(255,255,255,.35);
+      letter-spacing: .18em; text-transform: uppercase;
+      margin-bottom: 20px; padding-left: 4px;
+      display: flex; align-items: center; gap: 10px;
+    }
+    .section-label::after {
+      content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.07);
+    }
+
+    .frames-row {
+      display: flex; gap: 28px; align-items: flex-start; flex-wrap: wrap;
+    }
+
+    .frame-wrap { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+    .frame-caption {
+      font-size: 12px; color: rgba(255,255,255,.4); letter-spacing: .08em;
+      text-align: center;
+    }
+
+    /* ── Phone frame ── */
+    .phone {
+      width: 375px;
+      background: var(--neutral-0);
+      border-radius: 36px;
+      overflow: hidden;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.06), 0 24px 64px rgba(0,0,0,.5);
+      display: flex; flex-direction: column;
+      position: relative;
+    }
+    .phone.tall { min-height: 780px; }
+    .phone.short { min-height: 560px; }
+
+    /* Status bar */
+    .status-bar {
+      height: 44px; flex-shrink: 0;
+      background: var(--sage-600);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 20px;
+    }
+    .status-time { font-size: 14px; font-weight: 600; color: #fff; letter-spacing: .02em; }
+    .status-icons { display: flex; align-items: center; gap: 6px; }
+    .status-icons svg { width: 16px; height: 16px; fill: #fff; opacity: .85; }
+
+    /* ══ Store Header ══ */
+    .store-header {
+      background: linear-gradient(180deg, var(--sage-600) 0%, var(--sage-500) 100%);
+      padding: 12px 16px 14px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .store-avatar {
+      width: 40px; height: 40px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--sakura-mid), var(--sakura));
+      display: grid; place-items: center;
+      font-family: 'Zen Maru Gothic', sans-serif; font-weight: 700;
+      font-size: 15px; color: #fff; flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    }
+    .store-info { flex: 1; min-width: 0; }
+    .store-name {
+      font-family: 'Zen Maru Gothic', sans-serif; font-weight: 700;
+      font-size: 16px; color: #fff; letter-spacing: .04em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .store-greeting { font-size: 11px; color: rgba(255,255,255,.58); margin-top: 1px; }
+    .header-search-btn {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: rgba(255,255,255,.12);
+      border: none; cursor: pointer;
+      display: grid; place-items: center;
+      flex-shrink: 0;
+    }
+    .header-search-btn svg { width: 16px; height: 16px; stroke: #fff; fill: none; stroke-width: 2; }
+
+    /* Search bar */
+    .search-area {
+      padding: 10px 14px 16px;
+      background: var(--sage-500);
+      border-radius: 0 0 20px 20px;
+      position: relative;
+      z-index: 1;
+      box-shadow: 0 4px 14px rgba(28,54,16,.22);
+    }
+    .search-bar {
+      display: flex; align-items: center; gap: 8px;
+      background: rgba(255,255,255,.14);
+      border-radius: var(--r-full);
+      padding: 8px 14px;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+    .search-bar svg { width: 15px; height: 15px; stroke: rgba(255,255,255,.6); fill: none; stroke-width: 2; flex-shrink: 0; }
+    .search-bar input {
+      background: none; border: none; outline: none;
+      font-family: 'Noto Sans TC', sans-serif; font-size: 14px;
+      color: rgba(255,255,255,.85);
+      flex: 1;
+    }
+    .search-bar input::placeholder { color: rgba(255,255,255,.45); }
+
+    /* Content area */
+    .phone-content { flex: 1; overflow-y: auto; background: var(--neutral-50); }
+
+    /* Category group */
+    .cat-group { margin-bottom: 4px; }
+    .cat-label {
+      font-size: 11px; font-weight: 500; color: var(--sage-500);
+      letter-spacing: .16em; text-transform: uppercase;
+      padding: 14px 14px 8px;
+    }
+    .product-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; padding: 0 14px;
+    }
+    .product-card {
+      background: #fff; border-radius: var(--r-lg);
+      box-shadow: var(--sh-sm);
+      overflow: hidden; cursor: pointer;
+      transition: box-shadow .2s;
+    }
+    .product-img {
+      aspect-ratio: 1; background: var(--neutral-100);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+    }
+    .product-img.green { background: linear-gradient(135deg, #e0f0d0, #b8dca0); }
+    .product-img.pink  { background: linear-gradient(135deg, #ffd8e8, #ffb0cc); }
+    .product-img.earth { background: linear-gradient(135deg, #f5e8d0, #e8c898); }
+    .product-img.blue  { background: linear-gradient(135deg, #d0e8f5, #a0c8e8); }
+    .product-meta { padding: 8px 10px 10px; }
+    .product-name { font-size: 13px; color: var(--neutral-700); line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .product-price { font-size: 14px; font-weight: 700; color: var(--sakura); margin-top: 5px; letter-spacing: .02em; }
+    .product-price-range { font-size: 11px; color: var(--neutral-400); }
+
+    /* Bottom nav */
+    .bottom-nav {
+      height: 64px; background: #fff;
+      border-top: 1px solid var(--neutral-200);
+      display: flex; align-items: stretch;
+      flex-shrink: 0;
+    }
+    .nav-tab {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; gap: 3px;
+      cursor: pointer; border: none; background: none;
+    }
+    .nav-tab svg { width: 22px; height: 22px; stroke-width: 1.7; }
+    .nav-tab-label { font-size: 11px; font-weight: 500; letter-spacing: .04em; }
+    .nav-tab.active svg { stroke: var(--sage-600); }
+    .nav-tab.active .nav-tab-label { color: var(--sage-600); }
+    .nav-tab:not(.active) svg { stroke: var(--neutral-400); }
+    .nav-tab:not(.active) .nav-tab-label { color: var(--neutral-400); }
+    .nav-tab.active-dot { position: relative; }
+    .nav-tab.active-dot::after {
+      content: ''; position: absolute; bottom: 8px;
+      width: 4px; height: 4px; border-radius: 50%;
+      background: var(--sage-500);
+    }
+
+    /* ── Auth state pages ── */
+    .auth-page {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      padding: 24px; text-align: center; gap: 14px;
+    }
+    .auth-illus {
+      width: 88px; height: 88px; border-radius: 50%;
+      display: grid; place-items: center;
+      font-size: 36px;
+      margin-bottom: 8px;
+    }
+    .auth-illus.pending { background: linear-gradient(135deg, #fff8e0, #ffedb8); }
+    .auth-illus.none    { background: linear-gradient(135deg, #e0f0d0, #c4e0a8); }
+    .auth-title {
+      font-family: 'Zen Maru Gothic', sans-serif;
+      font-size: 18px; font-weight: 700; color: var(--neutral-800);
+      line-height: 1.4;
+    }
+    .auth-desc { font-size: 13px; color: var(--neutral-500); line-height: 1.7; max-width: 240px; }
+    .btn-apply {
+      padding: 12px 28px; border-radius: var(--r-full);
+      background: var(--sakura); border: none;
+      color: #fff; font-family: 'Noto Sans TC', sans-serif;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      letter-spacing: .05em; margin-top: 6px;
+      box-shadow: 0 4px 14px rgba(232,116,157,.35);
+    }
+    .pending-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 14px; border-radius: var(--r-full);
+      background: rgba(196,168,40,.1);
+      border: 1px solid rgba(196,168,40,.3);
+      color: #b89820; font-size: 12px; font-weight: 500;
+    }
+
+    /* ── Divider line in product list ── */
+    .cat-divider { height: 1px; background: var(--neutral-200); margin: 4px 14px 0; }
+
+    /* ── Empty state ── */
+    .empty-state {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 10px; padding: 32px; text-align: center;
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 4px; }
+    .empty-title { font-size: 15px; font-weight: 600; color: var(--neutral-600); }
+    .empty-sub { font-size: 13px; color: var(--neutral-400); }
+
+    /* ── Search active state ── */
+    .search-bar.active {
+      background: rgba(255,255,255,.22);
+      border-color: rgba(255,255,255,.2);
+    }
+    .search-keyword { color: rgba(255,255,255,.9); }
+    .search-clear {
+      width: 18px; height: 18px; border-radius: 50%;
+      background: rgba(255,255,255,.25);
+      display: grid; place-items: center; cursor: pointer; flex-shrink: 0;
+    }
+    .search-clear svg { width: 10px; height: 10px; stroke: rgba(255,255,255,.8); fill: none; stroke-width: 2.5; }
+
+    .search-results-info {
+      padding: 10px 14px; font-size: 12px; color: var(--neutral-500);
+    }
+
+    /* ── Highlight text ── */
+    .highlight { color: var(--sakura); }
+  </style>
+</head>
+<body>
+
+<div class="showcase-header">
+  <div>
+    <div class="showcase-title">顧客前台首頁</div>
+    <div class="showcase-sub">store-home · Sprint 3 Design · 商品列表 + 身份驗證狀態</div>
+  </div>
+  <div class="showcase-badge">Sprint 3</div>
+</div>
+
+<!-- ─────────────── Section 1: Auth States ─────────────── -->
+<div class="section">
+  <div class="section-label">身份驗證狀態</div>
+  <div class="frames-row">
+
+    <!-- Frame: Pending -->
+    <div class="frame-wrap">
+      <div class="phone short">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z"/></svg>
+          </div>
+        </div>
+        <!-- Header -->
+        <div class="store-header">
+          <div class="store-avatar">芮</div>
+          <div class="store-info">
+            <div class="store-name">芮選精品</div>
+            <div class="store-greeting">LINE 登入成功</div>
+          </div>
+        </div>
+        <!-- Auth Page: Pending -->
+        <div class="phone-content" style="display:flex;flex-direction:column;">
+          <div class="auth-page">
+            <div class="auth-illus pending">⏳</div>
+            <div class="auth-title">申請正在審核中</div>
+            <div class="auth-desc">商家確認您的申請後<br>即可進入賣場選購</div>
+            <div class="pending-tag">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              申請審核中
+            </div>
+          </div>
+        </div>
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span class="nav-tab-label">我的帳戶</span>
+          </button>
+          <button class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <span class="nav-tab-label">商品</span>
+          </button>
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            <span class="nav-tab-label">我的訂單</span>
+          </button>
+        </div>
+      </div>
+      <div class="frame-caption">status: pending<br>審核等待狀態</div>
+    </div>
+
+    <!-- Frame: Not member -->
+    <div class="frame-wrap">
+      <div class="phone short">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z"/></svg>
+          </div>
+        </div>
+        <div class="store-header">
+          <div class="store-avatar">芮</div>
+          <div class="store-info">
+            <div class="store-name">芮選精品</div>
+            <div class="store-greeting">LINE 登入成功</div>
+          </div>
+        </div>
+        <div class="phone-content" style="display:flex;flex-direction:column;">
+          <div class="auth-page">
+            <div class="auth-illus none">🔐</div>
+            <div class="auth-title">您尚未加入此賣場</div>
+            <div class="auth-desc">請先申請加入芮選精品<br>審核通過後即可瀏覽商品</div>
+            <button class="btn-apply">前往申請加入</button>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span class="nav-tab-label">我的帳戶</span>
+          </button>
+          <button class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <span class="nav-tab-label">商品</span>
+          </button>
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            <span class="nav-tab-label">我的訂單</span>
+          </button>
+        </div>
+      </div>
+      <div class="frame-caption">status: none / rejected<br>未加入賣場狀態</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─────────────── Section 2: Product List ─────────────── -->
+<div class="section">
+  <div class="section-label">商品列表（已審核通過）</div>
+  <div class="frames-row">
+
+    <!-- Frame: Product List (approved) -->
+    <div class="frame-wrap">
+      <div class="phone tall">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z"/></svg>
+          </div>
+        </div>
+        <div class="store-header">
+          <div class="store-avatar">芮</div>
+          <div class="store-info">
+            <div class="store-name">芮選精品</div>
+            <div class="store-greeting">Hi，小芮 👋</div>
+          </div>
+          <button class="header-search-btn">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          </button>
+        </div>
+        <!-- Search bar -->
+        <div class="search-area">
+          <div class="search-bar">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <input type="text" placeholder="搜尋商品名稱…" readonly />
+          </div>
+        </div>
+        <!-- Content -->
+        <div class="phone-content">
+
+          <!-- Category: 保養品 -->
+          <div class="cat-group">
+            <div class="cat-label">✦ 保養品</div>
+            <div class="product-grid">
+              <div class="product-card">
+                <div class="product-img green">🍃</div>
+                <div class="product-meta">
+                  <div class="product-name">日本 LANEIGE 水庫水面膜三入組</div>
+                  <div class="product-price">NT$ 680</div>
+                </div>
+              </div>
+              <div class="product-card">
+                <div class="product-img pink">🌸</div>
+                <div class="product-meta">
+                  <div class="product-name">韓國 COSRX 蝸牛精華液 96%</div>
+                  <div class="product-price">NT$ 520 ~ 890</div>
+                  <div class="product-price-range" style="font-size:10px;color:var(--neutral-400);">多規格</div>
+                </div>
+              </div>
+              <div class="product-card">
+                <div class="product-img earth">🌿</div>
+                <div class="product-meta">
+                  <div class="product-name">日本和紙面膜 天然保濕</div>
+                  <div class="product-price">NT$ 360</div>
+                </div>
+              </div>
+              <div class="product-card">
+                <div class="product-img blue">💧</div>
+                <div class="product-meta">
+                  <div class="product-name">台灣玻尿酸精萃保濕乳液</div>
+                  <div class="product-price">NT$ 450 ~ 680</div>
+                  <div class="product-price-range" style="font-size:10px;color:var(--neutral-400);">多規格</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cat-divider"></div>
+
+          <!-- Category: 彩妝 -->
+          <div class="cat-group" style="margin-top:4px;">
+            <div class="cat-label">✦ 彩妝</div>
+            <div class="product-grid">
+              <div class="product-card">
+                <div class="product-img pink">💄</div>
+                <div class="product-meta">
+                  <div class="product-name">日本 CANMAKE 腮紅 N13 玫瑰棕</div>
+                  <div class="product-price">NT$ 280</div>
+                </div>
+              </div>
+              <div class="product-card">
+                <div class="product-img green">🎨</div>
+                <div class="product-meta">
+                  <div class="product-name">韓國 3CE 霧面唇彩 多色可選</div>
+                  <div class="product-price">NT$ 320 ~ 380</div>
+                  <div class="product-price-range" style="font-size:10px;color:var(--neutral-400);">多規格</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style="height:20px;"></div>
+
+        </div>
+        <!-- Bottom Nav -->
+        <div class="bottom-nav">
+          <button class="nav-tab active active-dot">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <span class="nav-tab-label">商品</span>
+          </button>
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            <span class="nav-tab-label">我的訂單</span>
+          </button>
+        </div>
+      </div>
+      <div class="frame-caption">商品列表（類別分組）<br>approved member</div>
+    </div>
+
+    <!-- Frame: Search results -->
+    <div class="frame-wrap">
+      <div class="phone tall">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z"/></svg>
+          </div>
+        </div>
+        <div class="store-header">
+          <div class="store-avatar">芮</div>
+          <div class="store-info">
+            <div class="store-name">芮選精品</div>
+            <div class="store-greeting">Hi，小芮 👋</div>
+          </div>
+        </div>
+        <div class="search-area">
+          <div class="search-bar active">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span class="search-keyword" style="flex:1;font-size:14px;">面膜</span>
+            <div class="search-clear">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="phone-content">
+          <div class="search-results-info">找到 2 件「<span class="highlight">面膜</span>」相關商品</div>
+          <div class="product-grid" style="padding:0 14px 14px;">
+            <div class="product-card">
+              <div class="product-img green">🍃</div>
+              <div class="product-meta">
+                <div class="product-name">日本 LANEIGE 水庫水<span class="highlight">面膜</span>三入組</div>
+                <div class="product-price">NT$ 680</div>
+              </div>
+            </div>
+            <div class="product-card">
+              <div class="product-img earth">🌿</div>
+              <div class="product-meta">
+                <div class="product-name">日本和紙<span class="highlight">面膜</span> 天然保濕</div>
+                <div class="product-price">NT$ 360</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="nav-tab active active-dot">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <span class="nav-tab-label">商品</span>
+          </button>
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            <span class="nav-tab-label">我的訂單</span>
+          </button>
+        </div>
+      </div>
+      <div class="frame-caption">搜尋結果（有結果）<br>關鍵字高亮顯示</div>
+    </div>
+
+    <!-- Frame: Search no results -->
+    <div class="frame-wrap">
+      <div class="phone short">
+        <div class="status-bar">
+          <span class="status-time">9:41</span>
+          <div class="status-icons">
+            <svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z"/></svg>
+          </div>
+        </div>
+        <div class="store-header">
+          <div class="store-avatar">芮</div>
+          <div class="store-info">
+            <div class="store-name">芮選精品</div>
+          </div>
+        </div>
+        <div class="search-area">
+          <div class="search-bar active">
+            <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            <span class="search-keyword" style="flex:1;font-size:14px;">口紅</span>
+            <div class="search-clear">
+              <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
+          </div>
+        </div>
+        <div class="phone-content" style="display:flex;flex-direction:column;">
+          <div class="empty-state">
+            <div class="empty-icon">🔍</div>
+            <div class="empty-title">找不到「口紅」相關商品</div>
+            <div class="empty-sub">試試其他關鍵字</div>
+          </div>
+        </div>
+        <div class="bottom-nav">
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            <span class="nav-tab-label">我的帳戶</span>
+          </button>
+          <button class="nav-tab active">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+            <span class="nav-tab-label">商品</span>
+          </button>
+          <button class="nav-tab">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            <span class="nav-tab-label">我的訂單</span>
+          </button>
+        </div>
+      </div>
+      <div class="frame-caption">搜尋結果（無結果）<br>空狀態</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

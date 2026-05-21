@@ -1,0 +1,1055 @@
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>芮選 · 顧客商品詳細頁 + 下單設計稿（Sprint 3）</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700&family=Noto+Sans+TC:wght@300;400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      :root {
+        --sage-50: #f2f8ec;
+        --sage-100: #e0f0d0;
+        --sage-200: #b8dca0;
+        --sage-400: #6dab3d;
+        --sage-500: #508a2c;
+        --sage-600: #3d7020;
+        --sage-700: #2c5218;
+        --sage-800: #1c3610;
+        --sakura-pale: #fff0f5;
+        --sakura-100: #ffd8e8;
+        --sakura-mid: #f5a8bf;
+        --sakura: #e8749d;
+        --sakura-deep: #c42858;
+        --neutral-0: #fff;
+        --neutral-50: #f6fbf0;
+        --neutral-100: #edf5e8;
+        --neutral-200: #d8e8cc;
+        --neutral-300: #b4c8a0;
+        --neutral-400: #8a9a82;
+        --neutral-500: #647258;
+        --neutral-600: #4a5e42;
+        --neutral-700: #2a3e20;
+        --neutral-800: #192e10;
+        --r-sm: 6px;
+        --r-md: 12px;
+        --r-lg: 18px;
+        --r-xl: 24px;
+        --r-full: 999px;
+        --sh-xs: 0 1px 3px rgba(28, 54, 16, 0.07);
+        --sh-sm: 0 2px 8px rgba(28, 54, 16, 0.09);
+        --sh-md: 0 4px 16px rgba(28, 54, 16, 0.11);
+        --sh-lg: 0 8px 32px rgba(28, 54, 16, 0.14);
+        --sh-cta: 0 4px 14px rgba(232, 116, 157, 0.32);
+      }
+
+      body {
+        font-family: 'Noto Sans TC', sans-serif;
+        background: #141f0f;
+        background-image:
+          radial-gradient(ellipse 60% 40% at 10% 15%, rgba(61, 112, 32, 0.25) 0%, transparent 60%),
+          radial-gradient(ellipse 40% 35% at 90% 80%, rgba(28, 54, 16, 0.35) 0%, transparent 55%);
+        min-height: 100vh;
+        padding: 48px 40px 80px;
+      }
+
+      .showcase-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        margin-bottom: 48px;
+        gap: 24px;
+        flex-wrap: wrap;
+      }
+      .showcase-title {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 26px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.05em;
+      }
+      .showcase-sub {
+        font-size: 14px;
+        color: rgba(255, 255, 255, 0.45);
+        margin-top: 6px;
+      }
+      .showcase-badge {
+        padding: 5px 14px;
+        border-radius: var(--r-full);
+        background: rgba(80, 138, 44, 0.25);
+        border: 1px solid rgba(80, 138, 44, 0.4);
+        color: var(--sage-200);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        white-space: nowrap;
+        align-self: center;
+      }
+
+      .section {
+        margin-bottom: 56px;
+      }
+      .section-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.35);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        margin-bottom: 20px;
+        padding-left: 4px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .section-label::after {
+        content: '';
+        flex: 1;
+        height: 1px;
+        background: rgba(255, 255, 255, 0.07);
+      }
+
+      .frames-row {
+        display: flex;
+        gap: 28px;
+        align-items: flex-start;
+        flex-wrap: wrap;
+      }
+      .frame-wrap {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+      }
+      .frame-caption {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.4);
+        letter-spacing: 0.08em;
+        text-align: center;
+      }
+
+      /* ── Phone frame ── */
+      .phone {
+        width: 375px;
+        background: var(--neutral-0);
+        border-radius: 36px;
+        overflow: hidden;
+        box-shadow:
+          0 0 0 1px rgba(255, 255, 255, 0.06),
+          0 24px 64px rgba(0, 0, 0, 0.5);
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+      .phone.tall {
+        min-height: 820px;
+      }
+
+      .status-bar {
+        height: 44px;
+        flex-shrink: 0;
+        background: var(--sage-600);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 20px;
+      }
+      .status-time {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+      }
+      .status-icons svg {
+        width: 16px;
+        height: 16px;
+        fill: #fff;
+        opacity: 0.85;
+      }
+
+      /* Top bar (back button + store name) */
+      .top-bar {
+        height: 52px;
+        flex-shrink: 0;
+        background: linear-gradient(180deg, var(--sage-600) 0%, var(--sage-500) 100%);
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        gap: 10px;
+      }
+      .back-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.12);
+        border: none;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        flex-shrink: 0;
+      }
+      .back-btn svg {
+        width: 18px;
+        height: 18px;
+        stroke: #fff;
+        fill: none;
+        stroke-width: 2;
+      }
+      .top-bar-title {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: 0.04em;
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      /* Content scrollable area */
+      .phone-content {
+        flex: 1;
+        overflow-y: auto;
+        background: var(--neutral-50);
+      }
+
+      /* Product images carousel */
+      .product-carousel {
+        aspect-ratio: 1;
+        background: var(--neutral-100);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 72px;
+        position: relative;
+        overflow: hidden;
+        background: linear-gradient(135deg, #e0f0d0 0%, #b8dca0 100%);
+      }
+      .carousel-dots {
+        position: absolute;
+        bottom: 10px;
+        left: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 5px;
+      }
+      .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.5);
+      }
+      .dot.active {
+        background: #fff;
+        width: 18px;
+        border-radius: 3px;
+      }
+      .carousel-counter {
+        position: absolute;
+        top: 10px;
+        right: 12px;
+        background: rgba(0, 0, 0, 0.35);
+        border-radius: var(--r-full);
+        padding: 3px 10px;
+        font-size: 12px;
+        color: #fff;
+        font-weight: 500;
+      }
+
+      /* Product info section */
+      .product-info {
+        padding: 16px 16px 0;
+      }
+      .product-name-lg {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 18px;
+        font-weight: 700;
+        color: var(--neutral-800);
+        line-height: 1.4;
+      }
+      .product-price-display {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .price-amount {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--sakura);
+        letter-spacing: 0.02em;
+      }
+      .price-unit {
+        font-size: 13px;
+        color: var(--neutral-400);
+      }
+      .price-na {
+        font-size: 16px;
+        color: var(--neutral-400);
+      }
+
+      /* Description */
+      .product-desc {
+        margin-top: 10px;
+        font-size: 13px;
+        color: var(--neutral-600);
+        line-height: 1.8;
+        white-space: pre-wrap;
+      }
+
+      /* Section divider */
+      .info-divider {
+        height: 8px;
+        background: var(--neutral-100);
+        margin: 14px 0;
+      }
+
+      /* Variant selector */
+      .variant-section {
+        padding: 0 16px 12px;
+      }
+      .variant-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--neutral-700);
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .variant-required {
+        font-size: 11px;
+        color: var(--sakura);
+        font-weight: 500;
+      }
+      .variant-row {
+        margin-bottom: 12px;
+      }
+      .variant-dim-label {
+        font-size: 12px;
+        color: var(--neutral-500);
+        margin-bottom: 7px;
+        font-weight: 500;
+      }
+      .variant-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 7px;
+      }
+      .variant-opt {
+        padding: 6px 14px;
+        border-radius: var(--r-full);
+        border: 1.5px solid var(--neutral-200);
+        background: #fff;
+        font-size: 13px;
+        color: var(--neutral-600);
+        cursor: pointer;
+        font-family: 'Noto Sans TC', sans-serif;
+        transition: all 0.15s;
+      }
+      .variant-opt.selected {
+        background: var(--sage-600);
+        border-color: var(--sage-600);
+        color: #fff;
+        font-weight: 600;
+      }
+      .variant-opt.unavailable {
+        opacity: 0.4;
+        cursor: not-allowed;
+        text-decoration: line-through;
+      }
+
+      /* Quantity */
+      .qty-section {
+        padding: 0 16px 16px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .qty-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--neutral-700);
+      }
+      .qty-control {
+        display: flex;
+        align-items: center;
+        gap: 0;
+        border: 1.5px solid var(--neutral-200);
+        border-radius: var(--r-md);
+        overflow: hidden;
+      }
+      .qty-btn {
+        width: 36px;
+        height: 36px;
+        border: none;
+        background: var(--neutral-50);
+        font-size: 18px;
+        color: var(--neutral-600);
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        font-family: 'Noto Sans TC', sans-serif;
+      }
+      .qty-btn:hover {
+        background: var(--neutral-100);
+      }
+      .qty-num {
+        width: 44px;
+        text-align: center;
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--neutral-800);
+        border-left: 1px solid var(--neutral-200);
+        border-right: 1px solid var(--neutral-200);
+        line-height: 36px;
+      }
+
+      /* CTA sticky area */
+      .cta-area {
+        padding: 12px 16px;
+        background: #fff;
+        border-top: 1px solid var(--neutral-200);
+        flex-shrink: 0;
+      }
+      .btn-order {
+        width: 100%;
+        padding: 14px;
+        border-radius: var(--r-lg);
+        border: none;
+        font-family: 'Noto Sans TC', sans-serif;
+        font-size: 16px;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.05em;
+      }
+      .btn-order.ready {
+        background: var(--sakura);
+        color: #fff;
+        box-shadow: var(--sh-cta);
+      }
+      .btn-order.disabled {
+        background: var(--neutral-200);
+        color: var(--neutral-400);
+        cursor: not-allowed;
+      }
+      .cta-hint {
+        font-size: 11px;
+        color: var(--neutral-400);
+        text-align: center;
+        margin-top: 7px;
+      }
+
+      /* ══ Order Confirm Bottom Sheet ══ */
+      .sheet-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(25, 46, 16, 0.55);
+        display: flex;
+        align-items: flex-end;
+        z-index: 100;
+      }
+      .bottom-sheet {
+        width: 100%;
+        background: #fff;
+        border-radius: var(--r-xl) var(--r-xl) 0 0;
+        padding: 0 0 0;
+        overflow: hidden;
+      }
+      .sheet-handle-area {
+        padding: 12px 0 4px;
+        display: flex;
+        justify-content: center;
+      }
+      .sheet-handle {
+        width: 36px;
+        height: 4px;
+        border-radius: var(--r-full);
+        background: var(--neutral-200);
+      }
+      .sheet-title {
+        font-family: 'Zen Maru Gothic', sans-serif;
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--neutral-800);
+        padding: 4px 20px 14px;
+        border-bottom: 1px solid var(--neutral-100);
+      }
+      .sheet-body {
+        padding: 16px 20px;
+      }
+      .sheet-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+      }
+      .sheet-row:last-child {
+        margin-bottom: 0;
+      }
+      .sheet-key {
+        font-size: 13px;
+        color: var(--neutral-500);
+        flex-shrink: 0;
+      }
+      .sheet-val {
+        font-size: 13px;
+        color: var(--neutral-800);
+        font-weight: 500;
+        text-align: right;
+        max-width: 200px;
+      }
+      .sheet-divider {
+        height: 1px;
+        background: var(--neutral-100);
+        margin: 12px 0;
+      }
+      .sheet-total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .sheet-total-label {
+        font-size: 15px;
+        font-weight: 700;
+        color: var(--neutral-700);
+      }
+      .sheet-total-amount {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--sakura);
+        letter-spacing: 0.02em;
+      }
+      .sheet-notice {
+        background: var(--neutral-50);
+        border-radius: var(--r-md);
+        padding: 10px 12px;
+        margin-top: 12px;
+        font-size: 12px;
+        color: var(--neutral-500);
+        line-height: 1.6;
+        display: flex;
+        gap: 8px;
+        align-items: flex-start;
+      }
+      .sheet-notice-icon {
+        font-size: 14px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .sheet-actions {
+        padding: 12px 20px 20px;
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 10px;
+      }
+      .btn-cancel {
+        padding: 13px;
+        border-radius: var(--r-lg);
+        border: 1.5px solid var(--neutral-200);
+        background: #fff;
+        font-family: 'Noto Sans TC', sans-serif;
+        font-size: 15px;
+        font-weight: 500;
+        color: var(--neutral-600);
+        cursor: pointer;
+      }
+      .btn-confirm {
+        padding: 13px;
+        border-radius: var(--r-lg);
+        border: none;
+        background: var(--sakura);
+        color: #fff;
+        font-family: 'Noto Sans TC', sans-serif;
+        font-size: 15px;
+        font-weight: 700;
+        cursor: pointer;
+        letter-spacing: 0.04em;
+        box-shadow: var(--sh-cta);
+      }
+
+      /* ══ Success Toast ══ */
+      .toast-overlay {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding-top: 60px;
+        z-index: 200;
+        pointer-events: none;
+      }
+      .toast {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--neutral-800);
+        color: #fff;
+        padding: 12px 18px;
+        border-radius: var(--r-lg);
+        box-shadow: var(--sh-lg);
+        max-width: 280px;
+      }
+      .toast-icon {
+        font-size: 18px;
+      }
+      .toast-text {
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      /* Bottom nav */
+      .bottom-nav {
+        height: 64px;
+        background: #fff;
+        border-top: 1px solid var(--neutral-200);
+        display: flex;
+        align-items: stretch;
+        flex-shrink: 0;
+      }
+      .nav-tab {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 3px;
+        cursor: pointer;
+        border: none;
+        background: none;
+      }
+      .nav-tab svg {
+        width: 22px;
+        height: 22px;
+        stroke-width: 1.7;
+      }
+      .nav-tab-label {
+        font-size: 11px;
+        font-weight: 500;
+        letter-spacing: 0.04em;
+      }
+      .nav-tab.active svg {
+        stroke: var(--sage-600);
+      }
+      .nav-tab.active .nav-tab-label {
+        color: var(--sage-600);
+      }
+      .nav-tab:not(.active) svg {
+        stroke: var(--neutral-400);
+      }
+      .nav-tab:not(.active) .nav-tab-label {
+        color: var(--neutral-400);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="showcase-header">
+      <div>
+        <div class="showcase-title">顧客商品詳細頁 · 下單確認</div>
+        <div class="showcase-sub">store-product-detail · Sprint 3 Design · 規格選擇 + 下單彈窗</div>
+      </div>
+      <div class="showcase-badge">Sprint 3</div>
+    </div>
+
+    <!-- ─────────────── Section 1: Product Detail (規格未選) ─────────────── -->
+    <div class="section">
+      <div class="section-label">商品詳細頁</div>
+      <div class="frames-row">
+        <!-- Frame: 未選規格（CTA disabled） -->
+        <div class="frame-wrap">
+          <div class="phone tall">
+            <div class="status-bar">
+              <span class="status-time">9:41</span>
+              <div class="status-icons">
+                <svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z" /></svg>
+              </div>
+            </div>
+            <div class="top-bar">
+              <button class="back-btn">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+              </button>
+              <span class="top-bar-title">商品詳細</span>
+            </div>
+
+            <div class="phone-content">
+              <!-- Image carousel -->
+              <div class="product-carousel">
+                🍃
+                <div class="carousel-counter">1 / 3</div>
+                <div class="carousel-dots">
+                  <div class="dot active"></div>
+                  <div class="dot"></div>
+                  <div class="dot"></div>
+                </div>
+              </div>
+
+              <!-- Info -->
+              <div class="product-info">
+                <div class="product-name-lg">日本 LANEIGE 水庫水面膜三入組 補水保濕天然萃取</div>
+                <div class="product-price-display">
+                  <span class="price-na">請先選擇規格</span>
+                </div>
+                <div class="product-desc">
+                  ✦ 韓國原裝進口，台灣專屬代購限量 含天然植萃保濕精華，深層補水不黏膩
+                  適合各種膚質，敏感肌可安心使用
+                </div>
+              </div>
+
+              <div class="info-divider"></div>
+
+              <!-- Variant selector -->
+              <div class="variant-section">
+                <div class="variant-title">
+                  選擇規格
+                  <span class="variant-required">必選</span>
+                </div>
+                <!-- 顏色維度 -->
+                <div class="variant-row">
+                  <div class="variant-dim-label">顏色</div>
+                  <div class="variant-options">
+                    <div class="variant-opt">原色</div>
+                    <div class="variant-opt">粉紅</div>
+                    <div class="variant-opt unavailable">限定綠</div>
+                  </div>
+                </div>
+                <!-- 入數維度 -->
+                <div class="variant-row">
+                  <div class="variant-dim-label">入數</div>
+                  <div class="variant-options">
+                    <div class="variant-opt">三入組</div>
+                    <div class="variant-opt">五入組</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-divider"></div>
+
+              <!-- Quantity -->
+              <div class="qty-section">
+                <span class="qty-label">數量</span>
+                <div class="qty-control">
+                  <button class="qty-btn">－</button>
+                  <span class="qty-num">1</span>
+                  <button class="qty-btn">＋</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- CTA -->
+            <div class="cta-area">
+              <button class="btn-order disabled">請先選擇所有規格</button>
+            </div>
+            <!-- No bottom nav on product detail (back button to return) -->
+          </div>
+          <div class="frame-caption">未選規格<br />CTA 按鈕 disabled</div>
+        </div>
+
+        <!-- Frame: 已選規格（CTA ready）-->
+        <div class="frame-wrap">
+          <div class="phone tall">
+            <div class="status-bar">
+              <span class="status-time">9:41</span>
+              <div class="status-icons">
+                <svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z" /></svg>
+              </div>
+            </div>
+            <div class="top-bar">
+              <button class="back-btn">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+              </button>
+              <span class="top-bar-title">商品詳細</span>
+            </div>
+
+            <div class="phone-content">
+              <div class="product-carousel">
+                🍃
+                <div class="carousel-counter">2 / 3</div>
+                <div class="carousel-dots">
+                  <div class="dot"></div>
+                  <div class="dot active"></div>
+                  <div class="dot"></div>
+                </div>
+              </div>
+
+              <div class="product-info">
+                <div class="product-name-lg">日本 LANEIGE 水庫水面膜三入組 補水保濕天然萃取</div>
+                <div class="product-price-display">
+                  <span class="price-amount">NT$ 680</span>
+                  <span class="price-unit">/ 組</span>
+                </div>
+                <div class="product-desc">
+                  ✦ 韓國原裝進口，台灣專屬代購限量 含天然植萃保濕精華，深層補水不黏膩
+                  適合各種膚質，敏感肌可安心使用
+                </div>
+              </div>
+
+              <div class="info-divider"></div>
+
+              <div class="variant-section">
+                <div class="variant-title">
+                  選擇規格
+                  <span style="font-size: 11px; color: var(--sage-600); font-weight: 500"
+                    >已選：粉紅 / 三入組</span
+                  >
+                </div>
+                <div class="variant-row">
+                  <div class="variant-dim-label">顏色</div>
+                  <div class="variant-options">
+                    <div class="variant-opt">原色</div>
+                    <div class="variant-opt selected">粉紅</div>
+                    <div class="variant-opt unavailable">限定綠</div>
+                  </div>
+                </div>
+                <div class="variant-row">
+                  <div class="variant-dim-label">入數</div>
+                  <div class="variant-options">
+                    <div class="variant-opt selected">三入組</div>
+                    <div class="variant-opt">五入組</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="info-divider"></div>
+
+              <div class="qty-section">
+                <span class="qty-label">數量</span>
+                <div class="qty-control">
+                  <button class="qty-btn" style="color: var(--neutral-300)">－</button>
+                  <span class="qty-num">2</span>
+                  <button class="qty-btn">＋</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="cta-area">
+              <button class="btn-order ready">立即下單</button>
+              <div class="cta-hint">下單即購買，無購物車</div>
+            </div>
+          </div>
+          <div class="frame-caption">已選規格 / 數量 2<br />CTA 按鈕 ready</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─────────────── Section 2: Order Confirm Bottom Sheet ─────────────── -->
+    <div class="section">
+      <div class="section-label">下單確認彈窗（Bottom Sheet）</div>
+      <div class="frames-row">
+        <!-- Frame: 確認彈窗 -->
+        <div class="frame-wrap">
+          <div class="phone tall" style="position: relative">
+            <!-- 背景（商品詳細頁，已模糊） -->
+            <div class="status-bar">
+              <span class="status-time">9:41</span>
+              <div class="status-icons">
+                <svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z" /></svg>
+              </div>
+            </div>
+            <div class="top-bar">
+              <button class="back-btn">
+                <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6" /></svg>
+              </button>
+              <span class="top-bar-title">商品詳細</span>
+            </div>
+            <div class="phone-content">
+              <div class="product-carousel" style="opacity: 0.4">🍃</div>
+              <div class="product-info" style="opacity: 0.4">
+                <div class="product-name-lg">日本 LANEIGE 水庫水面膜三入組</div>
+                <div class="product-price-display">
+                  <span class="price-amount">NT$ 680</span>
+                </div>
+              </div>
+              <div class="info-divider" style="opacity: 0.4"></div>
+              <div class="variant-section" style="opacity: 0.4">
+                <div class="variant-row">
+                  <div class="variant-dim-label">顏色</div>
+                  <div class="variant-options">
+                    <div class="variant-opt selected">粉紅</div>
+                    <div class="variant-opt">原色</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="cta-area" style="opacity: 0.4">
+              <button class="btn-order ready">立即下單</button>
+            </div>
+
+            <!-- Bottom Sheet Overlay -->
+            <div class="sheet-overlay">
+              <div class="bottom-sheet">
+                <div class="sheet-handle-area"><div class="sheet-handle"></div></div>
+                <div class="sheet-title">確認下單</div>
+                <div class="sheet-body">
+                  <div class="sheet-row">
+                    <span class="sheet-key">商品</span>
+                    <span class="sheet-val">日本 LANEIGE 水庫水面膜三入組</span>
+                  </div>
+                  <div class="sheet-row">
+                    <span class="sheet-key">規格</span>
+                    <span class="sheet-val">顏色：粉紅｜入數：三入組</span>
+                  </div>
+                  <div class="sheet-row">
+                    <span class="sheet-key">數量</span>
+                    <span class="sheet-val">2</span>
+                  </div>
+                  <div class="sheet-divider"></div>
+                  <div class="sheet-total-row">
+                    <span class="sheet-total-label">小計</span>
+                    <span class="sheet-total-amount">NT$ 1,360</span>
+                  </div>
+                  <div class="sheet-notice">
+                    <span class="sheet-notice-icon">💬</span>
+                    下單即購買，確認後商家會開始採買此商品。
+                  </div>
+                </div>
+                <div class="sheet-actions">
+                  <button class="btn-cancel">取消</button>
+                  <button class="btn-confirm">確認下單</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="frame-caption">確認彈窗（Bottom Sheet）<br />數量 2 × NT$680 = NT$1,360</div>
+        </div>
+
+        <!-- Frame: 下單成功 Toast -->
+        <div class="frame-wrap">
+          <div class="phone" style="min-height: 500px; position: relative">
+            <div class="status-bar">
+              <span class="status-time">9:41</span>
+              <div class="status-icons">
+                <svg viewBox="0 0 24 24"><path d="M1 6h22v12H1z" /></svg>
+              </div>
+            </div>
+            <!-- 訂單頁背景（下單後導向） -->
+            <div class="top-bar">
+              <div
+                style="
+                  font-family: 'Zen Maru Gothic', sans-serif;
+                  font-size: 16px;
+                  font-weight: 700;
+                  color: #fff;
+                  letter-spacing: 0.04em;
+                "
+              >
+                我的訂單
+              </div>
+            </div>
+            <div class="phone-content" style="padding: 16px">
+              <!-- 訂單卡片模糊背景 -->
+              <div
+                style="
+                  background: #fff;
+                  border-radius: var(--r-lg);
+                  padding: 14px;
+                  box-shadow: var(--sh-sm);
+                  opacity: 0.5;
+                "
+              >
+                <div style="display: flex; gap: 10px; align-items: flex-start">
+                  <div
+                    style="
+                      width: 56px;
+                      height: 56px;
+                      border-radius: var(--r-md);
+                      background: linear-gradient(135deg, #e0f0d0, #b8dca0);
+                      flex-shrink: 0;
+                      display: grid;
+                      place-items: center;
+                      font-size: 22px;
+                    "
+                  >
+                    🍃
+                  </div>
+                  <div style="flex: 1">
+                    <div style="font-size: 14px; font-weight: 600; color: var(--neutral-800)">
+                      日本 LANEIGE 水庫水面膜三入組
+                    </div>
+                    <div style="font-size: 12px; color: var(--neutral-500); margin-top: 3px">
+                      粉紅｜三入組 × 2
+                    </div>
+                    <div
+                      style="
+                        font-size: 14px;
+                        font-weight: 700;
+                        color: var(--sakura);
+                        margin-top: 5px;
+                      "
+                    >
+                      NT$ 1,360
+                    </div>
+                  </div>
+                  <div
+                    style="
+                      padding: 4px 10px;
+                      border-radius: var(--r-full);
+                      background: rgba(196, 168, 40, 0.12);
+                      border: 1px solid rgba(196, 168, 40, 0.3);
+                      color: #b89820;
+                      font-size: 11px;
+                      font-weight: 600;
+                      white-space: nowrap;
+                      flex-shrink: 0;
+                    "
+                  >
+                    待採買
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Bottom nav -->
+            <div class="bottom-nav">
+              <button class="nav-tab">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="8" r="4" />
+                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
+                </svg>
+                <span class="nav-tab-label">我的帳戶</span>
+              </button>
+              <button class="nav-tab">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+                  <line x1="3" y1="6" x2="21" y2="6" />
+                  <path d="M16 10a4 4 0 0 1-8 0" />
+                </svg>
+                <span class="nav-tab-label">商品</span>
+              </button>
+              <button class="nav-tab active">
+                <svg viewBox="0 0 24 24" fill="none">
+                  <path
+                    d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"
+                  />
+                  <rect x="9" y="3" width="6" height="4" rx="1" />
+                  <line x1="9" y1="12" x2="15" y2="12" />
+                  <line x1="9" y1="16" x2="13" y2="16" />
+                </svg>
+                <span class="nav-tab-label">我的訂單</span>
+              </button>
+            </div>
+
+            <!-- Toast overlay -->
+            <div class="toast-overlay">
+              <div class="toast">
+                <span class="toast-icon">✅</span>
+                <span class="toast-text">下單成功！</span>
+              </div>
+            </div>
+          </div>
+          <div class="frame-caption">下單成功 Toast<br />自動導向訂單頁</div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
