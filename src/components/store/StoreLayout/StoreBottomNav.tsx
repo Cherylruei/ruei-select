@@ -76,7 +76,7 @@ export default function StoreBottomNav({ slug }: StoreBottomNavProps) {
 
   return (
     <nav
-      className='fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-[var(--neutral-200)]'
+      className='fixed bottom-0 left-0 right-0 z-20 bg-white border-t border-(--neutral-200) lg:hidden'
       style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
       aria-label='底部導覽'
     >
