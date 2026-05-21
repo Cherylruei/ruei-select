@@ -8,6 +8,7 @@ type PageState = 'loading' | 'form' | 'success' | 'already_pending' | 'already_a
 interface JoinClientProps {
   slug: string
   storeName: string
+  storeAvatarUrl?: string | null
 }
 
 interface FormData {
@@ -46,7 +47,7 @@ function validateForm(data: FormData): FormErrors {
   return errors
 }
 
-export default function JoinClient({ slug, storeName }: JoinClientProps) {
+export default function JoinClient({ slug, storeName, storeAvatarUrl }: JoinClientProps) {
   const [pageState, setPageState] = useState<PageState>('loading')
   const [liffToken, setLiffToken] = useState<string | null>(null)
   const [displayName, setDisplayName] = useState('')
@@ -59,7 +60,6 @@ export default function JoinClient({ slug, storeName }: JoinClientProps) {
     if (liffInitialized.current) return
     liffInitialized.current = true
 
-    // dev mock：開發環境跳過 LIFF，直接顯示表單
     if (process.env.NODE_ENV === 'development') {
       /* eslint-disable react-hooks/set-state-in-effect */
       setDisplayName('測試用戶')
@@ -143,133 +143,194 @@ export default function JoinClient({ slug, storeName }: JoinClientProps) {
 
   if (pageState === 'loading') {
     return (
-      <div className='min-h-screen bg-[var(--neutral-50)] flex items-center justify-center'>
+      <div className='h-screen bg-[var(--neutral-50)] flex items-center justify-center'>
         <div className='text-center'>
-          <div className='w-12 h-12 rounded-full border-4 border-[var(--sage-200)] border-t-[var(--sage-500)] animate-spin mx-auto mb-4' />
+          <div className='w-10 h-10 rounded-full border-4 border-[var(--forest-200)] border-t-[var(--forest-base)] animate-spin mx-auto mb-3' />
           <p className='text-sm text-[var(--neutral-500)]'>LINE 登入中...</p>
         </div>
       </div>
     )
   }
 
-  if (pageState === 'success') {
-    return <ResultPage type='success' storeName={storeName} />
-  }
-
-  if (pageState === 'already_pending') {
-    return <ResultPage type='already_pending' storeName={storeName} />
-  }
-
-  if (pageState === 'already_approved') {
-    return <ResultPage type='already_approved' storeName={storeName} />
-  }
-
-  if (pageState === 'error') {
-    return <ResultPage type='error' storeName={storeName} />
+  if (pageState !== 'form') {
+    return <ResultPage type={pageState} storeName={storeName} />
   }
 
   return (
-    <div className='min-h-screen bg-[var(--neutral-50)] flex flex-col items-center justify-center px-4 py-10'>
-      <div className='w-full max-w-md'>
-        {/* Header */}
-        <div className='text-center mb-8'>
-          <div className='w-16 h-16 rounded-full bg-gradient-to-br from-[var(--sage-400)] to-[var(--sage-600)] flex items-center justify-center mx-auto mb-4 shadow-md'>
+    <div className='h-screen bg-[var(--neutral-50)] flex flex-col lg:flex-row overflow-hidden'>
+      {/* ── 左側品牌區（桌機） ─────────────────────────────── */}
+      <div className='hidden lg:flex lg:w-2/5 xl:w-1/3 bg-gradient-to-br from-[var(--forest-base)] to-[var(--forest-deep)] flex-col items-center justify-center px-10 shrink-0'>
+        {storeAvatarUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={storeAvatarUrl}
+            alt={storeName}
+            className='w-24 h-24 rounded-full object-cover ring-4 ring-white/20 shadow-lg mb-6'
+          />
+        ) : (
+          <div className='w-24 h-24 rounded-full bg-white/10 ring-4 ring-white/20 flex items-center justify-center mb-6 shadow-lg'>
             <svg
               viewBox='0 0 24 24'
-              width='28'
-              height='28'
+              width='40'
+              height='40'
               fill='none'
               stroke='white'
-              strokeWidth='1.8'
+              strokeWidth='1.5'
+              aria-hidden='true'
             >
-              <path d='M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' />
-              <circle cx='9' cy='7' r='4' />
-              <path d='M23 21v-2a4 4 0 0 0-3-3.87' />
-              <path d='M16 3.13a4 4 0 0 1 0 7.75' />
+              <path d='M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z' />
+              <line x1='3' y1='6' x2='21' y2='6' />
+              <path d='M16 10a4 4 0 01-8 0' />
             </svg>
           </div>
-          <h1 className='text-xl font-bold text-[var(--neutral-800)] [font-family:var(--font-zen-maru-gothic)] mb-1'>
+        )}
+        <h1
+          className='text-2xl font-bold text-white mb-2 text-center'
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
+          {storeName}
+        </h1>
+        <p className='text-sm text-white/60 text-center leading-relaxed'>
+          填寫資料後，商家審核通過即可進入賣場選購
+        </p>
+      </div>
+
+      {/* ── 右側表單區 ─────────────────────────────────────── */}
+      <div className='flex-1 flex flex-col overflow-hidden'>
+        {/* 手機版 header（只在手機顯示） */}
+        <div className='lg:hidden flex flex-col items-center pt-6 pb-4 px-4'>
+          {storeAvatarUrl ? (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={storeAvatarUrl}
+              alt={storeName}
+              className='w-14 h-14 rounded-full object-cover ring-2 ring-[var(--neutral-200)] shadow mb-3'
+            />
+          ) : (
+            <div className='w-14 h-14 rounded-full bg-gradient-to-br from-[var(--forest-400)] to-[var(--forest-base)] flex items-center justify-center mb-3 shadow'>
+              <svg
+                viewBox='0 0 24 24'
+                width='24'
+                height='24'
+                fill='none'
+                stroke='white'
+                strokeWidth='2'
+                aria-hidden='true'
+              >
+                <path d='M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z' />
+                <line x1='3' y1='6' x2='21' y2='6' />
+                <path d='M16 10a4 4 0 01-8 0' />
+              </svg>
+            </div>
+          )}
+          <h1
+            className='text-lg font-bold text-[var(--neutral-800)] mb-0.5'
+            style={{ fontFamily: 'var(--font-display)' }}
+          >
             申請加入 {storeName}
           </h1>
-          <p className='text-sm text-[var(--neutral-500)]'>
+          <p className='text-xs text-[var(--neutral-500)]'>
             以 LINE 帳號{' '}
             <span className='font-medium text-[var(--neutral-700)]'>{displayName}</span> 申請加入
           </p>
         </div>
 
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className='bg-white rounded-2xl border border-[var(--neutral-200)] shadow-sm p-6 flex flex-col gap-5'
-        >
-          {/* 姓名 */}
-          <FormField label='姓名' required error={errors.name}>
-            <input
-              type='text'
-              value={form.name}
-              onChange={handleChange('name')}
-              placeholder='請輸入您的姓名'
-              maxLength={20}
-              className={inputClass(!!errors.name)}
-            />
-          </FormField>
-
-          {/* LINE ID */}
-          <FormField label='LINE ID' required error={errors.line_id}>
-            <input
-              type='text'
-              value={form.line_id}
-              onChange={handleChange('line_id')}
-              placeholder='請輸入您的 LINE ID（供商家聯繫）'
-              className={inputClass(!!errors.line_id)}
-            />
-          </FormField>
-
-          {/* 手機號碼 */}
-          <FormField label='手機號碼' error={errors.phone} hint='選填'>
-            <input
-              type='tel'
-              value={form.phone}
-              onChange={handleChange('phone')}
-              placeholder='09xxxxxxxx'
-              maxLength={10}
-              className={inputClass(!!errors.phone)}
-            />
-          </FormField>
-
-          {/* 自我介紹 */}
-          <FormField label='自我介紹' error={errors.bio} hint={`選填・${form.bio.length}/100 字`}>
-            <textarea
-              value={form.bio}
-              onChange={handleChange('bio')}
-              placeholder='簡單介紹自己，讓商家更了解您（上限 100 字）'
-              maxLength={100}
-              rows={3}
-              className={`${inputClass(!!errors.bio)} resize-none`}
-            />
-          </FormField>
-
-          <button
-            type='submit'
-            disabled={submitting}
-            className='w-full py-3 bg-[var(--sage-500)] hover:bg-[var(--sage-600)] text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2'
+        {/* 表單捲動區 */}
+        <div className='flex-1 overflow-y-auto'>
+          <form
+            onSubmit={handleSubmit}
+            className='h-full lg:flex lg:flex-col lg:justify-between px-4 lg:px-10 xl:px-16 pb-4 lg:py-10'
           >
-            {submitting && (
-              <svg
-                className='animate-spin'
-                width='16'
-                height='16'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
+            {/* 桌機版標題 */}
+            <div className='hidden lg:block mb-6'>
+              <h2
+                className='text-xl font-bold text-[var(--neutral-800)] mb-1'
+                style={{ fontFamily: 'var(--font-display)' }}
               >
-                <path d='M21 12a9 9 0 1 1-6.219-8.56' />
-              </svg>
-            )}
-            送出申請
-          </button>
-        </form>
+                申請加入賣場
+              </h2>
+              <p className='text-sm text-[var(--neutral-500)]'>
+                以 LINE 帳號{' '}
+                <span className='font-medium text-[var(--neutral-700)]'>{displayName}</span>{' '}
+                申請加入
+              </p>
+            </div>
+
+            {/* 表單欄位 */}
+            <div className='flex flex-col gap-3 lg:gap-4'>
+              <FormField label='姓名' required error={errors.name}>
+                <input
+                  type='text'
+                  value={form.name}
+                  onChange={handleChange('name')}
+                  placeholder='請輸入您的姓名'
+                  maxLength={20}
+                  className={inputClass(!!errors.name)}
+                />
+              </FormField>
+
+              <FormField label='LINE ID' required error={errors.line_id}>
+                <input
+                  type='text'
+                  value={form.line_id}
+                  onChange={handleChange('line_id')}
+                  placeholder='請輸入您的 LINE ID（供商家聯繫）'
+                  className={inputClass(!!errors.line_id)}
+                />
+              </FormField>
+
+              <FormField label='手機號碼' error={errors.phone} hint='選填'>
+                <input
+                  type='tel'
+                  value={form.phone}
+                  onChange={handleChange('phone')}
+                  placeholder='09xxxxxxxx'
+                  maxLength={10}
+                  className={inputClass(!!errors.phone)}
+                />
+              </FormField>
+
+              <FormField
+                label='自我介紹'
+                error={errors.bio}
+                hint={`選填・${form.bio.length}/100 字`}
+              >
+                <textarea
+                  value={form.bio}
+                  onChange={handleChange('bio')}
+                  placeholder='簡單介紹自己，讓商家更了解您（上限 100 字）'
+                  maxLength={100}
+                  rows={2}
+                  className={`${inputClass(!!errors.bio)} resize-none`}
+                />
+              </FormField>
+            </div>
+
+            {/* 送出按鈕 */}
+            <div className='mt-4 lg:mt-6'>
+              <button
+                type='submit'
+                disabled={submitting}
+                className='w-full py-3 bg-[var(--forest-base)] hover:bg-[var(--forest-deep)] text-white text-sm font-semibold rounded-xl transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2 shadow-[var(--sh-sm)]'
+              >
+                {submitting && (
+                  <svg
+                    className='animate-spin'
+                    width='16'
+                    height='16'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                  >
+                    <path d='M21 12a9 9 0 1 1-6.219-8.56' />
+                  </svg>
+                )}
+                送出申請
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   )
@@ -281,7 +342,7 @@ function ResultPage({
   type,
   storeName,
 }: {
-  type: 'success' | 'already_pending' | 'already_approved' | 'error'
+  type: Exclude<PageState, 'loading' | 'form'>
   storeName: string
 }) {
   const configs = {
@@ -291,7 +352,7 @@ function ResultPage({
           <path d='M20 6L9 17l-5-5' />
         </svg>
       ),
-      bgClass: 'from-[var(--sage-400)] to-[var(--sage-600)]',
+      bgClass: 'from-[var(--forest-400)] to-[var(--forest-base)]',
       title: '申請已送出！',
       message: `商家收到您的申請後會盡快審核。審核通過後即可進入 ${storeName} 選購。`,
     },
@@ -313,7 +374,7 @@ function ResultPage({
           <path d='M22 4L12 14.01l-3-3' />
         </svg>
       ),
-      bgClass: 'from-[var(--sage-500)] to-[var(--sage-700)]',
+      bgClass: 'from-[var(--forest-400)] to-[var(--forest-deep)]',
       title: '您已是會員',
       message: `您已是 ${storeName} 的會員，請透過商家分享的連結進入賣場。`,
     },
@@ -324,7 +385,7 @@ function ResultPage({
           <path d='M15 9l-6 6M9 9l6 6' />
         </svg>
       ),
-      bgClass: 'from-[var(--color-danger,#c4453d)] to-[#9a3028]',
+      bgClass: 'from-[var(--sakura-400)] to-[var(--sakura-base)]',
       title: '發生錯誤',
       message: '申請失敗，請稍後再試或聯繫商家。',
     },
@@ -333,14 +394,17 @@ function ResultPage({
   const config = configs[type]
 
   return (
-    <div className='min-h-screen bg-[var(--neutral-50)] flex items-center justify-center px-4'>
+    <div className='h-screen bg-[var(--neutral-50)] flex items-center justify-center px-4'>
       <div className='text-center max-w-sm'>
         <div
-          className={`w-20 h-20 rounded-full bg-gradient-to-br ${config.bgClass} flex items-center justify-center mx-auto mb-6 shadow-lg`}
+          className={`w-20 h-20 rounded-full bg-gradient-to-br ${config.bgClass} flex items-center justify-center mx-auto mb-6 shadow-[var(--sh-lg)]`}
         >
           {config.icon}
         </div>
-        <h2 className='text-xl font-bold text-[var(--neutral-800)] [font-family:var(--font-zen-maru-gothic)] mb-3'>
+        <h2
+          className='text-xl font-bold text-[var(--neutral-800)] mb-3'
+          style={{ fontFamily: 'var(--font-display)' }}
+        >
           {config.title}
         </h2>
         <p className='text-sm text-[var(--neutral-600)] leading-relaxed'>{config.message}</p>
@@ -365,27 +429,27 @@ function FormField({
   children: React.ReactNode
 }) {
   return (
-    <div className='flex flex-col gap-1.5'>
+    <div className='flex flex-col gap-1'>
       <div className='flex items-center justify-between'>
         <label className='text-sm font-medium text-[var(--neutral-700)]'>
           {label}
-          {required && <span className='text-[var(--color-danger,#c4453d)] ml-0.5'>*</span>}
+          {required && <span className='text-[var(--color-danger)] ml-0.5'>*</span>}
         </label>
         {hint && <span className='text-xs text-[var(--neutral-400)]'>{hint}</span>}
       </div>
       {children}
-      {error && <p className='text-xs text-[var(--color-danger,#c4453d)]'>{error}</p>}
+      {error && <p className='text-xs text-[var(--color-danger)]'>{error}</p>}
     </div>
   )
 }
 
 function inputClass(hasError: boolean) {
   return [
-    'w-full px-4 py-2.5 rounded-xl border text-sm text-[var(--neutral-800)] bg-white',
+    'w-full px-3 py-2 rounded-xl border text-sm text-[var(--neutral-800)] bg-white',
     'placeholder:text-[var(--neutral-400)]',
     'focus:outline-none focus:ring-2 transition-all',
     hasError
-      ? 'border-[var(--color-danger,#c4453d)] focus:ring-[rgba(196,69,61,0.2)]'
-      : 'border-[var(--neutral-200)] focus:border-[var(--sage-400)] focus:ring-[rgba(109,171,61,0.2)]',
+      ? 'border-[var(--color-danger)] focus:ring-[rgba(232,58,106,0.15)]'
+      : 'border-[var(--neutral-200)] focus:border-[var(--forest-400)] focus:ring-[rgba(58,136,56,0.15)]',
   ].join(' ')
 }

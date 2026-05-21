@@ -81,32 +81,29 @@ describe('middleware route protection', () => {
     })
   })
 
-  describe('/store/[slug]/* protected routes', () => {
-    it('redirects unauthenticated user from /store/test-shop to /store/test-shop/login', async () => {
+  // Sprint 3：/store/* 全部改為公開路由，auth guard 移至 layout LIFF 處理
+  describe('/store/* 全部公開（auth guard 在 layout）', () => {
+    it('未登入也可存取 /store/test-shop', async () => {
       vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
-      const response = await middleware(makeRequest('/store/test-shop'))
-      expect(response.status).toBe(307)
-      expect(response.headers.get('location')).toContain('/store/test-shop/login')
-    })
-
-    it('redirects unauthenticated user from /store/test-shop/orders to /store/test-shop/login', async () => {
-      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
-      const response = await middleware(makeRequest('/store/test-shop/orders'))
-      expect(response.status).toBe(307)
-      expect(response.headers.get('location')).toContain('/store/test-shop/login')
-    })
-
-    it('allows authenticated user to access /store/test-shop', async () => {
-      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(true) as never)
       const response = await middleware(makeRequest('/store/test-shop'))
       expect(response.status).not.toBe(307)
     })
-  })
 
-  describe('/store/[slug]/login public route', () => {
-    it('allows unauthenticated access to /store/test-shop/login', async () => {
+    it('未登入也可存取 /store/test-shop/orders', async () => {
       vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
-      const response = await middleware(makeRequest('/store/test-shop/login'))
+      const response = await middleware(makeRequest('/store/test-shop/orders'))
+      expect(response.status).not.toBe(307)
+    })
+
+    it('未登入也可存取 /store/test-shop/account', async () => {
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/store/test-shop/account'))
+      expect(response.status).not.toBe(307)
+    })
+
+    it('未登入也可存取 /store/test-shop/join', async () => {
+      vi.mocked(createServerClient).mockReturnValue(makeSupabaseMock(false) as never)
+      const response = await middleware(makeRequest('/store/test-shop/join'))
       expect(response.status).not.toBe(307)
     })
   })
