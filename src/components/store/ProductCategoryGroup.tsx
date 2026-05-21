@@ -23,7 +23,7 @@ export default function ProductCategoryGroup({
         <div className='flex-1 h-px bg-[var(--neutral-200)]' />
         <span className='text-[11px] text-[var(--neutral-400)]'>{products.length} 件</span>
       </div>
-      <div className='grid grid-cols-2 gap-3 sm:grid-cols-3'>
+      <div className='grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4'>
         {products.map((product) => (
           <ProductCard key={product.id} product={product} slug={slug} keyword={keyword} />
         ))}

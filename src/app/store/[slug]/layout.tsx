@@ -133,8 +133,10 @@ export default function StoreLayout({ children, params }: StoreLayoutProps) {
   // approved
   return (
     <div className='min-h-screen bg-[var(--neutral-50)] flex flex-col'>
-      {auth.store && <StoreHeader name={auth.store.name} avatarUrl={auth.store.avatar_url} />}
-      <main className='flex-1 pb-20'>{children}</main>
+      {auth.store && (
+        <StoreHeader name={auth.store.name} avatarUrl={auth.store.avatar_url} slug={slug} />
+      )}
+      <main className='flex-1 max-w-5xl mx-auto w-full pb-20 lg:pb-8'>{children}</main>
       <StoreBottomNav slug={slug} />
     </div>
   )
@@ -151,7 +153,7 @@ function StoreSkeleton() {
         <div className='h-4 w-32 rounded bg-[var(--neutral-100)] animate-pulse' />
       </div>
       {/* content skeleton */}
-      <div className='px-4 pt-6 grid grid-cols-2 gap-3'>
+      <div className='max-w-5xl mx-auto px-4 pt-6 grid grid-cols-2 gap-3 lg:grid-cols-4'>
         {Array.from({ length: 4 }).map((_, i) => (
           <div key={i} className='bg-white rounded-xl overflow-hidden shadow-[var(--sh-xs)]'>
             <div className='aspect-square bg-[var(--neutral-100)] animate-pulse' />
