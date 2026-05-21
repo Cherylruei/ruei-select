@@ -5,7 +5,7 @@
 export type UserRole = 'merchant' | 'customer'
 export type MemberStatus = 'pending' | 'approved' | 'rejected'
 export type MemberSource = 'invite_link' | 'public_page'
-export type Currency = 'TWD' | 'JPY' | 'GBP' | 'USD' | 'HKD'
+export type Currency = 'TWD' | 'JPY' | 'KRW' | 'GBP' | 'USD' | 'HKD'
 export type ProductStatus = 'active' | 'inactive' | 'soldout'
 export type OrderStatus =
   | 'pending_purchase'

@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import type { Currency } from '@/types'
 
-const FOREIGN_CURRENCIES: Exclude<Currency, 'TWD'>[] = ['JPY', 'GBP', 'USD', 'HKD']
+const FOREIGN_CURRENCIES: Exclude<Currency, 'TWD'>[] = ['JPY', 'KRW', 'GBP', 'USD', 'HKD']
 
 interface Props {
   value: number | null
