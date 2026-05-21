@@ -12,11 +12,14 @@ export default async function JoinPage({ params }: JoinPageProps) {
   const serviceClient = createServiceClient()
   const { data: store } = (await serviceClient
     .from('stores')
-    .select('id, name')
+    .select('id, name, avatar_url')
     .eq('slug', slug)
-    .maybeSingle()) as { data: { id: string; name: string } | null; error: unknown }
+    .maybeSingle()) as {
+    data: { id: string; name: string; avatar_url: string | null } | null
+    error: unknown
+  }
 
   if (!store) notFound()
 
-  return <JoinClient slug={slug} storeName={store.name} />
+  return <JoinClient slug={slug} storeName={store.name} storeAvatarUrl={store.avatar_url} />
 }

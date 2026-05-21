@@ -8,13 +8,7 @@ function isProtectedAdminRoute(pathname: string) {
   return pathname.startsWith('/admin') && pathname !== '/admin/login'
 }
 
-function isProtectedStoreRoute(pathname: string) {
-  return (
-    pathname.match(/^\/store\/[^/]+/) !== null &&
-    !pathname.match(/^\/store\/[^/]+\/login$/) &&
-    !pathname.match(/^\/store\/[^/]+\/join$/)
-  )
-}
+// Sprint 3：/store/* 路由全部公開，auth guard 改由 layout LIFF 處理
 
 async function getAuthUser(request: NextRequest, response: NextResponse) {
   if (!supabaseUrl || !supabaseAnonKey) {
@@ -81,18 +75,8 @@ export async function authMiddleware(request: NextRequest) {
     return response
   }
 
-  // /store/[slug]/login — public
-  if (pathname.match(/^\/store\/[^/]+\/login$/)) {
-    return response
-  }
-
-  // /store/[slug]/* — require authentication
-  if (isProtectedStoreRoute(pathname)) {
-    if (!user) {
-      const slugMatch = pathname.match(/^\/store\/([^/]+)/)
-      const slug = slugMatch ? slugMatch[1] : ''
-      return redirectWithCookies(new URL(`/store/${slug}/login`, request.url), response)
-    }
+  // /store/* — 全部公開，LIFF auth guard 在 layout 層處理
+  if (pathname.startsWith('/store/')) {
     return response
   }
 

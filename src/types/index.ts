@@ -190,6 +190,93 @@ export interface ExchangeRate {
   fetched_at: string
 }
 
+// ── Sprint 3：顧客前台類型 ─────────────────────────────────────────────────────
+
+export type CustomerOrderDisplayStatus = '已訂購' | '已到貨' | '已出貨' | '已完成' | '已取消'
+
+export function toDisplayStatus(status: OrderStatus): CustomerOrderDisplayStatus {
+  switch (status) {
+    case 'pending_purchase':
+    case 'ordered':
+      return '已訂購'
+    case 'allocated':
+    case 'settled':
+      return '已到貨'
+    case 'shipped':
+      return '已出貨'
+    case 'completed':
+      return '已完成'
+    case 'cancelled':
+      return '已取消'
+  }
+}
+
+export interface StoreProductSummary {
+  id: string
+  name: string
+  description: string | null
+  category: string | null
+  primaryImage: string | null
+  priceRange: {
+    min: number
+    max: number
+  }
+}
+
+export interface StoreProductDetail {
+  id: string
+  name: string
+  description: string | null
+  category: string | null
+  images: { url: string; sort_order: number }[]
+  variants: {
+    id: string
+    specs: Record<string, string>
+    price: number
+  }[]
+}
+
+export interface CustomerOrderItem {
+  id: string
+  quantity: number
+  unit_price: number
+  product: {
+    id: string
+    name: string
+    primaryImage: string | null
+  }
+  variant: {
+    id: string
+    specs: Record<string, string>
+  } | null
+}
+
+export interface CustomerOrder {
+  id: string
+  status: OrderStatus
+  displayStatus: CustomerOrderDisplayStatus
+  ordered_at: string
+  items: CustomerOrderItem[]
+}
+
+export interface StoreAuthResult {
+  status: 'approved' | 'pending' | 'rejected' | 'none'
+  store: {
+    id: string
+    name: string
+    avatar_url: string | null
+    slug: string
+    line_official_account_url: string | null
+  }
+  member?: {
+    id: string
+    name: string
+    phone: string | null
+    line_id: string | null
+    created_at: string
+  }
+}
+
 // AI 文案優化回傳格式
 export interface CopywritingResult {
   name: string
