@@ -273,7 +273,7 @@ export interface StoreAuthResult {
     name: string
     phone: string | null
     line_id: string | null
-    created_at: string
+    applied_at: string
   }
 }
 
