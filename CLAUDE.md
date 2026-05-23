@@ -97,7 +97,55 @@ DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → KM
 
 ---
 
-## 6. 目前狀態
+## 6. 本地開發環境 SOP
+
+### 環境差異對照
+
+| 項目 | 本地開發 | Production |
+|------|---------|-----------|
+| 資料庫 | Docker `127.0.0.1:54321` | Supabase Cloud |
+| 環境變數 | `.env.development.local`（覆蓋 `.env.local`） | Vercel 環境變數 |
+| 前台登入 | `dev-mock-token` bypass → `U_dev_mock` 用戶 | LIFF SDK 真實 token |
+| 後台登入 | Supabase Auth（Email/Password） | 同左 |
+| 測試資料 | `supabase/seed.sql`（`db:reset` 時注入） | 真實資料 |
+
+### 啟動順序（每次開發）
+
+```
+1. 開 Docker Desktop（系統托盤綠燈）
+2. npx supabase start        ← 啟動 Postgres 容器
+3. npm run dev:clean         ← 清舊進程+快取後啟動 dev server
+4. 開 localhost:3000/store/test-store 開始測試
+```
+
+### npm scripts 速查
+
+| 指令 | 用途 |
+|------|------|
+| `npm run dev:clean` | 清掉殘留 node 進程 + `.next` 後啟動 dev server（**推薦平常用這個**） |
+| `npm run dev:check` | 檢查 Supabase 狀態 + 顯示目前 node 進程數 |
+| `npm run dev` | 純啟動 dev server（不清快取，環境穩定時可用） |
+| `npm run db:reset` | 重置本地 DB + 重新跑 seed.sql |
+
+### 卡住時的恢復步驟
+
+若遇到 `ERR_EMPTY_RESPONSE` / webpack-hmr 連線失敗 / 莫名 404，依序：
+1. `npm run dev:check` 確認 Supabase 在跑、node 進程數合理（< 10）
+2. `npm run dev:clean` 重啟
+3. 若仍異常，看 [km/learnings/local-dev-debugging.md](km/learnings/local-dev-debugging.md) 對照踩坑紀錄
+
+### dev bypass 鏈條完整性
+
+修改 LIFF 認證相關程式碼時，**必須整條鏈**都通：
+1. `verifyLiffToken('dev-mock-token')` → 回傳 `{ lineId: 'U_dev_mock' }`
+2. `users` 表必須有 `line_id = 'U_dev_mock'` 的 row（在 seed.sql）
+3. `store_members` 表必須有對應 `user_id` + 目標 `store_id` + `status = 'approved'`
+
+任一環斷掉會回傳 `status: 'none'`（顯示「您尚未加入此賣場」）。
+
+---
+
+## 7. 目前狀態
 
 > 每個 feature 開始和完成時更新此區塊。
 
