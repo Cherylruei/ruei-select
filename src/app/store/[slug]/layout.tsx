@@ -45,34 +45,17 @@ export default function StoreLayout({ children, params }: StoreLayoutProps) {
 
     async function run() {
       try {
-        // 開發環境：直接 approved，略過 LIFF 和 DB 查詢
+        let token: string
         if (process.env.NODE_ENV === 'development') {
-          setAuth({
-            layoutState: 'approved',
-            store: {
-              id: 'dev-store-id',
-              name: '開發測試賣場',
-              avatar_url: null,
-              slug,
-              line_official_account_url: null,
-            },
-            member: {
-              id: 'dev-member-id',
-              name: '測試用戶',
-              phone: null,
-              line_id: 'U_dev_mock',
-              created_at: new Date().toISOString(),
-            },
-          })
-          return
+          token = 'dev-mock-token'
+        } else {
+          const liff = await initLiff()
+          if (!liff.isLoggedIn()) {
+            liff.login({ redirectUri: window.location.href })
+            return
+          }
+          token = liff.getAccessToken() ?? ''
         }
-
-        const liff = await initLiff()
-        if (!liff.isLoggedIn()) {
-          liff.login({ redirectUri: window.location.href })
-          return
-        }
-        const token = liff.getAccessToken() ?? ''
 
         const res = await fetch(`/api/store-auth?slug=${encodeURIComponent(slug)}`, {
           headers: { Authorization: `Bearer ${token}` },

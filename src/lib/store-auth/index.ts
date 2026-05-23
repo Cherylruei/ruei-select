@@ -15,7 +15,7 @@ interface MemberRow {
   name: string
   phone: string | null
   line_id: string | null
-  created_at: string
+  applied_at: string
   status: string
 }
 
@@ -33,49 +33,23 @@ export async function verifyStoreAccess(
   liffToken: string,
   slug: string
 ): Promise<StoreAuthSuccess | StoreAuthFailure> {
-  // 開發環境 bypass：略過 LIFF 驗證，直接查詢 DB 中的真實賣場
-  if (process.env.NODE_ENV === 'development' && liffToken === 'dev-mock-token') {
-    const db = createServiceClient()
-    const { data: store } = (await db
-      .from('stores')
-      .select('id, name, avatar_url, slug')
-      .eq('slug', slug)
-      .maybeSingle()) as { data: StoreRow | null; error: unknown }
-
-    if (!store) return { error: 'STORE_NOT_FOUND' }
-
-    return {
-      result: {
-        status: 'approved',
-        store: {
-          id: store.id,
-          name: store.name,
-          avatar_url: store.avatar_url,
-          slug: store.slug,
-          line_official_account_url: null,
-        },
-        member: {
-          id: 'dev-member-id',
-          name: '開發測試用戶',
-          phone: null,
-          line_id: 'U_dev_mock',
-          created_at: new Date().toISOString(),
-        },
-      },
-    }
-  }
-
+  // verifyLiffToken 已內建 dev bypass：
+  // 'dev-mock-token' → { lineId: 'U_dev_mock' }，以下共用同一套查詢邏輯
   const profile = await verifyLiffToken(liffToken)
   if (!profile) return { error: 'INVALID_TOKEN' }
 
   const db = createServiceClient()
 
-  const { data: store } = (await db
+  const storeResult = (await db
     .from('stores')
     .select('id, name, avatar_url, slug')
     .eq('slug', slug)
-    .maybeSingle()) as { data: StoreRow | null; error: unknown }
+    .maybeSingle()) as { data: StoreRow | null; error: { message: string } | null }
 
+  if (storeResult.error && process.env.NODE_ENV === 'development') {
+    console.error('[verifyStoreAccess] store query error:', storeResult.error.message)
+  }
+  const { data: store } = storeResult
   if (!store) return { error: 'STORE_NOT_FOUND' }
 
   const storeWithUrl: StoreAuthResult['store'] = {
@@ -87,11 +61,16 @@ export async function verifyStoreAccess(
     line_official_account_url: null,
   }
 
-  const { data: user } = (await db
+  const userResult = (await db
     .from('users')
     .select('id')
     .eq('line_id', profile.lineId)
-    .maybeSingle()) as { data: { id: string } | null; error: unknown }
+    .maybeSingle()) as { data: { id: string } | null; error: { message: string } | null }
+
+  if (userResult.error && process.env.NODE_ENV === 'development') {
+    console.error('[verifyStoreAccess] user query error:', userResult.error.message)
+  }
+  const { data: user } = userResult
 
   if (!user) {
     return {
@@ -99,12 +78,17 @@ export async function verifyStoreAccess(
     }
   }
 
-  const { data: member } = (await db
+  const memberResult = (await db
     .from('store_members')
-    .select('id, name, phone, line_id, created_at, status')
+    .select('id, name, phone, line_id, applied_at, status')
     .eq('store_id', store.id)
     .eq('user_id', user.id)
-    .maybeSingle()) as { data: MemberRow | null; error: unknown }
+    .maybeSingle()) as { data: MemberRow | null; error: { message: string } | null }
+
+  if (memberResult.error && process.env.NODE_ENV === 'development') {
+    console.error('[verifyStoreAccess] member query error:', memberResult.error.message)
+  }
+  const { data: member } = memberResult
 
   if (!member) {
     return {
@@ -124,7 +108,7 @@ export async function verifyStoreAccess(
           name: member.name,
           phone: member.phone,
           line_id: member.line_id,
-          created_at: member.created_at,
+          applied_at: member.applied_at,
         },
       },
     }

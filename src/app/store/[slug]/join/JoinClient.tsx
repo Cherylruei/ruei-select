@@ -62,6 +62,7 @@ export default function JoinClient({ slug, storeName, storeAvatarUrl }: JoinClie
 
     if (process.env.NODE_ENV === 'development') {
       /* eslint-disable react-hooks/set-state-in-effect */
+      setLiffToken('dev-mock-token')
       setDisplayName('測試用戶')
       setForm((prev) => ({ ...prev, name: '測試用戶' }))
       setPageState('form')
@@ -78,6 +79,19 @@ export default function JoinClient({ slug, storeName, storeAvatarUrl }: JoinClie
         }
         const token = liff.getAccessToken()
         const profile = await liff.getProfile()
+
+        // 已是審核通過的會員 → 直接進入賣場，不顯示申請表單
+        const authRes = await fetch(`/api/store-auth?slug=${encodeURIComponent(slug)}`, {
+          headers: { Authorization: `Bearer ${token ?? ''}` },
+        })
+        if (authRes.ok) {
+          const authData = await authRes.json()
+          if (authData.status === 'approved') {
+            window.location.replace(`/store/${slug}`)
+            return
+          }
+        }
+
         setLiffToken(token)
         setDisplayName(profile.displayName)
         setForm((prev) => ({ ...prev, name: profile.displayName }))
