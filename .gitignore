@@ -43,3 +43,7 @@ next-env.d.ts
 
 # claude code local settings (session-specific permissions)
 .claude/settings.json
+
+# supabase local state (branch tracking, CLI cache)
+supabase/.branches
+supabase/.temp
