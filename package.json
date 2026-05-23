@@ -13,7 +13,7 @@
     "type-check": "tsc --noEmit",
     "prepare": "husky",
     "db:reset": "supabase db reset",
-    "dev:clean": "powershell -NoProfile -Command \"Get-Process node -ErrorAction SilentlyContinue | Stop-Process -Force; if (Test-Path .next) { Remove-Item .next -Recurse -Force }\" && npm run dev",
+    "dev:clean": "powershell -NoProfile -Command \"$p = Get-Process node -ErrorAction SilentlyContinue; if ($p) { $p | Stop-Process -Force }; if (Test-Path .next) { Remove-Item .next -Recurse -Force }\" && npm run dev",
     "dev:check": "powershell -NoProfile -Command \"npx supabase status; Write-Host '--- node processes ---'; @(Get-Process node -ErrorAction SilentlyContinue).Count\""
   },
   "dependencies": {
