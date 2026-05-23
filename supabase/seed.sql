@@ -124,7 +124,7 @@ INSERT INTO product_images (id, product_id, url, sort_order)
 VALUES (
   '00000000-0000-0000-0000-000000000061',
   '00000000-0000-0000-0000-000000000041',
-  'https://placehold.co/400x400/fce4ec/c2185b?text=面膜',
+  'https://placehold.co/400x400/fce4ec/c2185b.png?text=面膜',
   1
 ) ON CONFLICT (id) DO NOTHING;
 
@@ -165,7 +165,7 @@ INSERT INTO product_images (id, product_id, url, sort_order)
 VALUES (
   '00000000-0000-0000-0000-000000000062',
   '00000000-0000-0000-0000-000000000042',
-  'https://placehold.co/400x400/e8f5e9/2e7d32?text=保濕霜',
+  'https://placehold.co/400x400/e8f5e9/2e7d32.png?text=保濕霜',
   1
 ) ON CONFLICT (id) DO NOTHING;
 
@@ -212,6 +212,6 @@ INSERT INTO product_images (id, product_id, url, sort_order)
 VALUES (
   '00000000-0000-0000-0000-000000000063',
   '00000000-0000-0000-0000-000000000043',
-  'https://placehold.co/400x400/fce4ec/e91e63?text=口紅',
+  'https://placehold.co/400x400/fce4ec/e91e63.png?text=口紅',
   1
 ) ON CONFLICT (id) DO NOTHING;
