@@ -8,6 +8,34 @@
 ## ⚠️ 語言規則（強制）
 
 **所有回覆、說明、程式碼註解一律使用繁體中文。禁止使用韓文、日文或其他語言。**
+**若發現自己輸出非繁體中文，必須立即停止並以繁體中文重新回答。**
+
+---
+
+## ⛔ 常見錯誤禁止清單（每次開 session 必讀，違反即停止）
+
+這些是過去實際發生的錯誤，不得重蹈：
+
+```
+❌ 禁止把 dev-mock-token bypass 當成功能測試或驗收依據
+   → dev-mock-token 只用於本地開發啟動，不代表真實 LIFF 流程可用
+
+❌ 禁止為前台顧客建立 email/password 帳號（seed.sql 或任何地方）
+   → 前台只有 LINE LIFF 登入，顧客測試帳號使用 line_id
+
+❌ 禁止建立「前後台不串聯」的種子資料
+   → seed.sql 必須包含完整旅程：顧客 → 下單 → 商家後台可見
+   → 建立前先讀 docs/USER_JOURNEYS.md
+
+❌ 禁止以「單功能跑通」作為完成標準
+   → 驗收必須包含：顧客操作 → 商家後台反映（或反向）
+
+❌ 禁止自行決定「這個 sprint 做 LINE Messaging API」
+   → LINE Messaging API 不在 Sprint 1–5 範圍，整個產品完成後才開發
+```
+
+> 詳細架構約束見 [docs/SYSTEM_CONSTRAINTS.md](docs/SYSTEM_CONSTRAINTS.md)
+> 使用者旅程與前後台串聯見 [docs/USER_JOURNEYS.md](docs/USER_JOURNEYS.md)
 
 ---
 
@@ -148,41 +176,44 @@ DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → KM
 ## 7. 目前狀態
 
 > 每個 feature 開始和完成時更新此區塊。
+> 完整 sprint 進度索引見 [SPRINT_PLAN.md](SPRINT_PLAN.md)。
 
 ```
-目前 Sprint：   Sprint 2
-目前分支：      （待開分支）
+目前 Sprint：   Sprint 3（收尾）
+目前分支：      feature/sprint3-my-orders
 
-Sprint 1 進度（已完成）：
-- [x] feature/sprint1-init-setup       DB migration + Supabase client + types + middleware
-- [x] feature/sprint1-line-auth        LINE 登入流程
-- [x] feature/sprint1-admin-layout     後台 Sidebar 框架 + Dashboard
-- [x] feature/sprint1-store-settings   賣場設定（含頭像上傳、邀請連結）
-- [x] feature/sprint1-suppliers        供應商管理
-- [x] feature/sprint1-customers-frame  顧客審核框架
+Sprint 1 ✅ 完成（已 merge to main）
+Sprint 2 ✅ 完成（已 merge to main）
 
-Sprint 2 預計：
-- [ ] feature/sprint2-customers        顧客審核完整功能
-- [ ] feature/sprint2-products         商品管理（含 is_public 開關）
-- [ ] feature/sprint2-public-discovery 公開商品頁 SEO/AEO + 陌生客申請流程
-- [ ] feature/sprint2-orders           訂單管理
+Sprint 3 進度：
+- [x] feature/sprint3-store-auth       顧客前台 auth guard（LIFF 登入）
+- [x] feature/sprint3-products         顧客前台商品列表 + 詳細頁
+- [x] feature/sprint3-order            顧客下單流程
+- [ ] feature/sprint3-my-orders        顧客訂單查詢（US-16 測試型別問題處理中）
+- [ ] feature/sprint3-account          顧客帳戶頁（US-17）
+
+Sprint 4 待開始（DoR 已備妥，等 Sprint 3 merge）：
+→ 詳見 docs/dor/sprint4-dor.md
 ```
 
 ---
 
-## 7. 專案文件結構
+## 8. 專案文件結構
 
 ```
 ruei-select/
-├── claude.md
+├── CLAUDE.md                 ← 本文件（開發工作合約）
+├── SPRINT_PLAN.md            ← Sprint 狀態索引（輕量，每次 session 先讀）
 ├── src/app/
 │   ├── design-tokens.css     ← Design System tokens
 │   └── ...
 ├── docs/
-│   ├── PRD.md
+│   ├── PRD.md                ← 完整產品需求（細節查閱用）
+│   ├── SYSTEM_CONSTRAINTS.md ← 架構約束與禁止事項（必讀）
+│   ├── USER_JOURNEYS.md      ← 使用者旅程（建種子資料前必讀）
 │   ├── sdd/                  ← 系統架構（system-sdd.md + sprint delta）
-│   ├── dor/                  ← Sprint 需求定義
-│   ├── dod/                  ← Sprint 完成標準
+│   ├── dor/                  ← Sprint 需求定義（sprint{n}-dor.md）
+│   ├── dod/                  ← Sprint 完成標準（sprint{n}-dod.md）
 │   └── design/               ← 設計稿（login / pages / design-system）
 └── km/
     ├── bugs/                 ← 重要 bug 根因分析
