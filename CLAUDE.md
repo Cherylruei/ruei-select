@@ -115,7 +115,7 @@ DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → KM
 1. 開 Docker Desktop（系統托盤綠燈）
 2. npx supabase start        ← 啟動 Postgres 容器
 3. npm run dev:clean         ← 清舊進程+快取後啟動 dev server
-4. 開 localhost:3000/store/test-store 開始測試
+4. 開 localhost:3000/store/ruiruidaigou-5e8w 開始測試（前台）
 ```
 
 ### npm scripts 速查

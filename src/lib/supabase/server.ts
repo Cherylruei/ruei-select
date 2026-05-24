@@ -27,7 +27,13 @@ export async function createRouteHandlerClient() {
           return cookieStore.getAll()
         },
         setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => cookieStore.set(name, value, options))
+          try {
+            cookiesToSet.forEach(({ name, value, options }) =>
+              cookieStore.set(name, value, options)
+            )
+          } catch {
+            // Server Component 呼叫時無法 set cookie，由 middleware 負責 session 刷新
+          }
         },
       },
     }

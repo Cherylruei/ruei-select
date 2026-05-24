@@ -11,6 +11,7 @@
 Sprint 2 完成了商品上架、顧客申請加入流程、公開商品頁、以及訂單資料模型（orders / order_items table）。Sprint 3 的核心目標是讓整個「顧客購買流程」跑通：
 
 **Sprint 3 解決的核心問題：**
+
 - 顧客前台商品瀏覽尚未實作（Sprint 2 的 `/store/[slug]/products` Out of Scope）
 - 顧客下單 UI 尚未實作（Sprint 2 只建了 DB model，無 UI）
 - 顧客無法查詢自己的訂單狀態
@@ -24,7 +25,7 @@ Sprint 2 完成了商品上架、顧客申請加入流程、公開商品頁、�
 sprint3-store-auth     顧客前台 auth guard（依賴：Sprint 2 的 store_members + LIFF）
   → sprint3-products   顧客前台商品列表 + 詳細頁（依賴：Sprint 2 的 products table）
     → sprint3-order    顧客下單流程（依賴：Sprint 2 的 orders / order_items table）
-      → sprint3-my-orders  顧客訂單查詢 + 狀態篩選（依賴：sprint3-order 建立的訂單）
+      → sprint3-my-orders  顧客訂單查詢 + 狀態篩選（依賴：sprint3-order 建立的訂單; 實作已在上一個分支完成，此分支為驗證 + 完善 US-16 的測試型別問題
 sprint3-account        顧客帳戶頁（依賴：sprint3-store-auth，store_members 資料）
 ```
 
@@ -43,6 +44,7 @@ So that 我能確認自己是否有資格瀏覽商品並下單。
 ```
 
 **Acceptance Criteria：**
+
 - AC-13.1：`/store/[slug]` 為顧客前台入口；未 LIFF 登入時自動觸發 `liff.login()`
 - AC-13.2：LIFF 登入後，server 端驗證 token 取得 LINE user ID，查詢 `store_members`：
   - `status = 'approved'` → 進入商品列表頁（`/store/[slug]`）
@@ -64,6 +66,7 @@ So that 我能快速找到想購買的商品。
 ```
 
 **Acceptance Criteria：**
+
 - AC-14.1：`/store/[slug]`（前台首頁）顯示該賣場所有 `status = 'active'` 的商品（已審核顧客可見，包括非公開商品）
 - AC-14.2：商品卡顯示：商品主圖（第一張）、商品名稱、售價範圍（最低～最高規格價格）
 - AC-14.3：商品依 `category` 分組顯示（無 category 的商品歸入「其他」）
@@ -85,6 +88,7 @@ So that 我的購買意願能立即被商家看到，進入待採買流程。
 **Acceptance Criteria：**
 
 **商品詳細頁**
+
 - AC-15.1：`/store/[slug]/products/[id]` 顯示商品圖片輪播（多張圖片）、商品名稱、商品描述
 - AC-15.2：依 `product_variants.specs` 建立規格選擇器（如顏色、尺寸各自獨立下拉或 badge 選擇）
 - AC-15.3：規格選齊後顯示對應 variant 的售價
@@ -94,6 +98,7 @@ So that 我的購買意願能立即被商家看到，進入待採買流程。
 - AC-15.7：商品不屬於此賣場 → 404
 
 **下單確認彈窗**
+
 - AC-15.8：點擊「立即下單」→ 開啟確認彈窗，顯示：
   - 商品名稱
   - 已選規格（如「顏色：紅 / 尺寸：M」）
@@ -103,6 +108,7 @@ So that 我的購買意願能立即被商家看到，進入待採買流程。
 - AC-15.9：確認彈窗有「取消」和「確認下單」按鈕
 
 **訂單建立**
+
 - AC-15.10：點擊「確認下單」→ 呼叫 `POST /api/orders`，建立：
   - `orders`：status = 'pending_purchase'，member_id = 當前顧客
   - `order_items`：product_id、variant_id、quantity、unit_price = variant.price
@@ -120,6 +126,7 @@ So that 我能追蹤購買進度，了解商品何時到貨。
 ```
 
 **Acceptance Criteria：**
+
 - AC-16.1：`/store/[slug]/orders` 顯示當前顧客在此賣場的所有訂單，依 `ordered_at` 倒序
 - AC-16.2：每筆訂單顯示：
   - 商品圖（第一張）+ 商品名稱 + 規格
@@ -128,13 +135,13 @@ So that 我能追蹤購買進度，了解商品何時到貨。
   - 下單時間（格式：YYYY/MM/DD HH:mm）
 - AC-16.3：顧客端訂單狀態 badge 顯示（顧客看到的標籤與商家後台不同）：
 
-  | 顧客端顯示 | 對應 DB status | 顏色 |
-  |-----------|---------------|------|
-  | 已訂購 | pending_purchase、ordered | 藍色 |
-  | 已到貨 | allocated、settled | 綠色 |
-  | 已出貨 | shipped | 深綠色 |
-  | 已完成 | completed | 灰色 |
-  | 已取消 | cancelled | 紅色 |
+  | 顧客端顯示 | 對應 DB status            | 顏色   |
+  | ---------- | ------------------------- | ------ |
+  | 已訂購     | pending_purchase、ordered | 藍色   |
+  | 已到貨     | allocated、settled        | 綠色   |
+  | 已出貨     | shipped                   | 深綠色 |
+  | 已完成     | completed                 | 灰色   |
+  | 已取消     | cancelled                 | 紅色   |
 
   > ℹ️ 商家後台使用原始 DB status（7種），顧客前台使用上方 5 種友善標籤，由 API 層映射。
 
@@ -154,6 +161,7 @@ So that 我能確認商家持有的聯絡資訊是否正確。
 ```
 
 **Acceptance Criteria：**
+
 - AC-17.1：`/store/[slug]/account` 顯示顧客的個人資料（唯讀）：
   - LINE 顯示名稱（不可修改，來自 LIFF）
   - 姓名（來自 `store_members.name`）
@@ -169,6 +177,7 @@ So that 我能確認商家持有的聯絡資訊是否正確。
 ## 範圍邊界
 
 ### In Scope（Sprint 3 要做）
+
 - 顧客前台 auth guard（LIFF 登入 + approved member 驗證）
 - 顧客前台商品列表頁（含關鍵字搜尋、類別分組）
 - 顧客前台商品詳細頁（含規格選擇、售價顯示）
@@ -180,6 +189,7 @@ So that 我能確認商家持有的聯絡資訊是否正確。
 - 顧客端訂單狀態映射（DB 原始 status → 5 種顧客友善標籤）
 
 ### Out of Scope（Sprint 3 不做）
+
 - 顧客結單流程（選取已到貨商品、填物流資訊）→ Sprint 4
 - LINE Messaging API 通知 → Sprint 4
 - 商家配貨流程 → Sprint 5
@@ -190,11 +200,11 @@ So that 我能確認商家持有的聯絡資訊是否正確。
 
 ## 技術依賴
 
-| 項目 | 說明 | 狀態 |
-|------|------|------|
+| 項目          | 說明                                                                                                  | 狀態                              |
+| ------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------- |
 | Sprint 2 完成 | `orders`、`order_items`、`products`、`product_variants`、`product_images`、`store_members` table 存在 | ⬜ 確認 Sprint 2 migration 已執行 |
-| LIFF App ID | 顧客前台已設定的 LIFF App，endpoint 設定包含 `/store/[slug]` | ⬜ 確認 LINE Developers 設定 |
-| `LIFF_ID` env | 顧客前台用的 LIFF ID，已加入 `.env.local` | ⬜ 確認 |
+| LIFF App ID   | 顧客前台已設定的 LIFF App，endpoint 設定包含 `/store/[slug]`                                          | ⬜ 確認 LINE Developers 設定      |
+| `LIFF_ID` env | 顧客前台用的 LIFF ID，已加入 `.env.local`                                                             | ⬜ 確認                           |
 
 ---
 
@@ -252,12 +262,12 @@ CREATE POLICY "顧客可讀取自己訂單的明細"
 
 ## 風險與緩解
 
-| 風險 | 影響 | 緩解方式 |
-|------|------|----------|
-| LIFF 在外部瀏覽器（非 LINE）開啟 | auth guard 失效 | 偵測環境，非 LINE 環境改用 LINE Login redirect；進入顧客前台要求從 LINE 開啟 |
-| 同一顧客快速連點「確認下單」導致重複建立訂單 | 重複訂單 | 按鈕點擊後立即 disabled，直到 API 回應 |
-| 規格組合對應售價計算錯誤 | 顧客看到錯誤價格 | `product_variants` 每個組合有獨立 price，前端直接用 variant.price，不做二次計算 |
-| 顧客前台商品可見度邊界（已審核顧客看到非公開商品） | 資料隔離 | RLS 確保顧客只能看到自己賣場（已加入）的商品，`store_members.status = 'approved'` 做判斷 |
+| 風險                                               | 影響             | 緩解方式                                                                                 |
+| -------------------------------------------------- | ---------------- | ---------------------------------------------------------------------------------------- |
+| LIFF 在外部瀏覽器（非 LINE）開啟                   | auth guard 失效  | 偵測環境，非 LINE 環境改用 LINE Login redirect；進入顧客前台要求從 LINE 開啟             |
+| 同一顧客快速連點「確認下單」導致重複建立訂單       | 重複訂單         | 按鈕點擊後立即 disabled，直到 API 回應                                                   |
+| 規格組合對應售價計算錯誤                           | 顧客看到錯誤價格 | `product_variants` 每個組合有獨立 price，前端直接用 variant.price，不做二次計算          |
+| 顧客前台商品可見度邊界（已審核顧客看到非公開商品） | 資料隔離         | RLS 確保顧客只能看到自己賣場（已加入）的商品，`store_members.status = 'approved'` 做判斷 |
 
 ---
 

@@ -30,7 +30,7 @@ const mockMember = {
   name: '王小明',
   phone: '0912345678',
   line_id: 'U_test',
-  created_at: '2026-01-01T00:00:00Z',
+  applied_at: '2026-01-01T00:00:00Z',
 }
 
 const approvedResult = {
