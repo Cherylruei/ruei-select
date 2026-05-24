@@ -52,7 +52,13 @@ describe('GET /api/store-auth', () => {
 
     expect(res.status).toBe(200)
     expect(json.status).toBe('approved')
-    expect(json.member).toMatchObject({ id: 'member-1' })
+    expect(json.member).toMatchObject({
+      id: 'member-1',
+      name: '王小明',
+      phone: '0912345678',
+      line_id: 'U_test',
+      applied_at: '2026-01-01T00:00:00Z',
+    })
     expect(json.store.slug).toBe('test-store')
   })
 
