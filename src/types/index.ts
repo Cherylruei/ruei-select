@@ -15,7 +15,10 @@ export type OrderStatus =
   | 'shipped'
   | 'completed'
   | 'cancelled'
-export type ShippingMethod = 'pickup' | 'convenience' | 'seller_delivery' | 'home_delivery'
+export type OrderCreatedBy = 'customer' | 'merchant'
+export type OrderCancelledBy = 'customer' | 'merchant'
+export type ShippingVendor = '黑貓' | '7-11' | '全家' | '賣貨便' | '其他'
+export type ShippingMethod = 'pickup' | 'convenience' | 'takkyubin' | 'home_delivery'
 export type PaymentMethod = 'cash' | 'transfer' | 'cod'
 
 export interface User {
@@ -129,9 +132,14 @@ export interface Order {
   store_id: string
   member_id: string
   status: OrderStatus
+  created_by: OrderCreatedBy
   note: string | null
   ordered_at: string
   updated_at: string
+  cancelled_by: OrderCancelledBy | null
+  cancelled_at: string | null
+  shipping_number: string | null
+  shipping_vendor: ShippingVendor | null
 }
 
 export interface OrderItem {
@@ -143,6 +151,60 @@ export interface OrderItem {
   unit_price: number
   unit_cost: number | null
   created_at: string
+}
+
+// ── Sprint 4：商家後台訂單類型 ─────────────────────────────────────────────────
+
+export interface AdminOrderItem {
+  id: string
+  quantity: number
+  unit_price: number
+  product_name: string
+  variant_specs: Record<string, string> | null
+}
+
+export interface AdminOrder {
+  id: string
+  store_id: string
+  member_id: string
+  member_name: string
+  member_line_id: string
+  status: OrderStatus
+  created_by: OrderCreatedBy
+  note: string | null
+  ordered_at: string
+  updated_at: string
+  cancelled_by: OrderCancelledBy | null
+  cancelled_at: string | null
+  items: AdminOrderItem[]
+}
+
+export interface OrderStatusCounts {
+  all: number
+  pending_purchase: number
+  ordered: number
+  allocated: number
+  settled: number
+  shipped: number
+  completed: number
+  cancelled: number
+}
+
+export interface MemberOption {
+  id: string
+  name: string
+  line_id: string
+}
+
+export interface ProductOption {
+  id: string
+  name: string
+}
+
+export interface VariantOption {
+  id: string
+  specs: Record<string, string>
+  price: number
 }
 
 export interface Shipment {

@@ -124,16 +124,9 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
           </svg>
         ),
       },
-    ],
-  },
-  {
-    section: '即將推出',
-    items: [
       {
         href: '/admin/orders',
         label: '訂單管理',
-        tag: 'S3',
-        disabled: true,
         exact: false,
         icon: (
           <svg
@@ -144,10 +137,9 @@ const NAV_ITEMS: { section: string; items: NavItem[] }[] = [
             stroke='currentColor'
             strokeWidth='1.7'
           >
-            <path d='M5 4h14l-1 12H6L5 4z' />
-            <path d='M5 4l-1-2H1' />
-            <circle cx='9' cy='20' r='1.5' />
-            <circle cx='17' cy='20' r='1.5' />
+            <path d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2' />
+            <rect x='9' y='3' width='6' height='4' rx='1' />
+            <path d='M9 12h6M9 16h4' />
           </svg>
         ),
       },
