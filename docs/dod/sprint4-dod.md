@@ -1,9 +1,14 @@
 # Sprint 4 — Definition of Done (DoD)
 
-**版本：** v1.0
+**版本：** v1.1
 **建立日期：** 2026-05-25
-**Sprint 目標：** 商家能管理訂單並安排出貨；顧客能結單選物流；並建立許願池功能
+**更新日期：** 2026-05-25（Cheryl 確認）
+**Sprint 目標：** 商家能管理訂單、代客結單並安排出貨；顧客能結單選物流；並建立許願池功能
 **關聯文件：** docs/dor/sprint4-dor.md · docs/sdd/sprint4-delta.md
+
+**v1.1 變更摘要：**
+- US-18 新增「商家代客結單」（AC-18.20～18.23）：商家可在後台代不熟悉系統的顧客完成結單選出貨方式
+- US-21「顧客取消訂單」移出 Sprint 4，暫不開放（日後視需求考慮）
 
 ---
 
@@ -73,6 +78,23 @@
 - [ ] **AC-18.18** 建立成功 → Toast「訂單已建立」→ 導回 `/admin/orders`，新訂單出現在列表最上方
 - [ ] **AC-18.19** 商家建立的訂單顧客端同樣可在 `/store/{slug}/orders` 看到
 
+**商家代客結單**
+
+> ℹ️ 適用情境：顧客已到貨但不熟悉系統操作，由商家協助選擇出貨方式並完成結單。
+
+- [ ] **AC-18.20** `status = 'allocated'` 的訂單卡在後台顯示「代客結單」按鈕（與「標記已到貨」的「已配單」狀態同層）
+- [ ] **AC-18.21** 點擊「代客結單」→ 進入 `/admin/orders/{id}/checkout`，頁面包含：
+  - 頂部顯示訂單摘要（顧客姓名、商品名稱、規格、數量、小計）
+  - 物流方式選擇（單選，4 種：自取 / 超商店到店 / 賣貨便 / 宅配）
+  - 依物流方式顯示對應收件欄位（同 US-20 AC-20.5 邏輯）
+  - 付款方式選擇依物流方式聯動（同 US-20 AC-20.6 邏輯）
+- [ ] **AC-18.22** 底部「確認代客結單」按鈕；必填欄位未填時 disabled
+- [ ] **AC-18.23** 確認後：
+  - `orders.status = 'settled'`
+  - 新增一筆 `settlements` 資料（含物流與付款資訊）
+  - Toast「已代顧客完成結單」→ 導回 `/admin/orders`，訂單狀態更新為「已結單」
+- [ ] **AC-18.24** 代客結單後，顧客端 `/store/{slug}/orders` 同步顯示「已到貨」badge（`settled` 映射規則同 AC-20.10，不另標示是商家代結）
+
 ### 測試完成標準
 
 ```
@@ -101,6 +123,20 @@ E2E 測試（playwright）：
 □ 代客建單：點「代客建立訂單」→ 選顧客/商品/規格/數量 → 送出 → Toast「訂單已建立」→ 導回列表，新訂單出現
 □ 代客建單：未選規格 → 按鈕 disabled
 □ 顧客端驗證：商家代建的訂單，在顧客的 /store/{slug}/orders 可見
+
+代客結單（AC-18.20～18.24）：
+□ GET /api/admin/orders/[id]/checkout-info — 回傳指定訂單的摘要資訊（顧客名、商品、金額）
+□ POST /api/admin/orders/[id]/checkout — allocated 訂單 → 200，status = 'settled'，settlements 新增一筆
+□ POST /api/admin/orders/[id]/checkout — 訂單非 allocated 狀態 → 400
+□ POST /api/admin/orders/[id]/checkout — 訂單不屬於此賣場 → 403
+□ POST /api/admin/orders/[id]/checkout — shipping_method = 'home_delivery' 未提供 address → 400
+□ POST /api/admin/orders/[id]/checkout — 未登入或非商家 → 401/403
+
+E2E 代客結單：
+□ Happy path：「已配單」訂單卡 → 點「代客結單」→ 選「宅配」→ 填收件人資訊 → 選「匯款」→ 確認 → Toast「已代顧客完成結單」→ 訂單狀態變為「已結單」
+□ 自取路徑：選「自取」→ 只顯示備註欄位 → 付款方式只出現「現金自取」
+□ 必填驗證：未填必填欄位 → 按鈕 disabled
+□ 顧客端驗證：代客結單後，顧客的 /store/{slug}/orders 仍顯示「已到貨」badge
 ```
 
 ### 技術驗收標準
@@ -109,6 +145,8 @@ E2E 測試（playwright）：
 - [ ] 狀態轉移邏輯集中於 server 端（`PATCH /api/admin/orders/[id]`），前端不自行計算合法轉移
 - [ ] 代客建單 API 驗證 member、product、variant 三層歸屬，unit_price 從 DB 取得（不信任 client）
 - [ ] `created_by = 'merchant'` 欄位在代客建單時必須設定
+- [ ] 代客結單 API（`POST /api/admin/orders/[id]/checkout`）驗證訂單屬於此賣場（`store_id` 比對）且 `status = 'allocated'`
+- [ ] 代客結單與顧客自行結單共用同一 `settlements` 表，結構完全相同（無需額外欄位區分來源）
 
 ---
 
@@ -199,39 +237,11 @@ E2E 測試（playwright）：
 
 ---
 
-## US-21：顧客取消訂單
+## ~~US-21：顧客取消訂單~~ — Sprint 4 不實作
 
-### 功能完成標準
-
-- [ ] **AC-21.1** `/store/{slug}/orders` 中，`status = 'pending_purchase'` 的訂單卡顯示「取消訂單」按鈕
-- [ ] **AC-21.2** 點擊取消 → 確認 dialog（「確認取消此訂單？取消後無法復原」）
-- [ ] **AC-21.3** 確認後：
-  - `orders.status = 'cancelled'`
-  - `orders.cancelled_at = now()`
-  - `orders.cancelled_by = 'customer'`
-- [ ] **AC-21.4** 取消後訂單在列表中顯示「已取消」紅色 badge，無取消按鈕
-- [ ] **AC-21.5** `status` 非 `pending_purchase` 的訂單不顯示取消按鈕（前端控制；後端 API 同樣驗證，非 `pending_purchase` 拒絕取消）
-
-### 測試完成標準
-
-```
-單元測試（vitest）：
-□ PATCH /api/store/[slug]/orders/[id]/cancel — pending_purchase → cancelled → 200，cancelled_by = 'customer'
-□ PATCH /api/store/[slug]/orders/[id]/cancel — 非 pending_purchase 狀態 → 400
-□ PATCH /api/store/[slug]/orders/[id]/cancel — 訂單不屬於此顧客 → 403
-□ PATCH /api/store/[slug]/orders/[id]/cancel — 未登入 → 401
-
-E2E 測試（playwright）：
-□ Happy path：訂單列表「待採買」狀態卡片 → 點「取消訂單」→ 確認 dialog → 確認 → 訂單顯示「已取消」紅色 badge
-□ 取消後：「取消訂單」按鈕消失
-□ 已訂購狀態：不顯示「取消訂單」按鈕
-```
-
-### 技術驗收標準
-
-- [ ] 取消 API 驗證訂單 `status = 'pending_purchase'`，否則拒絕
-- [ ] `cancelled_by = 'customer'`、`cancelled_at` 必須設定
-- [ ] 取消後商家後台 `/admin/orders` 同步顯示已取消狀態
+> ⚠️ **Cheryl 決策（2026-05-25）：顧客取消訂單功能暫不開放。**
+> 日後視業務需求考慮是否開放，目前保留資料欄位（`cancelled_by`、`cancelled_at`）供未來使用。
+> 詳見底部「不在 DoD 範圍內」。
 
 ---
 
@@ -374,7 +384,7 @@ npx supabase db reset
 # □ /store/{slug}/orders（allocated 訂單卡，含「結單」按鈕）
 # □ /store/{slug}/checkout/{orderId}（結單頁 — 選宅配）
 # □ /store/{slug}/checkout/{orderId}（結單頁 — 選自取）
-# □ /store/{slug}/orders（pending_purchase 訂單卡，含「取消訂單」按鈕）
+# □ /admin/orders/{id}/checkout（代客結單頁 — 選宅配）
 # □ /store/{slug}/wishlist（許願清單 — 有資料）
 # □ /store/{slug}/wishlist（空狀態）
 # □ /admin/wishlists（許願池後台）
@@ -398,20 +408,22 @@ Cheryl 親自走過以下流程，無需任何 workaround：
 □ 6. Toast「訂單已建立」→ 新訂單出現列表最上方（待採買）
 □ 7. 以林小美 LINE 前台登入 → /store/{slug}/orders → 看到代建的訂單
 
-顧客端（結單）：
+顧客端（自行結單）：
 □ 8. 訂單列表看到「已到貨」badge + 「結單」按鈕
 □ 9. 點結單 → 選「宅配」→ 填收件人資訊 → 選「匯款」→ 確認結單 → dialog 出現 → 確認 → Toast 成功
 
-顧客端（取消）：
-□ 10. 「待採買」訂單 → 點「取消訂單」→ 確認 dialog → 確認 → 訂單顯示「已取消」紅色 badge
+商家代客結單：
+□ 10. 「已配單」訂單卡 → 點「代客結單」→ 進入 /admin/orders/{id}/checkout
+□ 11. 選「自取」→ 填備註（選填）→ 付款方式只出現「現金自取」→ 確認代客結單 → Toast「已代顧客完成結單」
+□ 12. 顧客端 /store/{slug}/orders 同步顯示「已到貨」badge（無特別標示代結）
 
 商家依顧客查看到貨狀況：
-□ 11. 篩選「已配單」→ 切換「依顧客分組」→ 看到顧客分組 → 展開全部訂單（含其他狀態）
-□ 12. 複製顧客 LINE ID → 手動開 LINE 通知
+□ 13. 篩選「已配單」→ 切換「依顧客分組」→ 看到顧客分組 → 展開全部訂單（含其他狀態）
+□ 14. 複製顧客 LINE ID → 手動開 LINE 通知
 
 許願池：
-□ 13. 顧客點底部第三個 Tab「許願池」→ 空狀態 → 點「＋ 許願」→ 填名稱 + 上傳照片 → 送出 → Toast 成功
-□ 14. 商家後台「許願池」→ 看到許願 → 下拉改「已注意」→ Toast 成功 → 狀態即時更新
+□ 15. 顧客點底部第三個 Tab「許願池」→ 空狀態 → 點「＋ 許願」→ 填名稱 + 上傳照片 → 送出 → Toast 成功
+□ 16. 商家後台「許願池」→ 看到許願 → 下拉改「已注意」→ Toast 成功 → 狀態即時更新
 ```
 
 ---
@@ -419,6 +431,7 @@ Cheryl 親自走過以下流程，無需任何 workaround：
 ## 不在 DoD 範圍內（Sprint 4 明確排除）
 
 ```
+✗ 顧客取消訂單 → 暫不開放（Cheryl 2026-05-25 確認），日後視業務需求考慮
 ✗ 顧客確認收到（shipped → completed）→ 未來版本
 ✗ 商家取消訂單 → 未來版本
 ✗ 自動 / 手動配單升級版（按下單時間自動分配）→ Sprint 5

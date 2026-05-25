@@ -11,33 +11,33 @@
 
 ### 頁面路由
 
-| 路由 | 類型 | 說明 | Auth |
-|------|------|------|------|
-| `/admin/orders` | CSR（Client Component） | 商家訂單管理後台（US-18） | 商家（Supabase Auth） |
-| `/admin/orders/new` | CSR（Client Component） | 商家代客建立訂單（US-18） | 商家（Supabase Auth） |
-| `/admin/wishlists` | — | 許願池後台（US-23，Sprint 4 待實作） | 商家 |
-| `/store/[slug]/checkout/[orderId]` | CSR | 顧客結單頁（US-20，Sprint 4 待實作） | LIFF + approved member |
-| `/store/[slug]/wishlist` | CSR | 顧客許願池列表（US-22，Sprint 4 待實作） | LIFF + approved member |
+| 路由                               | 類型                    | 說明                                     | Auth                   |
+| ---------------------------------- | ----------------------- | ---------------------------------------- | ---------------------- |
+| `/admin/orders`                    | CSR（Client Component） | 商家訂單管理後台（US-18）                | 商家（Supabase Auth）  |
+| `/admin/orders/new`                | CSR（Client Component） | 商家代客建立訂單（US-18）                | 商家（Supabase Auth）  |
+| `/admin/wishlists`                 | —                       | 許願池後台（US-23，Sprint 4 待實作）     | 商家                   |
+| `/store/[slug]/checkout/[orderId]` | CSR                     | 顧客結單頁（US-20，Sprint 4 待實作）     | LIFF + approved member |
+| `/store/[slug]/wishlist`           | CSR                     | 顧客許願池列表（US-22，Sprint 4 待實作） | LIFF + approved member |
 
 ### 新增 API Routes（US-18 已實作）
 
-| 路由 | 方法 | 說明 |
-|------|------|------|
-| `/api/admin/orders` | GET | 查詢此賣場所有訂單（含狀態篩選 + 各狀態筆數） |
-| `/api/admin/orders` | POST | 商家代客建立訂單（`created_by = 'merchant'`） |
-| `/api/admin/orders/[id]` | PATCH | 更新單筆訂單狀態（transition 驗證） |
-| `/api/admin/members` | GET | 取得此賣場 approved members（代客建單下拉用） |
-| `/api/admin/products` | GET | 取得此賣場 active 商品 + variants（代客建單下拉用） |
+| 路由                     | 方法  | 說明                                                |
+| ------------------------ | ----- | --------------------------------------------------- |
+| `/api/admin/orders`      | GET   | 查詢此賣場所有訂單（含狀態篩選 + 各狀態筆數）       |
+| `/api/admin/orders`      | POST  | 商家代客建立訂單（`created_by = 'merchant'`）       |
+| `/api/admin/orders/[id]` | PATCH | 更新單筆訂單狀態（transition 驗證）                 |
+| `/api/admin/members`     | GET   | 取得此賣場 approved members（代客建單下拉用）       |
+| `/api/admin/products`    | GET   | 取得此賣場 active 商品 + variants（代客建單下拉用） |
 
 ### 待實作 API Routes（US-19～US-23）
 
-| 路由 | 方法 | 說明 |
-|------|------|------|
-| `/api/admin/orders/[id]` | PATCH | 延伸：填寫物流單號並更新為 `shipped`（US-19） |
-| `/api/orders/[id]/cancel` | PATCH | 顧客取消訂單（`cancelled_by = 'customer'`，US-21） |
-| `/api/orders/[id]/checkout` | POST | 顧客結單（新增 settlement + 更新 `settled`，US-20） |
-| `/api/wishlists` | GET, POST | 顧客許願池（US-22） |
-| `/api/admin/wishlists` | GET, PATCH | 商家許願池後台（US-23） |
+| 路由                        | 方法       | 說明                                                |
+| --------------------------- | ---------- | --------------------------------------------------- |
+| `/api/admin/orders/[id]`          | PATCH | 延伸：填寫物流單號並更新為 `shipped`（US-19）                            |
+| `/api/admin/orders/[id]/checkout` | POST  | **商家代客結單**（新增 settlement + 更新 `settled`，US-18 AC-18.20～18.24） |
+| `/api/orders/[id]/checkout`       | POST  | 顧客自行結單（新增 settlement + 更新 `settled`，US-20）                   |
+| `/api/wishlists`            | GET, POST  | 顧客許願池（US-22）                                 |
+| `/api/admin/wishlists`      | GET, PATCH | 商家許願池後台（US-23）                             |
 
 ---
 
@@ -58,6 +58,7 @@ ALTER TABLE orders
 ```
 
 **欄位說明：**
+
 - `created_by`：記錄訂單由誰建立（顧客自行下單 vs 商家代客建立），NOT NULL DEFAULT 'customer'
 - `cancelled_by`：記錄取消者（顧客取消 / 商家取消），可為 NULL（未取消時）
 - `cancelled_at`：取消時間戳記
@@ -147,8 +148,8 @@ CREATE POLICY "settlements_customer_insert" ON settlements
 
 ### 2.5 Supabase Storage（待建立）
 
-| Bucket | 存取 | 用途 | Sprint |
-|--------|------|------|--------|
+| Bucket            | 存取        | 用途         | Sprint                     |
+| ----------------- | ----------- | ------------ | -------------------------- |
 | `wishlist-images` | public read | 顧客許願圖片 | **Sprint 4 新增（US-22）** |
 
 ---
@@ -221,6 +222,7 @@ OrdersClient
 **訂單狀態更新：** 呼叫 `PATCH /api/admin/orders/{id}` → 成功後重新呼叫 `fetchOrders(activeTab)`。
 
 **依顧客分組（CustomerGroupView）：**
+
 - 僅在 `activeTab === 'allocated'` 時顯示切換按鈕
 - 預設以 `memberId` 為 key 分組，顯示每位顧客的已配單商品清單
 - 點擊顧客 Header 展開 → `AllOrdersForMember` 即時呼叫 `GET /api/admin/orders`（無 status 篩選）取得該顧客所有訂單
@@ -251,14 +253,17 @@ NewOrderClient
 **用途：** 查詢此賣場所有訂單，含各狀態筆數
 
 **Query Params：**
+
 ```
 status?: 'pending_purchase' | 'ordered' | 'allocated' | 'settled' | 'shipped' | 'completed' | 'cancelled'
 ```
+
 （省略時回傳全部）
 
 **Auth：** Supabase Auth（Merchant）
 
 **Response：**
+
 ```typescript
 {
   success: true,
@@ -312,6 +317,7 @@ status?: 'pending_purchase' | 'ordered' | 'allocated' | 'settled' | 'shipped' | 
 **Auth：** Supabase Auth（Merchant）
 
 **Request Body：**
+
 ```typescript
 {
   memberId: string,    // store_members.id（必填）
@@ -323,6 +329,7 @@ status?: 'pending_purchase' | 'ordered' | 'allocated' | 'settled' | 'shipped' | 
 ```
 
 **Server 端驗證：**
+
 1. 驗證 member 屬於此賣場且 `status = 'approved'`
 2. 驗證 product 屬於此賣場且 `status = 'active'`
 3. 驗證 variant 屬於此 product
@@ -331,6 +338,7 @@ status?: 'pending_purchase' | 'ordered' | 'allocated' | 'settled' | 'shipped' | 
 6. INSERT order_items
 
 **Response：**
+
 ```typescript
 // 201
 { success: true, orderId: string }
@@ -348,11 +356,15 @@ status?: 'pending_purchase' | 'ordered' | 'allocated' | 'settled' | 'shipped' | 
 **Auth：** Supabase Auth（Merchant）
 
 **Request Body：**
+
 ```typescript
-{ status: OrderStatus }
+{
+  status: OrderStatus
+}
 ```
 
 **合法 Transition（Sprint 4 US-18）：**
+
 ```
 pending_purchase → ordered    （商家向廠商下單）
 ordered          → allocated  （商品到貨，可配單給顧客）
@@ -361,9 +373,12 @@ ordered          → allocated  （商品到貨，可配單給顧客）
 > US-19 待實作：`allocated/settled → shipped`（填物流單號 + 物流商）
 
 **Response：**
+
 ```typescript
 // 200
-{ success: true }
+{
+  success: true
+}
 
 // 400 — Invalid status transition
 // 401 — Unauthorized
@@ -378,6 +393,7 @@ ordered          → allocated  （商品到貨，可配單給顧客）
 **Auth：** Supabase Auth（Merchant）
 
 **Response：**
+
 ```typescript
 {
   success: true,
@@ -396,6 +412,7 @@ ordered          → allocated  （商品到貨，可配單給顧客）
 **Auth：** Supabase Auth（Merchant）
 
 **Response：**
+
 ```typescript
 {
   success: true,
@@ -452,10 +469,10 @@ export type ShippingMethod = 'pickup' | 'convenience' | 'takkyubin' | 'home_deli
 // Order 介面補充欄位
 export interface Order {
   // ...（既有欄位）
-  created_by: OrderCreatedBy        // ✦ Sprint 4 新增
-  cancelled_by: OrderCancelledBy | null  // ✦ Sprint 4 新增
-  cancelled_at: string | null            // ✦ Sprint 4 新增
-  shipping_number: string | null         // ✦ Sprint 4 新增
+  created_by: OrderCreatedBy // ✦ Sprint 4 新增
+  cancelled_by: OrderCancelledBy | null // ✦ Sprint 4 新增
+  cancelled_at: string | null // ✦ Sprint 4 新增
+  shipping_number: string | null // ✦ Sprint 4 新增
   shipping_vendor: ShippingVendor | null // ✦ Sprint 4 新增
 }
 
@@ -464,8 +481,8 @@ export interface AdminOrder {
   id: string
   store_id: string
   member_id: string
-  member_name: string     // JOIN store_members.name
-  member_line_id: string  // JOIN store_members.line_id
+  member_name: string // JOIN store_members.name
+  member_line_id: string // JOIN store_members.line_id
   status: OrderStatus
   created_by: OrderCreatedBy
   note: string | null
@@ -523,7 +540,9 @@ Sprint 4 後台 API 統一使用以下認證模式（與 Sprint 2 既有後台�
 ```typescript
 // 1. 從 Supabase Auth session 取得登入用戶
 const rhc = await createRouteHandlerClient()
-const { data: { user } } = await rhc.auth.getUser()
+const {
+  data: { user },
+} = await rhc.auth.getUser()
 if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
 // 2. 從 email 提取 line_id（auth email 格式：line_{lineId}@internal.rueiselect.local）
@@ -548,6 +567,7 @@ const { data: store } = await db.from('stores').select('id').eq('owner_id', dbUs
 ## 8. Sidebar 導覽更新
 
 `src/app/admin/components/Sidebar.tsx` 修改：
+
 - 移除「即將推出」獨立區塊
 - 訂單管理連結移入主導覽（移除 `disabled: true` 和 `tag: 'S3'`）
 - 圖示更換為剪貼板（clipboard）風格 SVG
@@ -576,6 +596,7 @@ Sprint 4 新增種子資料：
 Sprint 4 US-18 的測試檔案尚待建立（參照 DoD 測試要求）。
 
 現有 Sprint 2 migration test 已更新以支援新型別：
+
 - `src/lib/supabase/__tests__/migration-sprint2-orders.test.ts`：修正 Order 測試 fixture，補全 `created_by`, `cancelled_by`, `cancelled_at`, `shipping_number`, `shipping_vendor` 欄位
 
 ### 10.2 待建立測試（依 DoD 要求）
@@ -598,16 +619,18 @@ e2e/admin-orders.spec.ts（Playwright）
   → 訂單列表載入 + Tab 切換
   → 標記已訂購流程（含確認 dialog，US-18 AC-18.7）
   → 代客建立訂單流程
+  → 代客結單流程（US-18 AC-18.20～18.24）
 ```
 
 ---
 
 ## 11. 待實作項目（Sprint 4 其餘 US）
 
-| US | 功能 | 依賴 |
-|----|------|------|
-| US-19 | 商家出貨管理（填物流單號 → `shipped`） | `settlements` 表存在（已預建）；需延伸 PATCH `/api/admin/orders/[id]` |
-| US-20 | 顧客結單流程（結單頁 + 4 種物流）| 需建立 `/api/orders/[id]/checkout` + `/store/[slug]/checkout/[orderId]` |
-| US-21 | 顧客取消訂單（限 `pending_purchase`） | 需建立 `/api/orders/[id]/cancel` + 顧客端按鈕 |
-| US-22 | 顧客許願池（送出許願 + 圖片上傳）| 需建立 `wishlists` migration + `wishlist-images` Storage bucket |
-| US-23 | 許願池後台（商家查看 + 改狀態）| 依賴 US-22；需建立 `/api/admin/wishlists` + `/admin/wishlists` 頁面 |
+| US                    | 功能                                       | 依賴                                                                                    |
+| --------------------- | ------------------------------------------ | --------------------------------------------------------------------------------------- |
+| US-18（代客結單部分） | 商家代客結單（`/admin/orders/[id]/checkout`） | `settlements` 表存在（已預建）；需建立 `POST /api/admin/orders/[id]/checkout` + 頁面     |
+| US-19                 | 商家出貨管理（填物流單號 → `shipped`）     | `settlements` 表存在（已預建）；需延伸 PATCH `/api/admin/orders/[id]`                   |
+| US-20                 | 顧客自行結單（結單頁 + 4 種物流）          | 需建立 `/api/orders/[id]/checkout` + `/store/[slug]/checkout/[orderId]`                 |
+| ~~US-21~~             | ~~顧客取消訂單~~ — **Sprint 4 不實作**     | 暫不開放；欄位保留供未來使用                                                             |
+| US-22                 | 顧客許願池（送出許願 + 圖片上傳）          | 需建立 `wishlists` migration + `wishlist-images` Storage bucket                         |
+| US-23                 | 許願池後台（商家查看 + 改狀態）            | 依賴 US-22；需建立 `/api/admin/wishlists` + `/admin/wishlists` 頁面                     |
