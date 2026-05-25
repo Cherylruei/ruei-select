@@ -414,6 +414,42 @@ function OrderCard({
   )
 }
 
+// ── 確認 Dialog ──────────────────────────────────────────────────────────────
+
+function ConfirmDialog({
+  message,
+  onConfirm,
+  onCancel,
+}: {
+  message: string
+  onConfirm: () => void
+  onCancel: () => void
+}) {
+  return (
+    <div className='fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/30'>
+      <div className='bg-white rounded-2xl shadow-xl w-full max-w-sm p-6'>
+        <p className='text-sm text-[var(--neutral-700)] text-center leading-relaxed mb-6'>
+          {message}
+        </p>
+        <div className='flex gap-3'>
+          <button
+            onClick={onCancel}
+            className='flex-1 py-2.5 rounded-xl border border-[var(--neutral-200)] text-sm font-medium text-[var(--neutral-600)] hover:bg-[var(--neutral-50)] transition-colors cursor-pointer'
+          >
+            取消
+          </button>
+          <button
+            onClick={onConfirm}
+            className='flex-1 py-2.5 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 transition-colors cursor-pointer'
+          >
+            確認
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function ActionButtons({
   status,
   isPending,
@@ -425,18 +461,33 @@ function ActionButtons({
   loadingAction: string | null
   onUpdate: (newStatus: OrderStatus) => void
 }) {
+  const [showConfirmOrdered, setShowConfirmOrdered] = useState(false)
+
   if (status === 'pending_purchase') {
     return (
-      <div className='mt-3 pt-3 border-t border-[var(--neutral-100)]'>
-        <button
-          onClick={() => onUpdate('ordered')}
-          disabled={isPending}
-          className='w-full py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 cursor-pointer'
-        >
-          {loadingAction === 'ordered' ? <Spinner /> : null}
-          標記已訂購
-        </button>
-      </div>
+      <>
+        {/* AC-18.7：點擊後顯示確認 dialog，確認後才更新狀態 */}
+        {showConfirmOrdered && (
+          <ConfirmDialog
+            message='確認已向廠商下單此商品？'
+            onConfirm={() => {
+              setShowConfirmOrdered(false)
+              onUpdate('ordered')
+            }}
+            onCancel={() => setShowConfirmOrdered(false)}
+          />
+        )}
+        <div className='mt-3 pt-3 border-t border-[var(--neutral-100)]'>
+          <button
+            onClick={() => setShowConfirmOrdered(true)}
+            disabled={isPending}
+            className='w-full py-2 rounded-xl bg-blue-600 text-white text-sm font-semibold hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2 cursor-pointer'
+          >
+            {loadingAction === 'ordered' ? <Spinner /> : null}
+            標記已訂購
+          </button>
+        </div>
+      </>
     )
   }
 
