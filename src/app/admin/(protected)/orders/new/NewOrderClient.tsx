@@ -241,7 +241,7 @@ export default function NewOrderClient() {
                   min={1}
                   value={quantity}
                   onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                  className='w-20 text-center font-mono px-3 py-2 rounded-md border-[1.5px] border-line bg-surface text-fg text-sm outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] transition'
+                  className='w-20 text-center font-mono px-3 py-2 rounded-md border-[1.5px] border-line bg-surface text-fg text-sm outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] transition [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none [-moz-appearance:textfield]'
                 />
                 <button
                   type='button'
