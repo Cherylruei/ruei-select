@@ -191,7 +191,6 @@ src/
         │       └── route.ts          ← ✦ GET（active 商品 + variants 下拉）
         ├── orders/
         │   └── [id]/
-        │       ├── cancel/           ← 待實作（US-21）
         │       └── checkout/         ← 待實作（US-20）
         └── wishlists/                ← 待實作（US-22）
 ```
@@ -448,7 +447,7 @@ shipped
     ↓（顧客確認收到，Out of Scope Sprint 4）
 completed
 
-* pending_purchase → cancelled（顧客取消，US-21 待實作；cancelled_by = 'customer'）
+* pending_purchase → cancelled（顧客取消，US-21 已移出 Sprint 4，暫不開放；欄位 cancelled_by / cancelled_at 保留供未來使用）
 ```
 
 ---

@@ -115,7 +115,7 @@ export default function StoreLayout({ children, params }: StoreLayoutProps) {
 
   // approved
   return (
-    <div className='min-h-screen bg-[var(--neutral-50)] flex flex-col'>
+    <div data-variant='candy' className='min-h-screen bg-[var(--neutral-50)] flex flex-col'>
       {auth.store && (
         <StoreHeader name={auth.store.name} avatarUrl={auth.store.avatar_url} slug={slug} />
       )}

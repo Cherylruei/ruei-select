@@ -4,6 +4,10 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 import type { MemberOption } from '@/types'
 import type { ProductWithVariants } from '@/app/api/admin/products/route'
+import { SearchSelect } from '@/components/ui/SearchSelect'
+import { Field, Select, Textarea } from '@/components/ui/Input'
+import { Button } from '@/components/ui/Button'
+import { useToast, ToastContainer } from '@/components/ui/Toast'
 
 // ── 工具 ───────────────────────────────────────────────────────────────────────
 
@@ -17,6 +21,7 @@ function specLabel(specs: Record<string, string>): string {
 
 export default function NewOrderClient() {
   const router = useRouter()
+  const { toasts, toast, dismiss } = useToast()
 
   // ── 選單資料 ────────────────────────────────────────────────
   const [members, setMembers] = useState<MemberOption[]>([])
@@ -24,13 +29,12 @@ export default function NewOrderClient() {
   const [loadingOptions, setLoadingOptions] = useState(true)
 
   // ── 表單狀態 ────────────────────────────────────────────────
-  const [memberId, setMemberId] = useState('')
-  const [productId, setProductId] = useState('')
+  const [memberId, setMemberId] = useState<string | null>(null)
+  const [productId, setProductId] = useState<string | null>(null)
   const [variantId, setVariantId] = useState('')
   const [quantity, setQuantity] = useState(1)
   const [note, setNote] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
 
   // ── 載入選項資料 ─────────────────────────────────────────────
   useEffect(() => {
@@ -51,15 +55,38 @@ export default function NewOrderClient() {
         if (membersJson.success) setMembers(membersJson.data)
         if (productsJson.success) setProducts(productsJson.data)
       } catch {
-        setToast({ message: '載入資料失敗，請重新整理', type: 'error' })
+        toast('載入資料失敗，請重新整理', 'error')
       } finally {
         setLoadingOptions(false)
       }
     }
     load()
-  }, [])
+  }, [toast])
+
+  // ── SearchSelect 選項 ────────────────────────────────────────
+
+  const customerOptions = useMemo(
+    () =>
+      members.map((m) => ({
+        value: m.id,
+        label: m.name,
+        sublabel: m.line_id,
+        avatar: m.name[0],
+      })),
+    [members]
+  )
+
+  const productOptions = useMemo(
+    () =>
+      products.map((p) => ({
+        value: p.id,
+        label: p.name,
+      })),
+    [products]
+  )
 
   // ── 選定商品的 variants ──────────────────────────────────────
+
   const selectedProduct = useMemo(
     () => products.find((p) => p.id === productId) ?? null,
     [products, productId]
@@ -71,24 +98,18 @@ export default function NewOrderClient() {
   )
 
   // 切換商品時重置規格
-  const handleProductChange = (pid: string) => {
+  const handleProductChange = (pid: string | null) => {
     setProductId(pid)
     setVariantId('')
   }
 
   // ── 表單驗證 ─────────────────────────────────────────────────
-  const isValid = memberId && productId && variantId && quantity >= 1
 
+  const isValid = memberId !== null && productId !== null && variantId !== '' && quantity >= 1
   const subtotal = selectedVariant ? selectedVariant.price * quantity : 0
 
-  // ── Toast 自動消失 ────────────────────────────────────────────
-  useEffect(() => {
-    if (!toast) return
-    const t = setTimeout(() => setToast(null), 3000)
-    return () => clearTimeout(t)
-  }, [toast])
-
   // ── 送出 ──────────────────────────────────────────────────────
+
   const handleSubmit = async () => {
     if (!isValid) return
     setSubmitting(true)
@@ -96,245 +117,208 @@ export default function NewOrderClient() {
       const res = await fetch('/api/admin/orders', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ memberId, productId, variantId, quantity, note: note || undefined }),
+        body: JSON.stringify({
+          memberId,
+          productId,
+          variantId,
+          quantity,
+          note: note || undefined,
+        }),
       })
       const json = (await res.json()) as { success?: boolean; error?: string }
       if (json.success) {
-        setToast({ message: '訂單已建立', type: 'success' })
+        toast('訂單已建立', 'success')
         setTimeout(() => router.push('/admin/orders'), 1000)
       } else {
-        setToast({ message: json.error ?? '建立失敗，請重試', type: 'error' })
+        toast(json.error ?? '建立失敗，請重試', 'error')
       }
     } catch {
-      setToast({ message: '建立失敗，請重試', type: 'error' })
+      toast('建立失敗，請重試', 'error')
     } finally {
       setSubmitting(false)
     }
   }
 
   return (
-    <div className='max-w-lg mx-auto'>
-      {/* Toast */}
-      {toast && (
-        <div
-          className={[
-            'fixed top-5 right-5 z-50 px-5 py-3 rounded-xl text-sm font-medium shadow-lg',
-            toast.type === 'success'
-              ? 'bg-[var(--forest-base)] text-white'
-              : 'bg-[var(--color-error)] text-white',
-          ].join(' ')}
-        >
-          {toast.message}
-        </div>
-      )}
+    <>
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
 
-      {/* 頁面 Header */}
-      <div className='flex items-center gap-3 mb-8'>
-        <button
-          onClick={() => router.back()}
-          className='w-9 h-9 rounded-xl bg-[var(--neutral-100)] flex items-center justify-center text-[var(--neutral-500)] hover:bg-[var(--neutral-200)] transition-colors cursor-pointer border-0'
-          aria-label='返回'
-        >
-          <svg
-            viewBox='0 0 24 24'
-            width='18'
-            height='18'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2'
+      <div className='max-w-lg mx-auto'>
+        {/* 頁面 Header */}
+        <div className='flex items-center gap-3 mb-8'>
+          <Button
+            type='button'
+            variant='ghost'
+            iconOnly
+            onClick={() => router.back()}
+            aria-label='返回'
+            className='rounded-md'
           >
-            <path d='M15 18l-6-6 6-6' />
-          </svg>
-        </button>
-        <div>
-          <h1 className='text-xl font-bold text-[var(--neutral-800)] [font-family:var(--font-zen-maru-gothic)]'>
-            代客建立訂單
-          </h1>
-          <p className='text-xs text-[var(--neutral-400)] mt-0.5'>為顧客代為登記購買意願</p>
+            <svg
+              viewBox='0 0 24 24'
+              width='18'
+              height='18'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2'
+              aria-hidden='true'
+            >
+              <path d='M15 18l-6-6 6-6' />
+            </svg>
+          </Button>
+          <div>
+            <h1 className='text-xl font-display font-bold text-fg'>代客建立訂單</h1>
+            <p className='text-xs text-fg-subtle mt-0.5'>為顧客代為登記購買意願</p>
+          </div>
         </div>
-      </div>
 
-      {loadingOptions ? (
-        <FormSkeleton />
-      ) : (
-        <div className='bg-white rounded-2xl border border-[var(--neutral-200)] shadow-sm p-6 flex flex-col gap-5'>
-          {/* 顧客選取 */}
-          <FormField label='顧客' required>
-            <select
-              value={memberId}
-              onChange={(e) => setMemberId(e.target.value)}
-              className='w-full px-3.5 py-2.5 rounded-xl border border-[var(--neutral-200)] text-sm text-[var(--neutral-800)] bg-white focus:outline-none focus:border-[var(--forest-base)] focus:ring-2 focus:ring-[var(--forest-base)]/20 transition-all cursor-pointer'
-            >
-              <option value=''>請選擇顧客</option>
-              {members.map((m) => (
-                <option key={m.id} value={m.id}>
-                  {m.name}（LINE: {m.line_id}）
-                </option>
-              ))}
-            </select>
-            {members.length === 0 && (
-              <p className='text-xs text-[var(--neutral-400)] mt-1'>目前沒有已審核的顧客</p>
-            )}
-          </FormField>
-
-          {/* 商品選取 */}
-          <FormField label='商品' required>
-            <select
-              value={productId}
-              onChange={(e) => handleProductChange(e.target.value)}
-              className='w-full px-3.5 py-2.5 rounded-xl border border-[var(--neutral-200)] text-sm text-[var(--neutral-800)] bg-white focus:outline-none focus:border-[var(--forest-base)] focus:ring-2 focus:ring-[var(--forest-base)]/20 transition-all cursor-pointer'
-            >
-              <option value=''>請選擇商品</option>
-              {products.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          </FormField>
-
-          {/* 規格選取（動態載入） */}
-          {selectedProduct && (
-            <FormField label='規格' required>
-              <select
-                value={variantId}
-                onChange={(e) => setVariantId(e.target.value)}
-                className='w-full px-3.5 py-2.5 rounded-xl border border-[var(--neutral-200)] text-sm text-[var(--neutral-800)] bg-white focus:outline-none focus:border-[var(--forest-base)] focus:ring-2 focus:ring-[var(--forest-base)]/20 transition-all cursor-pointer'
-              >
-                <option value=''>請選擇規格</option>
-                {selectedProduct.variants.map((v) => (
-                  <option key={v.id} value={v.id}>
-                    {specLabel(v.specs)}　NT${v.price.toLocaleString()}
-                  </option>
-                ))}
-              </select>
-              {!variantId && <p className='text-xs text-amber-600 mt-1'>請選擇所有規格</p>}
-            </FormField>
-          )}
-
-          {/* 數量 */}
-          <FormField label='數量' required>
-            <div className='flex items-center gap-3'>
-              <button
-                type='button'
-                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                className='w-9 h-9 rounded-xl border border-[var(--neutral-200)] text-[var(--neutral-600)] flex items-center justify-center hover:bg-[var(--neutral-100)] transition-colors cursor-pointer'
-                aria-label='減少數量'
-              >
-                <svg
-                  viewBox='0 0 24 24'
-                  width='16'
-                  height='16'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='2'
-                >
-                  <path d='M5 12h14' />
-                </svg>
-              </button>
-              <input
-                type='number'
-                min={1}
-                value={quantity}
-                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                className='w-20 text-center px-3 py-2 rounded-xl border border-[var(--neutral-200)] text-sm text-[var(--neutral-800)] focus:outline-none focus:border-[var(--forest-base)] focus:ring-2 focus:ring-[var(--forest-base)]/20'
+        {loadingOptions ? (
+          <FormSkeleton />
+        ) : (
+          <div className='bg-surface rounded-xl border border-line shadow-sm p-6 flex flex-col gap-5'>
+            {/* 顧客選取 */}
+            <Field label='顧客' required>
+              <SearchSelect
+                options={customerOptions}
+                value={memberId}
+                onChange={setMemberId}
+                placeholder='搜尋顧客姓名 / LINE ID…'
+                emptyMessage='找不到此顧客，請先審核加入申請'
               />
-              <button
-                type='button'
-                onClick={() => setQuantity((q) => q + 1)}
-                className='w-9 h-9 rounded-xl border border-[var(--neutral-200)] text-[var(--neutral-600)] flex items-center justify-center hover:bg-[var(--neutral-100)] transition-colors cursor-pointer'
-                aria-label='增加數量'
-              >
-                <svg
-                  viewBox='0 0 24 24'
-                  width='16'
-                  height='16'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='2'
-                >
-                  <path d='M12 5v14M5 12h14' />
-                </svg>
-              </button>
-            </div>
-          </FormField>
+              {members.length === 0 && (
+                <p className='text-xs text-fg-subtle mt-1'>目前沒有已審核的顧客</p>
+              )}
+            </Field>
 
-          {/* 備註（選填） */}
-          <FormField label='備註（選填）'>
-            <textarea
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              rows={2}
-              placeholder='商家內部備注，顧客不可見'
-              className='w-full px-3.5 py-2.5 rounded-xl border border-[var(--neutral-200)] text-sm text-[var(--neutral-800)] bg-white focus:outline-none focus:border-[var(--forest-base)] focus:ring-2 focus:ring-[var(--forest-base)]/20 transition-all resize-none placeholder:text-[var(--neutral-300)]'
-            />
-          </FormField>
+            {/* 商品選取 */}
+            <Field label='商品' required>
+              <SearchSelect
+                options={productOptions}
+                value={productId}
+                onChange={handleProductChange}
+                placeholder='搜尋商品名稱…'
+                emptyMessage='找不到此商品'
+              />
+            </Field>
 
-          {/* 小計預覽 */}
-          {selectedVariant && (
-            <div className='bg-[var(--neutral-50)] rounded-xl px-4 py-3 flex items-center justify-between'>
-              <span className='text-sm text-[var(--neutral-500)]'>訂單小計</span>
-              <span className='text-base font-bold text-[var(--neutral-800)]'>
-                NT${subtotal.toLocaleString()}
-              </span>
-            </div>
-          )}
-
-          {/* 送出按鈕 */}
-          <button
-            onClick={handleSubmit}
-            disabled={!isValid || submitting}
-            className={[
-              'w-full py-3 rounded-xl text-sm font-semibold transition-all flex items-center justify-center gap-2',
-              isValid && !submitting
-                ? 'bg-[var(--forest-base)] text-white hover:bg-[var(--forest-deep)] cursor-pointer'
-                : 'bg-[var(--neutral-200)] text-[var(--neutral-400)] cursor-not-allowed',
-            ].join(' ')}
-          >
-            {submitting ? (
-              <>
-                <Spinner />
-                建立中…
-              </>
-            ) : (
-              '建立訂單'
+            {/* 規格選取（動態載入，選項少 → native select）*/}
+            {selectedProduct && (
+              <Field label='規格' required hint={!variantId ? '請選擇規格' : undefined}>
+                <Select value={variantId} onChange={(e) => setVariantId(e.target.value)}>
+                  <option value=''>請選擇規格</option>
+                  {selectedProduct.variants.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {specLabel(v.specs)}　NT${v.price.toLocaleString()}
+                    </option>
+                  ))}
+                </Select>
+              </Field>
             )}
-          </button>
-        </div>
-      )}
-    </div>
+
+            {/* 數量 */}
+            <Field label='數量' required>
+              <div className='flex items-center gap-3'>
+                <button
+                  type='button'
+                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                  className='w-9 h-9 rounded-md border border-line text-fg-muted flex items-center justify-center hover:bg-sunken transition-colors'
+                  aria-label='減少數量'
+                >
+                  <svg
+                    viewBox='0 0 24 24'
+                    width='16'
+                    height='16'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    aria-hidden='true'
+                  >
+                    <path d='M5 12h14' />
+                  </svg>
+                </button>
+                <input
+                  type='number'
+                  min={1}
+                  value={quantity}
+                  onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                  className='w-20 text-center font-mono px-3 py-2 rounded-md border-[1.5px] border-line bg-surface text-fg text-sm outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] transition'
+                />
+                <button
+                  type='button'
+                  onClick={() => setQuantity((q) => q + 1)}
+                  className='w-9 h-9 rounded-md border border-line text-fg-muted flex items-center justify-center hover:bg-sunken transition-colors'
+                  aria-label='增加數量'
+                >
+                  <svg
+                    viewBox='0 0 24 24'
+                    width='16'
+                    height='16'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    aria-hidden='true'
+                  >
+                    <path d='M12 5v14M5 12h14' />
+                  </svg>
+                </button>
+              </div>
+            </Field>
+
+            {/* 備註（選填） */}
+            <Field label='備註（選填）'>
+              <Textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={2}
+                placeholder='商家內部備注，顧客不可見'
+              />
+            </Field>
+
+            {/* 小計預覽 */}
+            {selectedVariant && (
+              <div className='bg-ink-50 rounded-lg px-4 py-3 flex items-center justify-between'>
+                <span className='text-sm text-fg-muted'>訂單小計</span>
+                <span className='font-display font-bold text-base text-fg'>
+                  NT$
+                  <span className='font-mono ml-0.5'>{subtotal.toLocaleString()}</span>
+                </span>
+              </div>
+            )}
+
+            {/* 送出按鈕 */}
+            <Button
+              type='button'
+              variant='secondary'
+              size='lg'
+              className='w-full'
+              disabled={!isValid || submitting}
+              onClick={handleSubmit}
+            >
+              {submitting ? (
+                <>
+                  <Spinner />
+                  建立中…
+                </>
+              ) : (
+                '建立訂單'
+              )}
+            </Button>
+          </div>
+        )}
+      </div>
+    </>
   )
 }
 
 // ── 小元件 ────────────────────────────────────────────────────────────────────
 
-function FormField({
-  label,
-  required,
-  children,
-}: {
-  label: string
-  required?: boolean
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <label className='block text-sm font-semibold text-[var(--neutral-700)] mb-1.5'>
-        {label}
-        {required && <span className='text-[var(--color-error)] ml-0.5'>*</span>}
-      </label>
-      {children}
-    </div>
-  )
-}
-
 function FormSkeleton() {
   return (
-    <div className='bg-white rounded-2xl border border-[var(--neutral-200)] shadow-sm p-6 animate-pulse space-y-5'>
+    <div className='bg-surface rounded-xl border border-line shadow-sm p-6 animate-pulse space-y-5'>
       {[1, 2, 3].map((i) => (
         <div key={i}>
-          <div className='h-4 w-16 bg-[var(--neutral-200)] rounded mb-2' />
-          <div className='h-10 bg-[var(--neutral-100)] rounded-xl' />
+          <div className='h-4 w-16 bg-ink-100 rounded mb-2' />
+          <div className='h-10 bg-ink-50 rounded-md' />
         </div>
       ))}
     </div>
@@ -351,6 +335,7 @@ function Spinner() {
       fill='none'
       stroke='currentColor'
       strokeWidth='2'
+      aria-hidden='true'
     >
       <path d='M21 12a9 9 0 1 1-6.219-8.56' />
     </svg>
