@@ -161,6 +161,7 @@ export interface AdminOrderItem {
   unit_price: number
   product_name: string
   variant_specs: Record<string, string> | null
+  supplier_name: string | null
 }
 
 export interface AdminOrder {
@@ -176,6 +177,8 @@ export interface AdminOrder {
   updated_at: string
   cancelled_by: OrderCancelledBy | null
   cancelled_at: string | null
+  shipping_number: string | null
+  shipping_vendor: ShippingVendor | null
   items: AdminOrderItem[]
 }
 

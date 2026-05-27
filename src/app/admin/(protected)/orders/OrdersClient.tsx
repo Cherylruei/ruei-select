@@ -399,7 +399,7 @@ function OrdersTable({ orders }: { orders: AdminOrder[] }) {
         <Thead>
           <Th className='w-[130px]'>訂單編號</Th>
           <Th>顧客</Th>
-          <Th>商品</Th>
+          <Th>商品 / 廠商</Th>
           <Th className='text-right'>金額</Th>
           <Th>狀態</Th>
           <Th className='w-10' />
@@ -451,8 +451,15 @@ function OrderRow({ order }: { order: AdminOrder }) {
       {/* 商品 */}
       <Td>
         <span className='text-fg-muted text-sm'>{itemLabel}</span>
-        <div className='font-mono text-[10px] text-fg-subtle mt-0.5'>
-          {formatDate(order.ordered_at)}
+        <div className='flex items-center gap-2 mt-0.5'>
+          {firstItem?.supplier_name && (
+            <span className='font-mono text-[10px] px-1.5 py-px rounded bg-ink-100 text-fg-subtle border border-line'>
+              {firstItem.supplier_name}
+            </span>
+          )}
+          <span className='font-mono text-[10px] text-fg-subtle'>
+            {formatDate(order.ordered_at)}
+          </span>
         </div>
       </Td>
 

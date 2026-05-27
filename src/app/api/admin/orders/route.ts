@@ -56,6 +56,8 @@ interface OrderRow {
   updated_at: string
   cancelled_by: string | null
   cancelled_at: string | null
+  shipping_number: string | null
+  shipping_vendor: string | null
   store_members: {
     name: string
     line_id: string
@@ -64,7 +66,7 @@ interface OrderRow {
     id: string
     quantity: number
     unit_price: number
-    products: { name: string } | null
+    products: { name: string; suppliers: { name: string } | null } | null
     product_variants: { specs: Record<string, string> } | null
   }[]
 }
@@ -124,11 +126,11 @@ export async function GET(request: NextRequest) {
       .from('orders')
       .select(
         `id, store_id, member_id, status, created_by, note, ordered_at, updated_at,
-         cancelled_by, cancelled_at,
+         cancelled_by, cancelled_at, shipping_number, shipping_vendor,
          store_members(name, line_id),
          order_items(
            id, quantity, unit_price,
-           products(name),
+           products(name, suppliers(name)),
            product_variants(specs)
          )`
       )
@@ -162,6 +164,9 @@ export async function GET(request: NextRequest) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       cancelled_by: row.cancelled_by as any,
       cancelled_at: row.cancelled_at,
+      shipping_number: row.shipping_number,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      shipping_vendor: row.shipping_vendor as any,
       items: row.order_items.map(
         (item): AdminOrderItem => ({
           id: item.id,
@@ -169,6 +174,7 @@ export async function GET(request: NextRequest) {
           unit_price: item.unit_price,
           product_name: item.products?.name ?? '',
           variant_specs: item.product_variants?.specs ?? null,
+          supplier_name: item.products?.suppliers?.name ?? null,
         })
       ),
     }))
