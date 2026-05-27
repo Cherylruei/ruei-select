@@ -15,9 +15,7 @@ import Sidebar from '../components/Sidebar'
 const defaultProps = {
   displayName: 'Cheryl',
   avatarUrl: null,
-  isCollapsed: false,
   isMobileOpen: false,
-  onToggle: vi.fn(),
   onNavClick: vi.fn(),
 }
 
@@ -31,15 +29,15 @@ describe('Sidebar', () => {
     it('renders all main nav items', () => {
       render(<Sidebar {...defaultProps} />)
       expect(screen.getByText('總覽')).toBeInTheDocument()
-      expect(screen.getByText('賣場設定')).toBeInTheDocument()
-      expect(screen.getByText('供應商管理')).toBeInTheDocument()
+      expect(screen.getByText('訂單管理')).toBeInTheDocument()
+      expect(screen.getByText('商品管理')).toBeInTheDocument()
       expect(screen.getByText('顧客管理')).toBeInTheDocument()
     })
 
-    it('renders disabled upcoming items', () => {
+    it('renders settings nav items', () => {
       render(<Sidebar {...defaultProps} />)
-      expect(screen.getByText('商品管理')).toBeInTheDocument()
-      expect(screen.getByText('訂單管理')).toBeInTheDocument()
+      expect(screen.getByText('供應商')).toBeInTheDocument()
+      expect(screen.getByText('賣場設定')).toBeInTheDocument()
     })
 
     it('marks /admin as active when pathname is /admin', () => {
@@ -82,22 +80,15 @@ describe('Sidebar', () => {
     })
   })
 
-  describe('toggle controls', () => {
-    it('calls onToggle when collapse button is clicked', () => {
-      const onToggle = vi.fn()
-      render(<Sidebar {...defaultProps} onToggle={onToggle} />)
-      fireEvent.click(screen.getByLabelText('收合側邊欄'))
-      expect(onToggle).toHaveBeenCalledOnce()
-    })
-
-    it('sets data-collapsed when isCollapsed is true', () => {
-      render(<Sidebar {...defaultProps} isCollapsed={true} />)
-      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-collapsed', 'true')
-    })
-
+  describe('mobile open state', () => {
     it('sets data-mobile-open when isMobileOpen is true', () => {
       render(<Sidebar {...defaultProps} isMobileOpen={true} />)
       expect(screen.getByTestId('sidebar')).toHaveAttribute('data-mobile-open', 'true')
+    })
+
+    it('sets data-mobile-open=false by default', () => {
+      render(<Sidebar {...defaultProps} />)
+      expect(screen.getByTestId('sidebar')).toHaveAttribute('data-mobile-open', 'false')
     })
   })
 

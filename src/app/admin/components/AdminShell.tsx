@@ -29,19 +29,16 @@ interface AdminShellProps {
 }
 
 export default function AdminShell({ displayName, avatarUrl, children }: AdminShellProps) {
-  const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const pathname = usePathname()
   const pageTitle = getPageTitle(pathname)
 
   return (
-    <div className='flex min-h-screen'>
+    <div data-variant='forest' className='flex min-h-screen bg-app text-fg'>
       <Sidebar
         displayName={displayName}
         avatarUrl={avatarUrl}
-        isCollapsed={isCollapsed}
         isMobileOpen={isMobileOpen}
-        onToggle={() => setIsCollapsed((c) => !c)}
         onNavClick={() => setIsMobileOpen(false)}
       />
 
@@ -53,15 +50,13 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
       />
 
       {/* Main content */}
-      <div
-        className={`flex-1 min-w-0 flex flex-col min-h-screen [transition:margin-left_0.3s_var(--ease-smooth)] max-md:ml-0 ${isCollapsed ? 'ml-16' : 'ml-[220px]'}`}
-      >
+      <div className='flex-1 min-w-0 flex flex-col min-h-screen ml-[220px] max-md:ml-0'>
         {/* Topbar */}
-        <header className='h-[60px] bg-white/[.88] backdrop-saturate-[140%] backdrop-blur-[8px] border-b border-[var(--neutral-200)] flex items-center gap-3.5 px-6 sticky top-0 z-30 shrink-0'>
+        <header className='h-[60px] bg-surface/[.88] backdrop-saturate-[140%] backdrop-blur-[8px] border-b border-line flex items-center gap-3.5 px-6 sticky top-0 z-30 shrink-0'>
           <button
             aria-label='開啟選單'
             onClick={() => setIsMobileOpen(true)}
-            className='hidden max-md:grid bg-transparent border border-[var(--neutral-200)] rounded-lg w-9 h-9 place-items-center cursor-pointer text-[var(--forest-deep)]'
+            className='hidden max-md:grid bg-transparent border border-line rounded-lg w-9 h-9 place-items-center cursor-pointer text-forest-700'
           >
             <svg
               viewBox='0 0 24 24'
@@ -78,7 +73,7 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
             </svg>
           </button>
 
-          <div className='text-[13px] text-[var(--neutral-500)] flex items-center gap-1.5'>
+          <div className='text-[13px] text-fg-muted flex items-center gap-1.5'>
             <span>後台</span>
             <svg
               viewBox='0 0 24 24'
@@ -91,7 +86,7 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
             >
               <polyline points='9 18 15 12 9 6' />
             </svg>
-            <strong className='text-[var(--neutral-800)] font-medium'>{pageTitle}</strong>
+            <strong className='text-fg font-medium'>{pageTitle}</strong>
           </div>
 
           <div className='flex-1' />
