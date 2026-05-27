@@ -134,22 +134,6 @@ function IconDollar() {
   )
 }
 
-function IconArrowRight() {
-  return (
-    <svg
-      width='16'
-      height='16'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='2'
-      strokeLinecap='round'
-    >
-      <path d='M9 6l6 6-6 6' />
-    </svg>
-  )
-}
-
 // ── 主元件 ─────────────────────────────────────────────────────────────────────
 
 export default function OrdersClient() {
@@ -402,7 +386,6 @@ function OrdersTable({ orders }: { orders: AdminOrder[] }) {
           <Th>商品 / 廠商</Th>
           <Th className='text-right'>金額</Th>
           <Th>狀態</Th>
-          <Th className='w-10' />
         </Thead>
         <Tbody>
           {orders.map((order) => (
@@ -415,6 +398,7 @@ function OrdersTable({ orders }: { orders: AdminOrder[] }) {
 }
 
 function OrderRow({ order }: { order: AdminOrder }) {
+  const router = useRouter()
   const subtotal = order.items.reduce((s, i) => s + i.unit_price * i.quantity, 0)
 
   // 商品欄：顯示第一件，多件時補 "+ N 件"
@@ -427,7 +411,7 @@ function OrderRow({ order }: { order: AdminOrder }) {
     : '—'
 
   return (
-    <Tr className='cursor-pointer'>
+    <Tr className='cursor-pointer' onClick={() => router.push(`/admin/orders/${order.id}`)}>
       {/* 訂單編號 */}
       <Td isId>{shortId(order.id)}</Td>
 
@@ -451,15 +435,13 @@ function OrderRow({ order }: { order: AdminOrder }) {
       {/* 商品 */}
       <Td>
         <span className='text-fg-muted text-sm'>{itemLabel}</span>
-        <div className='flex items-center gap-2 mt-0.5'>
+        <div className='flex items-center gap-2 mt-1'>
           {firstItem?.supplier_name && (
-            <span className='font-mono text-[10px] px-1.5 py-px rounded bg-ink-100 text-fg-subtle border border-line'>
+            <span className='font-mono text-xs px-1.5 py-0.5 rounded bg-ink-100 text-fg-muted border border-line'>
               {firstItem.supplier_name}
             </span>
           )}
-          <span className='font-mono text-[10px] text-fg-subtle'>
-            {formatDate(order.ordered_at)}
-          </span>
+          <span className='font-mono text-xs text-fg-subtle'>{formatDate(order.ordered_at)}</span>
         </div>
       </Td>
 
@@ -469,17 +451,6 @@ function OrderRow({ order }: { order: AdminOrder }) {
       {/* 狀態 */}
       <Td>
         <OrderStatusBadge status={order.status} />
-      </Td>
-
-      {/* 操作 → */}
-      <Td>
-        <Link
-          href={`/admin/orders/${order.id}`}
-          className='flex items-center justify-center w-8 h-8 rounded-pill hover:bg-sunken text-fg-muted hover:text-fg transition'
-          aria-label={`查看訂單 ${shortId(order.id)}`}
-        >
-          <IconArrowRight />
-        </Link>
       </Td>
     </Tr>
   )

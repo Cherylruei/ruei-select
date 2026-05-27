@@ -14,7 +14,9 @@ const PAGE_TITLES: Record<string, string> = {
 }
 
 function getPageTitle(pathname: string): string {
-  for (const [path, title] of Object.entries(PAGE_TITLES)) {
+  // 長路徑優先，避免 /admin 搶先匹配 /admin/orders 等子路徑
+  const sorted = Object.entries(PAGE_TITLES).sort((a, b) => b[0].length - a[0].length)
+  for (const [path, title] of sorted) {
     if (pathname === path || pathname.startsWith(path + '/')) {
       return title
     }
@@ -73,12 +75,12 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
             </svg>
           </button>
 
-          <div className='text-[13px] text-fg-muted flex items-center gap-1.5'>
-            <span>後台</span>
+          <div className='text-[18px] text-fg-muted flex items-center gap-2'>
+            <span className='text-[15px]'>後台</span>
             <svg
               viewBox='0 0 24 24'
-              width='13'
-              height='13'
+              width='14'
+              height='14'
               fill='none'
               stroke='currentColor'
               strokeWidth='2'
@@ -86,7 +88,7 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
             >
               <polyline points='9 18 15 12 9 6' />
             </svg>
-            <strong className='text-fg font-medium'>{pageTitle}</strong>
+            <strong className='text-fg font-semibold'>{pageTitle}</strong>
           </div>
 
           <div className='flex-1' />

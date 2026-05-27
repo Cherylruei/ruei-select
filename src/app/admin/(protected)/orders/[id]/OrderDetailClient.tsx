@@ -185,27 +185,27 @@ export default function OrderDetailClient({ params }: { params: Promise<{ id: st
           </div>
 
           {/* 顧客資訊 */}
-          <div className='border-t border-line pt-4 grid grid-cols-2 gap-3 text-sm'>
+          <div className='border-t border-line pt-4 grid grid-cols-2 gap-y-4 gap-x-3'>
             <div>
-              <div className='text-fg-subtle text-xs mb-1'>顧客</div>
-              <div className='font-semibold text-fg'>{order.member_name}</div>
+              <div className='text-fg-subtle text-[13px] mb-1'>顧客</div>
+              <div className='font-semibold text-[15px] text-fg'>{order.member_name}</div>
             </div>
             <div>
-              <div className='text-fg-subtle text-xs mb-1'>LINE ID</div>
-              <div className='font-mono text-fg-muted'>{order.member_line_id || '—'}</div>
+              <div className='text-fg-subtle text-[13px] mb-1'>LINE ID</div>
+              <div className='font-mono text-sm text-fg-muted'>{order.member_line_id || '—'}</div>
             </div>
             <div>
-              <div className='text-fg-subtle text-xs mb-1'>下單時間</div>
-              <div className='text-fg-muted'>{formatDateTime(order.ordered_at)}</div>
+              <div className='text-fg-subtle text-[13px] mb-1'>下單時間</div>
+              <div className='text-sm text-fg-muted'>{formatDateTime(order.ordered_at)}</div>
             </div>
             <div>
-              <div className='text-fg-subtle text-xs mb-1'>最後更新</div>
-              <div className='text-fg-muted'>{formatDateTime(order.updated_at)}</div>
+              <div className='text-fg-subtle text-[13px] mb-1'>最後更新</div>
+              <div className='text-sm text-fg-muted'>{formatDateTime(order.updated_at)}</div>
             </div>
             {order.cancelled_at && (
               <div className='col-span-2'>
-                <div className='text-fg-subtle text-xs mb-1'>取消時間</div>
-                <div className='text-fg-muted'>
+                <div className='text-fg-subtle text-[13px] mb-1'>取消時間</div>
+                <div className='text-sm text-fg-muted'>
                   {formatDateTime(order.cancelled_at)}
                   {order.cancelled_by &&
                     `（${order.cancelled_by === 'merchant' ? '商家' : '顧客'}取消）`}
@@ -214,7 +214,7 @@ export default function OrderDetailClient({ params }: { params: Promise<{ id: st
             )}
             {order.note && (
               <div className='col-span-2'>
-                <div className='text-fg-subtle text-xs mb-1'>備註</div>
+                <div className='text-fg-subtle text-[13px] mb-1'>備註</div>
                 <div className='text-fg bg-sunken rounded-lg px-3 py-2 text-sm'>{order.note}</div>
               </div>
             )}
@@ -223,32 +223,32 @@ export default function OrderDetailClient({ params }: { params: Promise<{ id: st
 
         {/* ── 商品明細 ── */}
         <div className='bg-surface border border-line rounded-xl overflow-hidden'>
-          <div className='px-5 py-3 border-b border-line'>
-            <h2 className='font-display font-semibold text-sm text-fg'>商品明細</h2>
+          <div className='px-5 py-3.5 border-b border-line'>
+            <h2 className='font-display font-semibold text-[15px] text-fg'>商品明細</h2>
           </div>
           <div className='divide-y divide-line'>
             {order.items.map((item) => (
               <div key={item.id} className='px-5 py-4 flex items-start gap-4'>
                 <div className='flex-1 min-w-0'>
-                  <div className='font-medium text-sm text-fg'>{item.product_name}</div>
-                  <div className='flex items-center gap-2 mt-1 flex-wrap'>
+                  <div className='font-medium text-[15px] text-fg'>{item.product_name}</div>
+                  <div className='flex items-center gap-2 mt-1.5 flex-wrap'>
                     {item.variant_specs && (
-                      <span className='font-mono text-[10px] text-fg-subtle'>
+                      <span className='font-mono text-xs text-fg-muted'>
                         {specLabel(item.variant_specs)}
                       </span>
                     )}
                     {item.supplier_name && (
-                      <span className='font-mono text-[10px] px-1.5 py-px rounded bg-ink-100 text-fg-subtle border border-line'>
+                      <span className='font-mono text-xs px-1.5 py-0.5 rounded bg-ink-100 text-fg-muted border border-line'>
                         {item.supplier_name}
                       </span>
                     )}
                   </div>
                 </div>
                 <div className='text-right shrink-0'>
-                  <div className='font-mono text-sm text-fg'>
+                  <div className='font-mono text-[15px] text-fg'>
                     NT$ {(item.unit_price * item.quantity).toLocaleString()}
                   </div>
-                  <div className='font-mono text-[10px] text-fg-subtle mt-0.5'>
+                  <div className='font-mono text-xs text-fg-subtle mt-0.5'>
                     NT$ {item.unit_price.toLocaleString()} × {item.quantity}
                   </div>
                 </div>
@@ -257,8 +257,8 @@ export default function OrderDetailClient({ params }: { params: Promise<{ id: st
           </div>
           {/* 合計 */}
           <div className='px-5 py-4 border-t border-line flex justify-between items-center bg-ink-50'>
-            <span className='font-display font-semibold text-sm text-fg'>合計</span>
-            <span className='font-display font-bold text-lg text-fg'>
+            <span className='font-display font-semibold text-[15px] text-fg'>合計</span>
+            <span className='font-display font-bold text-xl text-fg'>
               NT$ {subtotal.toLocaleString()}
             </span>
           </div>
@@ -267,18 +267,18 @@ export default function OrderDetailClient({ params }: { params: Promise<{ id: st
         {/* ── 出貨資訊（有出貨單號時顯示）── */}
         {(order.shipping_number || order.shipping_vendor) && (
           <div className='bg-surface border border-line rounded-xl p-5'>
-            <h2 className='font-display font-semibold text-sm text-fg mb-3'>出貨資訊</h2>
-            <div className='grid grid-cols-2 gap-3 text-sm'>
+            <h2 className='font-display font-semibold text-[15px] text-fg mb-3'>出貨資訊</h2>
+            <div className='grid grid-cols-2 gap-y-4 gap-x-3'>
               {order.shipping_vendor && (
                 <div>
-                  <div className='text-fg-subtle text-xs mb-1'>物流商</div>
-                  <div className='text-fg'>{order.shipping_vendor}</div>
+                  <div className='text-fg-subtle text-[13px] mb-1'>物流商</div>
+                  <div className='text-sm text-fg'>{order.shipping_vendor}</div>
                 </div>
               )}
               {order.shipping_number && (
                 <div>
-                  <div className='text-fg-subtle text-xs mb-1'>單號</div>
-                  <div className='font-mono text-fg'>{order.shipping_number}</div>
+                  <div className='text-fg-subtle text-[13px] mb-1'>單號</div>
+                  <div className='font-mono text-sm text-fg'>{order.shipping_number}</div>
                 </div>
               )}
             </div>
