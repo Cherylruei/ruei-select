@@ -182,9 +182,14 @@ describe('Sprint 2 Order TypeScript interface', () => {
       store_id: 'store-1',
       member_id: 'member-1',
       status: 'pending_purchase',
+      created_by: 'customer',
       note: null,
       ordered_at: '2026-05-19T00:00:00Z',
       updated_at: '2026-05-19T00:00:00Z',
+      cancelled_by: null,
+      cancelled_at: null,
+      shipping_number: null,
+      shipping_vendor: null,
     }
     expect(order.member_id).toBe('member-1')
     expect(order.store_id).toBe('store-1')
@@ -206,9 +211,14 @@ describe('Sprint 2 Order TypeScript interface', () => {
         store_id: 'store-1',
         member_id: 'member-1',
         status,
+        created_by: 'customer',
         note: null,
         ordered_at: '2026-05-19T00:00:00Z',
         updated_at: '2026-05-19T00:00:00Z',
+        cancelled_by: null,
+        cancelled_at: null,
+        shipping_number: null,
+        shipping_vendor: null,
       }
       expect(order.status).toBe(status)
     })

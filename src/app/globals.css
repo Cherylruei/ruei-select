@@ -1,7 +1,120 @@
-@import "tailwindcss";
+@import '../styles/design-tokens.css';
+@import 'tailwindcss';
+
+/* ============================================================
+   Tailwind v4 @theme — 把 CSS 變數接成 utility classes
+   ============================================================ */
+@theme {
+  /* ── Brand scales ────────────────────────────────────────── */
+  --color-sakura-50: var(--sakura-50);
+  --color-sakura-100: var(--sakura-100);
+  --color-sakura-200: var(--sakura-200);
+  --color-sakura-300: var(--sakura-300);
+  --color-sakura-400: var(--sakura-400);
+  --color-sakura-500: var(--sakura-500);
+  --color-sakura-600: var(--sakura-600);
+  --color-sakura-700: var(--sakura-700);
+  --color-sakura-800: var(--sakura-800);
+
+  --color-forest-50: var(--forest-50);
+  --color-forest-100: var(--forest-100);
+  --color-forest-200: var(--forest-200);
+  --color-forest-300: var(--forest-300);
+  --color-forest-400: var(--forest-400);
+  --color-forest-500: var(--forest-500);
+  --color-forest-600: var(--forest-600);
+  --color-forest-700: var(--forest-700);
+  --color-forest-800: var(--forest-800);
+
+  --color-earth-50: var(--earth-50);
+  --color-earth-100: var(--earth-100);
+  --color-earth-200: var(--earth-200);
+  --color-earth-300: var(--earth-300);
+  --color-earth-400: var(--earth-400);
+  --color-earth-500: var(--earth-500);
+  --color-earth-600: var(--earth-600);
+  --color-earth-700: var(--earth-700);
+
+  --color-ink-50: var(--ink-50);
+  --color-ink-100: var(--ink-100);
+  --color-ink-200: var(--ink-200);
+  --color-ink-300: var(--ink-300);
+  --color-ink-400: var(--ink-400);
+  --color-ink-500: var(--ink-500);
+  --color-ink-600: var(--ink-600);
+  --color-ink-700: var(--ink-700);
+  --color-ink-800: var(--ink-800);
+  --color-ink-900: var(--ink-900);
+
+  /* ── Semantic — 隨 data-variant 自動換 ───────────────────── */
+  --color-primary: var(--c-primary);
+  --color-primary-hv: var(--c-primary-hv);
+  --color-primary-bg: var(--c-primary-bg);
+  --color-primary-fg: var(--c-primary-fg);
+
+  --color-secondary: var(--c-secondary);
+  --color-secondary-hv: var(--c-secondary-hv);
+  --color-secondary-bg: var(--c-secondary-bg);
+  --color-secondary-fg: var(--c-secondary-fg);
+
+  --color-accent: var(--c-accent);
+  --color-accent-bg: var(--c-accent-bg);
+
+  /* ── Surface ─────────────────────────────────────────────── */
+  --color-surface: var(--bg-surface);
+  --color-sunken: var(--bg-sunken);
+  --color-app: var(--bg-app);
+
+  /* ── Foreground ──────────────────────────────────────────── */
+  --color-fg: var(--fg-default);
+  --color-fg-muted: var(--fg-muted);
+  --color-fg-subtle: var(--fg-subtle);
+
+  /* ── Border ──────────────────────────────────────────────── */
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+
+  /* ── Status ──────────────────────────────────────────────── */
+  --color-success: var(--c-success);
+  --color-success-bg: var(--c-success-bg);
+  --color-warning: var(--c-warning);
+  --color-warning-bg: var(--c-warning-bg);
+  --color-danger: var(--c-danger);
+  --color-danger-bg: var(--c-danger-bg);
+  --color-info: var(--c-info);
+  --color-info-bg: var(--c-info-bg);
+
+  /* ── Border Radius ───────────────────────────────────────── */
+  --radius-xs: var(--r-xs);
+  --radius-sm: var(--r-sm);
+  --radius-md: var(--r-md);
+  --radius-lg: var(--r-lg);
+  --radius-xl: var(--r-xl);
+  --radius-2xl: var(--r-2xl);
+  --radius-pill: var(--r-pill);
+
+  /* ── Shadows（具體值，避免 CSS var 循環引用）─────────────── */
+  --shadow-xs: 0 1px 2px rgba(35, 34, 32, 0.06);
+  --shadow-sm: 0 2px 6px rgba(35, 34, 32, 0.06), 0 1px 2px rgba(35, 34, 32, 0.04);
+  --shadow-md: 0 6px 18px rgba(35, 34, 32, 0.08), 0 2px 4px rgba(35, 34, 32, 0.04);
+  --shadow-lg: 0 18px 42px rgba(35, 34, 32, 0.12), 0 4px 8px rgba(35, 34, 32, 0.04);
+  --shadow-pink: 0 8px 24px rgba(242, 92, 122, 0.28);
+  --shadow-green: 0 8px 24px rgba(60, 122, 69, 0.22);
+
+  /* ── Typography: Font families ──────────────────────────── */
+  --font-display: var(--font-zen-maru-gothic), 'Noto Sans TC', system-ui, sans-serif;
+  --font-body: var(--font-noto-sans-tc), 'Zen Maru Gothic', system-ui, sans-serif;
+  --font-sans: var(--font-noto-sans-tc), 'Zen Maru Gothic', system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), 'JetBrains Mono', 'Menlo', monospace;
+
+  /* ── Typography: Custom font sizes ──────────────────────── */
+  --text-md: 16px;
+}
 
 body {
-  font-family: var(--font-noto-sans-tc), 'Noto Sans TC', sans-serif;
-  background: var(--neutral-50, #ffffff);
-  color: var(--neutral-800, #1e2218);
+  font-family: var(--font-body);
+  font-size: var(--fs-base);
+  line-height: var(--lh-base);
+  color: var(--fg-default);
+  background: var(--bg-app);
 }

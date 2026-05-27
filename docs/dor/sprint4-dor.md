@@ -1,8 +1,13 @@
 # Sprint 4 — Definition of Ready (DoR)
 
-**版本：** v1.0 草稿
+**版本：** v1.1
 **建立日期：** 2026-05-24
-**Sprint 目標：** 商家能管理訂單並安排出貨；顧客能結單選物流；並建立許願池功能
+**更新日期：** 2026-05-25（Cheryl 確認）
+**Sprint 目標：** 商家能管理訂單、代客結單並安排出貨；顧客能結單選物流；並建立許願池功能
+
+**v1.1 變更摘要：**
+- US-18 新增「商家代客結單」（AC-18.20～18.24）
+- US-21「顧客取消訂單」移出 Sprint 4 範圍，暫不開放
 
 ---
 
@@ -18,7 +23,7 @@ Sprint 3 完成了顧客完整購物流程：LIFF 身份驗證、商品瀏覽、
 
 Sprint 4 的核心目標是打通訂單從「待採買」到「已出貨」的完整商業閉環。
 
-> ⚠️ **範圍提醒**：本 Sprint 功能量偏大（6 個 US）。若開發時程不足，優先完成 US-18～US-21（訂單閉環），US-22/23（許願池）可視情況移至 Sprint 5。請 Cheryl 於開始前確認。
+> ⚠️ **範圍提醒**：本 Sprint 功能量偏大（5 個 US：US-18～US-20 + US-22～US-23）。若開發時程不足，優先完成 US-18～US-20（訂單閉環），US-22/23（許願池）可視情況移至 Sprint 5。請 Cheryl 於開始前確認。
 
 ---
 
@@ -28,7 +33,6 @@ Sprint 4 的核心目標是打通訂單從「待採買」到「已出貨」的�
 sprint4-admin-orders       商家訂單管理後台（依賴：Sprint 3 的 orders table）
   → sprint4-checkout       顧客結單流程（依賴：商家能標記已配單）
     → sprint4-shipping     商家出貨管理（依賴：顧客結單 = settled 狀態）
-sprint4-cancel             顧客取消訂單（依賴：訂單建立）
 sprint4-wishlist           顧客許願池送出（依賴：顧客前台框架）
   → sprint4-wishlist-admin 許願池後台（依賴：wishlist 送出）
 ```
@@ -98,6 +102,23 @@ So that 我能系統化追蹤每筆訂單，確保不漏單。
   - `order_items`：`product_id`、`variant_id`、`quantity`、`unit_price = variant.price`
 - AC-18.18：建立成功 → Toast「訂單已建立」→ 導回 `/admin/orders`，新訂單出現在列表最上方
 - AC-18.19：商家建立的訂單顧客端同樣可在 `/store/{slug}/orders` 看到（共用同一 orders table）；顧客端訂單來源不特別標示
+
+**商家代客結單**
+
+> ℹ️ 適用情境：顧客已到貨但不熟悉系統操作，由商家協助選擇出貨方式並完成結單。
+
+- AC-18.20：`status = 'allocated'` 的訂單卡在後台顯示「代客結單」按鈕
+- AC-18.21：點擊「代客結單」→ 進入 `/admin/orders/{id}/checkout`，頁面包含：
+  - 頂部顯示訂單摘要（顧客姓名、商品名稱、規格、數量、小計）
+  - 物流方式選擇（單選，4 種，同 US-20 AC-20.5）
+  - 依物流方式顯示對應收件欄位（同 US-20 AC-20.5）
+  - 付款方式選擇依物流方式聯動（同 US-20 AC-20.6）
+- AC-18.22：底部「確認代客結單」按鈕；必填欄位未填時 disabled
+- AC-18.23：確認後：
+  - `orders.status = 'settled'`
+  - 新增一筆 `settlements` 資料（含物流與付款資訊）
+  - Toast「已代顧客完成結單」→ 導回 `/admin/orders`
+- AC-18.24：代客結單後，顧客端 `/store/{slug}/orders` 同步顯示「已到貨」badge（`settled` 映射規則同 AC-20.10，不另標示是商家代結）
 
 ---
 
@@ -170,14 +191,9 @@ So that 我能在商家尚未向廠商下單前撤回購買意願。
 
 **Acceptance Criteria：**
 
-- AC-21.1：`/store/{slug}/orders` 中，`status = 'pending_purchase'` 的訂單卡顯示「取消訂單」按鈕
-- AC-21.2：點擊取消 → 確認 dialog（「確認取消此訂單？取消後無法復原」）
-- AC-21.3：確認後：
-  - `orders.status = 'cancelled'`
-  - `orders.cancelled_at = now()`
-  - `orders.cancelled_by = 'customer'`
-- AC-21.4：取消後訂單在列表中顯示「已取消」紅色 badge，無取消按鈕
-- AC-21.5：`status` 非 `pending_purchase` 的訂單不顯示取消按鈕（前端控制；後端 API 同樣驗證，非 `pending_purchase` 拒絕取消）
+> ⚠️ **本 US 已移出 Sprint 4 範圍（Cheryl 確認，2026-05-25）。**
+> 顧客取消訂單功能暫不開放，日後視業務需求考慮。
+> 資料欄位（`cancelled_by`、`cancelled_at`）保留於 DB schema 供未來使用。
 
 ---
 
@@ -229,9 +245,9 @@ So that 我能系統化管理採購需求，也讓顧客知道許願進度。
 
 - 商家訂單管理後台（`/admin/orders`）含狀態篩選與狀態更新（待採買→已訂購→已配單）
 - **商家協助建立訂單**（`/admin/orders/new`，代客登記）
+- **商家代客結單**（`/admin/orders/{id}/checkout`，代不熟悉系統的顧客完成結單選出貨方式）
 - 商家出貨管理（填物流單號 → 已出貨）
 - 顧客結單流程（4 種物流方式 + 付款方式）
-- 顧客取消訂單（限 `pending_purchase`）
 - 顧客許願池（送出）+ 許願池後台（商家）
 - `settlements` 資料表建立（儲存結單物流與付款資訊）
 - `wishlists` 資料表建立
@@ -239,6 +255,7 @@ So that 我能系統化管理採購需求，也讓顧客知道許願進度。
 
 ### Out of Scope（Sprint 4 不做）
 
+- 顧客取消訂單 → 暫不開放（Cheryl 2026-05-25 確認），日後視業務需求考慮
 - 顧客確認收到（`shipped → completed`）→ 未來版本
 - 商家取消訂單 → 未來版本
 - 自動 / 手動配單升級版（按下單時間自動分配）→ Sprint 5
@@ -336,14 +353,13 @@ ALTER TABLE orders
 顧客端：
 8. 訂單列表看到「已到貨」badge + 「結單」按鈕
 9. 點結單 → 選「宅配」→ 填收件人資訊 → 選「匯款」→ 確認結單 → Toast 成功
-10. 「待採買」訂單點「取消訂單」→ 確認 → 訂單顯示「已取消」紅色 badge
 
 商家依顧客查看到貨狀況：
-11. 篩選「已配單」→ 切換「依顧客分組」→ 看到顧客 A 有 2 件已到貨 → 展開看到其全部訂單（含未到的）→ 複製顧客 LINE ID → 手動開 LINE 通知
+10. 篩選「已配單」→ 切換「依顧客分組」→ 看到顧客 A 有 2 件已到貨 → 展開看到其全部訂單（含未到的）→ 複製顧客 LINE ID → 手動開 LINE 通知
 
 許願池：
-12. 顧客點底部「許願池」Tab → 點「＋ 許願」→ 填商品名 + 上傳照片 → 送出 → Toast 成功
-13. 商家後台「許願池」→ 看到許願 → 狀態下拉改「已注意」→ Toast 成功
+11. 顧客點底部「許願池」Tab → 點「＋ 許願」→ 填商品名 + 上傳照片 → 送出 → Toast 成功
+12. 商家後台「許願池」→ 看到許願 → 狀態下拉改「已注意」→ Toast 成功
 ```
 
 ---

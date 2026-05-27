@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>芮選 · Sprint 4 Design Handoff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="design-tokens.css" />
+  <style>
+    body { font-family: var(--font-body); background: var(--bg-app); color: var(--fg-default); margin: 0; padding: 0; }
+    .wrap { max-width: 920px; margin: 0 auto; padding: 56px 32px 96px; }
+    h1 { font-family: var(--font-display); font-size: 48px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; }
+    h2 { font-family: var(--font-display); font-size: 22px; font-weight: 700; margin-top: 56px; margin-bottom: 16px; }
+    p { color: var(--fg-muted); line-height: 1.65; }
+    .kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; color: var(--c-primary); text-transform: uppercase; margin-bottom: 12px; }
+    .files {
+      display: grid; gap: 14px; margin-top: 24px;
+    }
+    .file-card {
+      display: grid; grid-template-columns: auto 1fr auto; gap: 20px; align-items: center;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 20px 24px;
+      text-decoration: none; color: inherit;
+      transition: box-shadow 200ms var(--ease-out), transform 200ms var(--ease-out), border-color 200ms;
+    }
+    .file-card:hover { box-shadow: var(--shadow-md); border-color: transparent; transform: translateY(-1px); }
+    .file-icon {
+      width: 56px; height: 56px; border-radius: var(--r-md);
+      background: var(--c-primary-bg); color: var(--c-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.05em;
+    }
+    .file-card h3 { font-family: var(--font-display); font-size: 18px; margin: 0; }
+    .file-card .desc { color: var(--fg-muted); font-size: 13px; margin-top: 4px; }
+    .file-arrow { font-family: var(--font-mono); color: var(--fg-subtle); font-size: 18px; }
+    .file-card:hover .file-arrow { color: var(--c-primary); }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 12px; border-radius: var(--r-pill);
+      font-family: var(--font-display); font-size: 12px; font-weight: 600;
+      background: var(--c-primary-bg); color: var(--c-primary);
+    }
+    .step {
+      display: flex; gap: 16px; padding: 16px 0;
+      border-bottom: 1px dashed var(--border);
+    }
+    .step:last-child { border-bottom: 0; }
+    .step-num {
+      flex-shrink: 0;
+      width: 32px; height: 32px; border-radius: var(--r-pill);
+      background: var(--c-secondary); color: #fff;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 700; font-size: 14px;
+    }
+    .step-body { font-size: 14px; }
+    .step-body b { font-family: var(--font-display); font-weight: 700; display: block; margin-bottom: 4px; }
+    .step-body code { font-family: var(--font-mono); font-size: 12px; background: var(--bg-sunken); padding: 1px 6px; border-radius: 4px; }
+    .nudge {
+      margin-top: 28px;
+      background: var(--c-primary-bg); color: var(--c-primary-hv);
+      padding: 18px 22px; border-radius: var(--r-lg);
+      font-size: 14px;
+    }
+    .nudge b { font-family: var(--font-display); display: block; margin-bottom: 4px; font-size: 15px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="pill">Sprint 4 · Design Handoff</div>
+    <h1 style="margin-top: 16px">芮選 Design System<br/>給 Claude Code 的交接包</h1>
+    <p style="margin-top: 14px; max-width: 600px;">
+      下面 4 個檔案就是所有你需要交給 Claude Code 的東西。
+      Token、Tailwind 設定、元件視覺 + 程式碼、Sprint 4 導入步驟。
+    </p>
+
+    <div class="files">
+      <a class="file-card" href="design-tokens.css" target="_blank">
+        <div class="file-icon">.css</div>
+        <div>
+          <h3>design-tokens.css</h3>
+          <div class="desc">所有 CSS 變數（色彩、字體、間距、圓角、陰影）。直接拷貝到 <code style="font-family:var(--font-mono);font-size:12px">src/styles/</code></div>
+        </div>
+        <div class="file-arrow">→</div>
+      </a>
+
+      <a class="file-card" href="tailwind.config.ts" target="_blank">
+        <div class="file-icon" style="background:var(--c-secondary-bg);color:var(--c-secondary)">.ts</div>
+        <div>
+          <h3>tailwind.config.ts</h3>
+          <div class="desc">把 CSS 變數接成 Tailwind utility（<code style="font-family:var(--font-mono);font-size:12px">bg-primary</code>、<code style="font-family:var(--font-mono);font-size:12px">rounded-pill</code> 等）。合併到現有 config。</div>
+        </div>
+        <div class="file-arrow">→</div>
+      </a>
+
+      <a class="file-card" href="component-recipes.html" target="_blank">
+        <div class="file-icon" style="background:var(--earth-100);color:var(--earth-700)">html</div>
+        <div>
+          <h3>component-recipes.html</h3>
+          <div class="desc">13 個區塊、20+ 個元件配方。每個元件都有視覺預覽 + 可複製的 Tailwind JSX。<b style="color:var(--fg-default)">最重要的一份。</b></div>
+        </div>
+        <div class="file-arrow">→</div>
+      </a>
+
+      <a class="file-card" href="migration-notes.md" target="_blank">
+        <div class="file-icon" style="background:var(--ink-200);color:var(--ink-700)">.md</div>
+        <div>
+          <h3>migration-notes.md</h3>
+          <div class="desc">Sprint 4 導入步驟、Phase A/B/C/D 順序、給 Claude Code 的開工提示詞、驗收清單。</div>
+        </div>
+        <div class="file-arrow">→</div>
+      </a>
+    </div>
+
+    <h2>導入流程</h2>
+    <div>
+      <div class="step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <b>把 4 個檔案下載到專案</b>
+          設計檔放專案的 <code>handoff/</code> 資料夾，或開新 PR 直接上 main branch。
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <b>給 Claude Code 開工指令</b>
+          打開 migration-notes.md 第 5 節「給 Claude Code 的開工提示詞」，整段複製貼上。
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <b>Phase A · 基礎建設（半天）</b>
+          Token、Tailwind、字體、兩個 layout 的 data-variant。
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <b>Phase B · 重構共用元件（1–2 天）</b>
+          按推薦順序：Button → Badge → Input → Card → Table → Modal → Toast → EmptyState。每個元件都對照 component-recipes.html。
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <b>Phase C · Sprint 4 新功能套用</b>
+          Token 與元件都到位後，新功能會自動帶上正確視覺。
+        </div>
+      </div>
+    </div>
+
+    <div class="nudge">
+      <b>提醒</b>
+      Sprint 1–3 既有頁面不需要逐頁重做。共用元件改完，那些頁面自動換新衣。只有殘留的 hardcode 顏色（如 <code style="font-family:var(--font-mono);font-size:12px;background:rgba(0,0,0,0.06);padding:1px 6px;border-radius:4px">bg-gray-100</code>）需要手動替換。
+    </div>
+  </div>
+</body>
+</html>
