@@ -51,7 +51,54 @@
 
 ---
 
-## 2. 分支策略（GitHub Flow）
+## 2. 設計系統
+
+### 設計真相來源（優先序，高 → 低）
+
+| # | 來源 | 角色 |
+|---|---|---|
+| 1 | `src/components/ui/*.tsx` | **元件實作（最高權威）** |
+| 2 | `/admin/ui-demo`（live page） | **元件實況** |
+| 3 | `docs/design/mockups/*.html` | **頁面 spec** |
+| 4 | `docs/design/handoff/component-recipes.html` | **設計意圖（補充）** |
+| 5 | `src/styles/design-tokens.css` | **Token 真相** |
+
+**衝突仲裁**：
+- recipes 與 ui-demo 衝突 → 以 **ui-demo（真實 code）** 為準，回報差異
+- mockup 與 ui-demo 衝突 → **停下來問**
+- mockup 未覆蓋的場景 → **停下來問**，不要自己發明視覺
+
+### 設計鐵則
+
+1. **顏色一律走 token**：`bg-primary` / `text-fg-muted` / `border-line`…
+   ❌ 禁止 hardcode hex（`#F25C7A`）；❌ 禁止 Tailwind 預設 `gray-*` / `pink-*` / `slate-*`
+2. **圓角統一 token**：`rounded-md` / `lg` / `xl` / `2xl` / `pill`
+3. **字體 token**：標題 → `font-display`（Zen Maru Gothic）／內文 → `font-body`（Noto Sans TC）／數字編號 → `font-mono`（JetBrains Mono）
+4. **訂單狀態用** `<StatusBadge status="..." />`，不要在頁面手刻顏色
+5. **需要新元件 → 先停下來問**，不要重複造輪子
+6. **不要動範圍外的檔案**
+
+### UI 作業流程（任何涉及畫面的任務）
+
+```
+□ 讀對應 mockup HTML（對照表見 docs/design/mockups/INDEX.md）
+□ 對照 component-recipes.html 確認元件用法
+□ 確認 src/components/ui/ 已有可用元件
+□ 列出將建立/修改的檔案清單 + 有疑慮的決策點
+□ 停下來等使用者確認，再開工
+□ 一次只動一個檔案，動完停下來等確認，再繼續
+```
+
+### 設計未覆蓋的場景
+
+若 mockup / recipes 都沒覆蓋某 edge case：
+1. 停下來
+2. 描述場景並提出 2–3 個視覺方案
+3. 等使用者決定後再實作，不要自己發明新元件或新樣式
+
+---
+
+## 3. 分支策略（GitHub Flow）
 
 每個 feature 獨立從 main 開分支，完成後由 Cheryl merge 回 main。
 
@@ -74,7 +121,7 @@ docs/sprint{n}-{kebab-case-description}
 
 ---
 
-## 3. Commit 格式（Conventional Commits）
+## 4. Commit 格式（Conventional Commits）
 
 ```
 <type>(<scope>): <description>
@@ -85,7 +132,7 @@ scope：store / product / order / customer / shipping / auth / ui / db
 
 ---
 
-## 4. Task 開始前檢查清單
+## 5. Task 開始前檢查清單
 
 ```
 □ 確認目前所在分支正確（git branch --show-current）
@@ -96,7 +143,7 @@ scope：store / product / order / customer / shipping / auth / ui / db
 
 ---
 
-## 5. 開發流程
+## 6. 開發流程
 
 ```
 DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → KM
@@ -125,7 +172,7 @@ DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → KM
 
 ---
 
-## 6. 本地開發環境 SOP
+## 7. 本地開發環境 SOP
 
 ### 環境差異對照
 
@@ -173,7 +220,7 @@ DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → KM
 
 ---
 
-## 7. 目前狀態
+## 8. 目前狀態
 
 > 每個 feature 開始和完成時更新此區塊。
 > 完整 sprint 進度索引見 [SPRINT_PLAN.md](SPRINT_PLAN.md)。
@@ -198,15 +245,23 @@ Sprint 4 待開始（DoR 已備妥，等 Sprint 3 merge）：
 
 ---
 
-## 8. 專案文件結構
+## 9. 專案文件結構
 
 ```
 ruei-select/
 ├── CLAUDE.md                 ← 本文件（開發工作合約）
 ├── SPRINT_PLAN.md            ← Sprint 狀態索引（輕量，每次 session 先讀）
-├── src/app/
-│   ├── design-tokens.css     ← Design System tokens
-│   └── ...
+├── tailwind.config.ts        ← Tailwind 全專案設定
+├── src/
+│   ├── styles/
+│   │   └── design-tokens.css ← Token 真相來源（唯一一份）
+│   ├── components/
+│   │   └── ui/               ← 共用元件（Button / Input / Card / StatusBadge…）
+│   └── app/
+│       ├── admin/
+│       │   ├── ui-demo/      ← live style guide（forest variant）
+│       │   └── ...           ← forest variant 頁面
+│       └── store/[slug]/     ← candy variant 頁面
 ├── docs/
 │   ├── PRD.md                ← 完整產品需求（細節查閱用）
 │   ├── SYSTEM_CONSTRAINTS.md ← 架構約束與禁止事項（必讀）
@@ -214,7 +269,9 @@ ruei-select/
 │   ├── sdd/                  ← 系統架構（system-sdd.md + sprint delta）
 │   ├── dor/                  ← Sprint 需求定義（sprint{n}-dor.md）
 │   ├── dod/                  ← Sprint 完成標準（sprint{n}-dod.md）
-│   └── design/               ← 設計稿（login / pages / design-system）
+│   └── design/
+│       ├── mockups/          ← 高擬真頁面 spec（INDEX.md 有路由對照表）
+│       └── handoff/          ← component-recipes.html + sprint 任務包
 └── km/
     ├── bugs/                 ← 重要 bug 根因分析
     ├── decisions/            ← 架構決策紀錄（ADR）

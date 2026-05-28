@@ -1,282 +1,812 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>芮選 · Sprint 4 高擬真頁面</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
-  <style>
-    body { font-family: var(--font-body); background: var(--bg-app); color: var(--fg-default); margin: 0; }
-    .wrap { max-width: 1080px; margin: 0 auto; padding: 64px 32px 96px; }
-    h1 { font-family: var(--font-display); font-size: 48px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.05; margin: 16px 0 12px; }
-    .kicker { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.2em; color: var(--c-primary); text-transform: uppercase; }
-    p.intro { color: var(--fg-muted); line-height: 1.65; max-width: 620px; }
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>芮選 · Sprint 4 高擬真頁面</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
+    <style>
+      body {
+        font-family: var(--font-body);
+        background: var(--bg-app);
+        color: var(--fg-default);
+        margin: 0;
+      }
+      .wrap {
+        max-width: 1080px;
+        margin: 0 auto;
+        padding: 64px 32px 96px;
+      }
+      h1 {
+        font-family: var(--font-display);
+        font-size: 48px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        line-height: 1.05;
+        margin: 16px 0 12px;
+      }
+      .kicker {
+        font-family: var(--font-mono);
+        font-size: 11px;
+        letter-spacing: 0.2em;
+        color: var(--c-primary);
+        text-transform: uppercase;
+      }
+      p.intro {
+        color: var(--fg-muted);
+        line-height: 1.65;
+        max-width: 620px;
+      }
 
-    .grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; margin-top: 40px; }
-    @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        margin-top: 40px;
+      }
+      @media (max-width: 900px) {
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
 
-    .card {
-      display: flex; flex-direction: column;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-2xl);
-      overflow: hidden;
-      text-decoration: none; color: inherit;
-      transition: box-shadow 200ms var(--ease-out), transform 200ms var(--ease-out), border-color 200ms;
-    }
-    .card:hover { box-shadow: var(--shadow-lg); border-color: transparent; transform: translateY(-3px); }
+      .card {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-2xl);
+        overflow: hidden;
+        text-decoration: none;
+        color: inherit;
+        transition:
+          box-shadow 200ms var(--ease-out),
+          transform 200ms var(--ease-out),
+          border-color 200ms;
+      }
+      .card:hover {
+        box-shadow: var(--shadow-lg);
+        border-color: transparent;
+        transform: translateY(-3px);
+      }
 
-    .card-thumb {
-      aspect-ratio: 16 / 11;
-      position: relative;
-      overflow: hidden;
-    }
-    .thumb-admin {
-      background: linear-gradient(135deg, #F1F6F1 0%, #FBFAF7 100%);
-    }
-    .thumb-store {
-      background: linear-gradient(135deg, #FFF6F1 0%, #FFE9E0 100%);
-    }
-    .thumb-orders {
-      background: linear-gradient(135deg, #FFE9E0 0%, #ECE7FF 100%);
-    }
-    .thumb-mini {
-      position: absolute;
-      inset: 16px;
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.08);
-      overflow: hidden;
-    }
-    .phone-thumb {
-      width: 70%;
-      max-width: 160px;
-      margin: 16px auto;
-      aspect-ratio: 9 / 16;
-      background: white;
-      border-radius: 18px;
-      box-shadow: 0 8px 24px rgba(0,0,0,0.10);
-      overflow: hidden;
-    }
+      .card-thumb {
+        aspect-ratio: 16 / 11;
+        position: relative;
+        overflow: hidden;
+      }
+      .thumb-admin {
+        background: linear-gradient(135deg, #f1f6f1 0%, #fbfaf7 100%);
+      }
+      .thumb-store {
+        background: linear-gradient(135deg, #fff6f1 0%, #ffe9e0 100%);
+      }
+      .thumb-orders {
+        background: linear-gradient(135deg, #ffe9e0 0%, #ece7ff 100%);
+      }
+      .thumb-mini {
+        position: absolute;
+        inset: 16px;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+      }
+      .phone-thumb {
+        width: 70%;
+        max-width: 160px;
+        margin: 16px auto;
+        aspect-ratio: 9 / 16;
+        background: white;
+        border-radius: 18px;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
 
-    .card-body { padding: 24px; flex: 1; display: flex; flex-direction: column; }
-    .card-tag {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 3px 10px; border-radius: var(--r-pill);
-      font-family: var(--font-display); font-size: 11px; font-weight: 700;
-      background: var(--bg-sunken); color: var(--fg-muted);
-      align-self: flex-start;
-      margin-bottom: 8px;
-    }
-    .card-tag.forest { background: var(--forest-100); color: var(--forest-700); }
-    .card-tag.candy { background: #FFD9E4; color: #E8527C; }
+      .card-body {
+        padding: 24px;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+      .card-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 3px 10px;
+        border-radius: var(--r-pill);
+        font-family: var(--font-display);
+        font-size: 11px;
+        font-weight: 700;
+        background: var(--bg-sunken);
+        color: var(--fg-muted);
+        align-self: flex-start;
+        margin-bottom: 8px;
+      }
+      .card-tag.forest {
+        background: var(--forest-100);
+        color: var(--forest-700);
+      }
+      .card-tag.candy {
+        background: #ffd9e4;
+        color: #e8527c;
+      }
 
-    .card h3 { font-family: var(--font-display); font-size: 22px; margin: 0; }
-    .card .desc { color: var(--fg-muted); font-size: 13px; margin-top: 6px; flex: 1; }
+      .card h3 {
+        font-family: var(--font-display);
+        font-size: 22px;
+        margin: 0;
+      }
+      .card .desc {
+        color: var(--fg-muted);
+        font-size: 13px;
+        margin-top: 6px;
+        flex: 1;
+      }
 
-    .card-meta {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-top: 16px; padding-top: 16px;
-      border-top: 1px dashed var(--border);
-      font-family: var(--font-mono); font-size: 11px;
-      color: var(--fg-subtle);
-    }
-    .card-meta b { color: var(--c-primary); font-family: var(--font-body); font-weight: 600; }
+      .card-meta {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 16px;
+        padding-top: 16px;
+        border-top: 1px dashed var(--border);
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--fg-subtle);
+      }
+      .card-meta b {
+        color: var(--c-primary);
+        font-family: var(--font-body);
+        font-weight: 600;
+      }
 
-    /* Mini admin preview */
-    .admin-thumb {
-      display: grid; grid-template-columns: 30px 1fr; height: 100%;
-      font-size: 5px;
-    }
-    .admin-thumb .side { background: white; border-right: 1px solid #E6E3D9; padding: 8px 4px; }
-    .admin-thumb .side .dot { width: 6px; height: 6px; border-radius: 999px; background: #F25C7A; margin-bottom: 6px; }
-    .admin-thumb .side .nav { height: 4px; background: #E6E3D9; border-radius: 2px; margin-bottom: 4px; }
-    .admin-thumb .side .nav.act { background: #FFC9D4; }
-    .admin-thumb .main { padding: 8px 6px; background: #FBFAF7; display: flex; flex-direction: column; gap: 5px; }
-    .admin-thumb .row { display: flex; gap: 4px; }
-    .admin-thumb .stat { flex: 1; height: 24px; background: white; border-radius: 4px; border: 1px solid #E6E3D9; }
-    .admin-thumb .stat::before { content: ""; display: block; width: 8px; height: 8px; background: #FFC9D4; border-radius: 2px; margin: 3px; }
-    .admin-thumb .tbl { flex: 1; background: white; border-radius: 4px; border: 1px solid #E6E3D9; padding: 4px; display: flex; flex-direction: column; gap: 2px; }
-    .admin-thumb .tbl .r { height: 4px; background: #F4F2EC; border-radius: 2px; }
-    .admin-thumb .tbl .r:first-child { background: #E6E3D9; }
+      /* Mini admin preview */
+      .admin-thumb {
+        display: grid;
+        grid-template-columns: 30px 1fr;
+        height: 100%;
+        font-size: 5px;
+      }
+      .admin-thumb .side {
+        background: white;
+        border-right: 1px solid #e6e3d9;
+        padding: 8px 4px;
+      }
+      .admin-thumb .side .dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 999px;
+        background: #f25c7a;
+        margin-bottom: 6px;
+      }
+      .admin-thumb .side .nav {
+        height: 4px;
+        background: #e6e3d9;
+        border-radius: 2px;
+        margin-bottom: 4px;
+      }
+      .admin-thumb .side .nav.act {
+        background: #ffc9d4;
+      }
+      .admin-thumb .main {
+        padding: 8px 6px;
+        background: #fbfaf7;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .admin-thumb .row {
+        display: flex;
+        gap: 4px;
+      }
+      .admin-thumb .stat {
+        flex: 1;
+        height: 24px;
+        background: white;
+        border-radius: 4px;
+        border: 1px solid #e6e3d9;
+      }
+      .admin-thumb .stat::before {
+        content: '';
+        display: block;
+        width: 8px;
+        height: 8px;
+        background: #ffc9d4;
+        border-radius: 2px;
+        margin: 3px;
+      }
+      .admin-thumb .tbl {
+        flex: 1;
+        background: white;
+        border-radius: 4px;
+        border: 1px solid #e6e3d9;
+        padding: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .admin-thumb .tbl .r {
+        height: 4px;
+        background: #f4f2ec;
+        border-radius: 2px;
+      }
+      .admin-thumb .tbl .r:first-child {
+        background: #e6e3d9;
+      }
 
-    /* Mini store preview */
-    .store-thumb {
-      padding: 10px; height: 100%; display: flex; flex-direction: column; gap: 6px;
-    }
-    .store-thumb .banner { height: 24px; background: linear-gradient(135deg, #FF6E94, #9A8CFF); border-radius: 6px; }
-    .store-thumb .pills { display: flex; gap: 3px; }
-    .store-thumb .pill { height: 8px; flex: 1; background: #FFD9E4; border-radius: 999px; }
-    .store-thumb .pill:first-child { background: #FF6E94; }
-    .store-thumb .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; flex: 1; }
-    .store-thumb .pcard { background: #FFE9E0; border-radius: 6px; padding: 4px; display: flex; flex-direction: column; gap: 2px; }
-    .store-thumb .pimg { flex: 1; background: white; border-radius: 4px; }
-    .store-thumb .ptxt { height: 4px; background: white; border-radius: 1px; width: 80%; }
-    .store-thumb .pprice { height: 5px; background: #FF6E94; border-radius: 1px; width: 50%; }
-    .store-thumb .tab { height: 12px; background: white; border-radius: 6px; }
+      /* Mini store preview */
+      .store-thumb {
+        padding: 10px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .store-thumb .banner {
+        height: 24px;
+        background: linear-gradient(135deg, #ff6e94, #9a8cff);
+        border-radius: 6px;
+      }
+      .store-thumb .pills {
+        display: flex;
+        gap: 3px;
+      }
+      .store-thumb .pill {
+        height: 8px;
+        flex: 1;
+        background: #ffd9e4;
+        border-radius: 999px;
+      }
+      .store-thumb .pill:first-child {
+        background: #ff6e94;
+      }
+      .store-thumb .grid2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4px;
+        flex: 1;
+      }
+      .store-thumb .pcard {
+        background: #ffe9e0;
+        border-radius: 6px;
+        padding: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .store-thumb .pimg {
+        flex: 1;
+        background: white;
+        border-radius: 4px;
+      }
+      .store-thumb .ptxt {
+        height: 4px;
+        background: white;
+        border-radius: 1px;
+        width: 80%;
+      }
+      .store-thumb .pprice {
+        height: 5px;
+        background: #ff6e94;
+        border-radius: 1px;
+        width: 50%;
+      }
+      .store-thumb .tab {
+        height: 12px;
+        background: white;
+        border-radius: 6px;
+      }
 
-    /* Mini orders preview */
-    .orders-thumb {
-      padding: 10px; height: 100%; display: flex; flex-direction: column; gap: 5px;
-    }
-    .orders-thumb .stats { display: flex; gap: 3px; }
-    .orders-thumb .stat-pill { flex: 1; height: 14px; background: white; border-radius: 4px; }
-    .orders-thumb .stat-pill.active { background: #FF6E94; }
-    .orders-thumb .hero { height: 60px; background: linear-gradient(135deg, #FF6E94, #E8527C); border-radius: 8px; padding: 4px; display: flex; flex-direction: column; gap: 2px; }
-    .orders-thumb .hero .ln { height: 3px; background: rgba(255,255,255,0.4); border-radius: 1px; }
-    .orders-thumb .hero .lnt { height: 4px; background: white; border-radius: 1px; width: 60%; }
-    .orders-thumb .ocard { background: white; border-radius: 6px; padding: 4px; display: flex; gap: 3px; }
-    .orders-thumb .oimg { width: 16px; height: 16px; background: #FFE9E0; border-radius: 3px; }
-    .orders-thumb .otxt { flex: 1; display: flex; flex-direction: column; gap: 2px; }
-    .orders-thumb .otxt .ln { height: 3px; background: #F4F2EC; border-radius: 1px; width: 80%; }
+      /* Mini orders preview */
+      .orders-thumb {
+        padding: 10px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .orders-thumb .stats {
+        display: flex;
+        gap: 3px;
+      }
+      .orders-thumb .stat-pill {
+        flex: 1;
+        height: 14px;
+        background: white;
+        border-radius: 4px;
+      }
+      .orders-thumb .stat-pill.active {
+        background: #ff6e94;
+      }
+      .orders-thumb .hero {
+        height: 60px;
+        background: linear-gradient(135deg, #ff6e94, #e8527c);
+        border-radius: 8px;
+        padding: 4px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .orders-thumb .hero .ln {
+        height: 3px;
+        background: rgba(255, 255, 255, 0.4);
+        border-radius: 1px;
+      }
+      .orders-thumb .hero .lnt {
+        height: 4px;
+        background: white;
+        border-radius: 1px;
+        width: 60%;
+      }
+      .orders-thumb .ocard {
+        background: white;
+        border-radius: 6px;
+        padding: 4px;
+        display: flex;
+        gap: 3px;
+      }
+      .orders-thumb .oimg {
+        width: 16px;
+        height: 16px;
+        background: #ffe9e0;
+        border-radius: 3px;
+      }
+      .orders-thumb .otxt {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .orders-thumb .otxt .ln {
+        height: 3px;
+        background: #f4f2ec;
+        border-radius: 1px;
+        width: 80%;
+      }
 
-    .pill-tag {
-      display: inline-flex; align-items: center;
-      padding: 4px 12px; border-radius: var(--r-pill);
-      font-family: var(--font-display); font-size: 12px; font-weight: 600;
-      background: var(--c-primary-bg); color: var(--c-primary);
-    }
-    .note {
-      margin-top: 48px;
-      background: var(--bg-surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-xl);
-      padding: 24px 28px;
-      display: flex; gap: 20px;
-    }
-    .note-icon {
-      flex-shrink: 0;
-      width: 44px; height: 44px;
-      border-radius: var(--r-md);
-      background: var(--c-secondary-bg); color: var(--c-secondary);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--font-display); font-weight: 900; font-size: 20px;
-    }
-    .note h4 { font-family: var(--font-display); font-size: 16px; margin: 0 0 4px; }
-    .note p { color: var(--fg-muted); font-size: 13px; margin: 0; line-height: 1.6; }
-    .note code { font-family: var(--font-mono); font-size: 12px; background: var(--bg-sunken); padding: 1px 6px; border-radius: 4px; }
-  </style>
-</head>
-<body>
-  <div class="wrap">
-    <span class="pill-tag">Sprint 4 · Reference Pages</span>
-    <h1>給開發者看的<br/>高擬真參考頁面</h1>
-    <p class="intro">
-      用真實業務資料填的 3 個頁面。Claude Code 用這個當「最終樣子」來反推 component 與 layout，
-      不需要你逐個解釋。打開後可直接看到細節：欄位、欄位順序、間距、互動狀態、空狀態。
-    </p>
+      .pill-tag {
+        display: inline-flex;
+        align-items: center;
+        padding: 4px 12px;
+        border-radius: var(--r-pill);
+        font-family: var(--font-display);
+        font-size: 12px;
+        font-weight: 600;
+        background: var(--c-primary-bg);
+        color: var(--c-primary);
+      }
+      .note {
+        margin-top: 48px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border);
+        border-radius: var(--r-xl);
+        padding: 24px 28px;
+        display: flex;
+        gap: 20px;
+      }
+      .note-icon {
+        flex-shrink: 0;
+        width: 44px;
+        height: 44px;
+        border-radius: var(--r-md);
+        background: var(--c-secondary-bg);
+        color: var(--c-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-display);
+        font-weight: 900;
+        font-size: 20px;
+      }
+      .note h4 {
+        font-family: var(--font-display);
+        font-size: 16px;
+        margin: 0 0 4px;
+      }
+      .note p {
+        color: var(--fg-muted);
+        font-size: 13px;
+        margin: 0;
+        line-height: 1.6;
+      }
+      .note code {
+        font-family: var(--font-mono);
+        font-size: 12px;
+        background: var(--bg-sunken);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <span class="pill-tag">Sprint 4 · Reference Pages</span>
+      <h1>給開發者看的<br />高擬真參考頁面</h1>
+      <p class="intro">
+        用真實業務資料填的 3 個頁面。Claude Code 用這個當「最終樣子」來反推 component 與 layout，
+        不需要你逐個解釋。打開後可直接看到細節：欄位、欄位順序、間距、互動狀態、空狀態。
+      </p>
 
-    <div class="grid">
-      <!-- Admin -->
-      <a class="card" href="admin-dashboard.html" target="_blank">
-        <div class="card-thumb thumb-admin">
-          <div class="thumb-mini">
-            <div class="admin-thumb">
-              <div class="side">
-                <div class="dot"></div>
-                <div class="nav act"></div>
-                <div class="nav"></div>
-                <div class="nav"></div>
-                <div class="nav"></div>
-                <div class="nav"></div>
-              </div>
-              <div class="main">
-                <div class="row"><div class="stat"></div><div class="stat"></div><div class="stat"></div><div class="stat"></div></div>
-                <div class="tbl">
-                  <div class="r"></div><div class="r"></div><div class="r"></div><div class="r"></div><div class="r"></div><div class="r"></div>
+      <div class="grid">
+        <!-- Admin -->
+        <a class="card" href="admin-dashboard.html" target="_blank">
+          <div class="card-thumb thumb-admin">
+            <div class="thumb-mini">
+              <div class="admin-thumb">
+                <div class="side">
+                  <div class="dot"></div>
+                  <div class="nav act"></div>
+                  <div class="nav"></div>
+                  <div class="nav"></div>
+                  <div class="nav"></div>
+                  <div class="nav"></div>
+                </div>
+                <div class="main">
+                  <div class="row">
+                    <div class="stat"></div>
+                    <div class="stat"></div>
+                    <div class="stat"></div>
+                    <div class="stat"></div>
+                  </div>
+                  <div class="tbl">
+                    <div class="r"></div>
+                    <div class="r"></div>
+                    <div class="r"></div>
+                    <div class="r"></div>
+                    <div class="r"></div>
+                    <div class="r"></div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-        <div class="card-body">
-          <span class="card-tag forest">🌲 森林櫻花 · Admin</span>
-          <h3>商家後台 · 總覽</h3>
-          <p class="desc">
-            Dashboard 入口頁。Sidebar + 4 個 stat 卡 + 最近訂單表 + 今日待辦 + 熱銷排行 + 廠商表現。
-          </p>
-          <div class="card-meta">
-            <span><b>desktop</b> · 1280 px</span>
-            <span>→</span>
+          <div class="card-body">
+            <span class="card-tag forest">🌲 森林櫻花 · Admin</span>
+            <h3>商家後台 · 總覽</h3>
+            <p class="desc">
+              Dashboard 入口頁。Sidebar + 4 個 stat 卡 + 最近訂單表 + 今日待辦 + 熱銷排行 +
+              廠商表現。
+            </p>
+            <div class="card-meta">
+              <span><b>desktop</b> · 1280 px</span>
+              <span>→</span>
+            </div>
           </div>
-        </div>
-      </a>
+        </a>
 
-      <!-- Store products -->
-      <a class="card" href="store-products.html" target="_blank">
-        <div class="card-thumb thumb-store" style="display:flex;align-items:center;justify-content:center;">
-          <div class="phone-thumb">
-            <div class="store-thumb">
-              <div class="banner"></div>
-              <div class="pills"><div class="pill"></div><div class="pill"></div><div class="pill"></div><div class="pill"></div></div>
-              <div class="grid2">
-                <div class="pcard"><div class="pimg"></div><div class="ptxt"></div><div class="pprice"></div></div>
-                <div class="pcard"><div class="pimg"></div><div class="ptxt"></div><div class="pprice"></div></div>
-                <div class="pcard"><div class="pimg"></div><div class="ptxt"></div><div class="pprice"></div></div>
-                <div class="pcard"><div class="pimg"></div><div class="ptxt"></div><div class="pprice"></div></div>
+        <!-- Admin · 訂單管理 -->
+        <a class="card" href="admin-orders.html" target="_blank">
+          <div class="card-thumb thumb-admin">
+            <div class="thumb-mini">
+              <div class="admin-thumb">
+                <div class="side">
+                  <div class="dot"></div>
+                  <div class="nav"></div>
+                  <div class="nav act"></div>
+                  <div class="nav"></div>
+                  <div class="nav"></div>
+                  <div class="nav"></div>
+                </div>
+                <div class="main" style="background: #fbfaf7">
+                  <!-- pipeline -->
+                  <div style="display: flex; gap: 2px">
+                    <div
+                      style="
+                        flex: 1;
+                        height: 16px;
+                        background: white;
+                        border: 1px solid #e6e3d9;
+                        border-radius: 3px;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        flex: 1;
+                        height: 16px;
+                        background: white;
+                        border: 1px solid #e6e3d9;
+                        border-radius: 3px;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        flex: 1;
+                        height: 16px;
+                        background: white;
+                        border: 1px solid #e6e3d9;
+                        border-radius: 3px;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        flex: 1;
+                        height: 16px;
+                        background: white;
+                        border: 1px solid #e6e3d9;
+                        border-radius: 3px;
+                      "
+                    ></div>
+                    <div
+                      style="
+                        flex: 1;
+                        height: 16px;
+                        background: white;
+                        border: 1px solid #e6e3d9;
+                        border-radius: 3px;
+                      "
+                    ></div>
+                  </div>
+                  <!-- status chips row -->
+                  <div style="display: flex; gap: 2px">
+                    <div
+                      style="height: 5px; width: 18px; background: #f25c7a; border-radius: 99px"
+                    ></div>
+                    <div
+                      style="height: 5px; width: 14px; background: #fbebd2; border-radius: 99px"
+                    ></div>
+                    <div
+                      style="height: 5px; width: 12px; background: #d6eafb; border-radius: 99px"
+                    ></div>
+                    <div
+                      style="height: 5px; width: 14px; background: #cfe9d9; border-radius: 99px"
+                    ></div>
+                    <div
+                      style="height: 5px; width: 12px; background: #ffd9e4; border-radius: 99px"
+                    ></div>
+                  </div>
+                  <!-- selected bulk bar -->
+                  <div style="height: 7px; background: #ffe4ea; border-radius: 2px"></div>
+                  <!-- table rows -->
+                  <div class="tbl" style="gap: 3px">
+                    <div class="r" style="background: #ffd9e4; height: 5px"></div>
+                    <div class="r" style="background: #ffe4ea; height: 5px"></div>
+                    <div class="r" style="height: 5px"></div>
+                    <div class="r" style="height: 5px"></div>
+                    <div class="r" style="height: 5px"></div>
+                    <div class="r" style="height: 5px"></div>
+                  </div>
+                </div>
               </div>
-              <div class="tab"></div>
             </div>
           </div>
-        </div>
-        <div class="card-body">
-          <span class="card-tag candy">🍡 蜜糖可愛 · Store</span>
-          <h3>顧客前台 · 商品列表</h3>
-          <p class="desc">
-            LINE LIFF 內的賣場首頁。Hero banner + 分類 pills + 2 欄商品 grid + 許願池 CTA + bottom tab bar。
-          </p>
-          <div class="card-meta">
-            <span><b>mobile</b> · 390 px</span>
-            <span>→</span>
-          </div>
-        </div>
-      </a>
-
-      <!-- Store orders -->
-      <a class="card" href="store-orders.html" target="_blank">
-        <div class="card-thumb thumb-orders" style="display:flex;align-items:center;justify-content:center;">
-          <div class="phone-thumb">
-            <div class="orders-thumb">
-              <div class="stats"><div class="stat-pill"></div><div class="stat-pill active"></div><div class="stat-pill"></div></div>
-              <div class="stats"><div class="stat-pill active" style="height:8px"></div><div class="stat-pill" style="height:8px"></div><div class="stat-pill" style="height:8px"></div></div>
-              <div class="hero"><div class="lnt"></div><div class="ln"></div><div class="ln" style="width:40%"></div></div>
-              <div class="ocard"><div class="oimg"></div><div class="otxt"><div class="ln"></div><div class="ln" style="width:50%"></div></div></div>
-              <div class="ocard"><div class="oimg"></div><div class="otxt"><div class="ln"></div><div class="ln" style="width:50%"></div></div></div>
-              <div class="ocard"><div class="oimg"></div><div class="otxt"><div class="ln"></div><div class="ln" style="width:50%"></div></div></div>
+          <div class="card-body">
+            <span class="card-tag forest">🌲 森林櫻花 · Admin</span>
+            <h3>商家後台 · 訂單管理</h3>
+            <p class="desc">
+              5 階段 pipeline + 狀態 tabs + 批次選取/向廠商下單 + 行內展開時程。Sprint 4
+              訂單生命週期的主操作頁。
+            </p>
+            <div class="card-meta">
+              <span><b>desktop</b> · 1280 px</span>
+              <span>→</span>
             </div>
           </div>
-        </div>
-        <div class="card-body">
-          <span class="card-tag candy">🍡 蜜糖可愛 · Store</span>
-          <h3>顧客前台 · 我的訂單</h3>
-          <p class="desc">
-            訂單清單 + Sprint 4 結單流程。3 個 stats、5 種狀態、可結單卡片含勾選與「前往結單」入口。
-          </p>
-          <div class="card-meta">
-            <span><b>mobile</b> · 390 px</span>
-            <span>→</span>
-          </div>
-        </div>
-      </a>
-    </div>
+        </a>
 
-    <div class="note">
-      <div class="note-icon">i</div>
-      <div>
-        <h4>給 Claude Code 的話</h4>
-        <p>
-          這 3 個頁面是 <b>最終視覺</b>，不是要直接複製 HTML。請參考<br/>
-          ・佈局結構（哪些區塊、用什麼間距）<br/>
-          ・欄位順序與資訊密度<br/>
-          ・互動狀態（active filter、checked checkbox、hover）<br/>
-          ・空狀態與引導<br/>
-          實作時，<b>用 <code>handoff/component-recipes.html</code> 的 component class 組合</b>，不要重複造輪子。
-        </p>
+        <!-- Admin · 代客建單 -->
+        <a class="card" href="admin-orders-new.html" target="_blank">
+          <div class="card-thumb thumb-admin">
+            <div class="thumb-mini">
+              <div class="admin-thumb">
+                <div class="side">
+                  <div class="dot"></div>
+                  <div class="nav"></div>
+                  <div class="nav act"></div>
+                  <div class="nav"></div>
+                  <div class="nav"></div>
+                  <div class="nav"></div>
+                </div>
+                <div class="main" style="background: #fbfaf7">
+                  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 4px; flex: 1">
+                    <div style="display: flex; flex-direction: column; gap: 3px">
+                      <div
+                        style="
+                          background: white;
+                          border: 1px solid #e6e3d9;
+                          border-radius: 3px;
+                          padding: 3px;
+                          height: 14px;
+                        "
+                      ></div>
+                      <div
+                        style="
+                          background: white;
+                          border: 1px solid #e6e3d9;
+                          border-radius: 3px;
+                          padding: 3px;
+                          height: 14px;
+                        "
+                      ></div>
+                      <div
+                        style="
+                          background: white;
+                          border: 1px solid #e6e3d9;
+                          border-radius: 3px;
+                          padding: 3px;
+                          height: 14px;
+                        "
+                      ></div>
+                      <div
+                        style="
+                          background: white;
+                          border: 1px solid #e6e3d9;
+                          border-radius: 3px;
+                          padding: 3px;
+                          height: 14px;
+                        "
+                      ></div>
+                    </div>
+                    <div
+                      style="
+                        background: #ffe4ea;
+                        border-radius: 3px;
+                        display: flex;
+                        flex-direction: column;
+                        justify-content: space-between;
+                        padding: 3px;
+                      "
+                    >
+                      <div style="height: 6px; background: #ffc9d4; border-radius: 1px"></div>
+                      <div style="height: 5px; background: #f25c7a; border-radius: 99px"></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <span class="card-tag forest">🌲 森林櫻花 · Admin</span>
+            <h3>商家後台 · 代客建單</h3>
+            <p class="desc">
+              分步表單 + sticky 訂單摘要。Step 2 選商品 3 種輸入方式（搜尋 / 供應商瀏覽 /
+              貼連結）含未選/搜尋中/已選 3 狀態。
+            </p>
+            <div class="card-meta">
+              <span><b>desktop</b> · 1280 px</span>
+              <span>→</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Store products -->
+        <a class="card" href="store-products.html" target="_blank">
+          <div
+            class="card-thumb thumb-store"
+            style="display: flex; align-items: center; justify-content: center"
+          >
+            <div class="phone-thumb">
+              <div class="store-thumb">
+                <div class="banner"></div>
+                <div class="pills">
+                  <div class="pill"></div>
+                  <div class="pill"></div>
+                  <div class="pill"></div>
+                  <div class="pill"></div>
+                </div>
+                <div class="grid2">
+                  <div class="pcard">
+                    <div class="pimg"></div>
+                    <div class="ptxt"></div>
+                    <div class="pprice"></div>
+                  </div>
+                  <div class="pcard">
+                    <div class="pimg"></div>
+                    <div class="ptxt"></div>
+                    <div class="pprice"></div>
+                  </div>
+                  <div class="pcard">
+                    <div class="pimg"></div>
+                    <div class="ptxt"></div>
+                    <div class="pprice"></div>
+                  </div>
+                  <div class="pcard">
+                    <div class="pimg"></div>
+                    <div class="ptxt"></div>
+                    <div class="pprice"></div>
+                  </div>
+                </div>
+                <div class="tab"></div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <span class="card-tag candy">🍡 蜜糖可愛 · Store</span>
+            <h3>顧客前台 · 商品列表</h3>
+            <p class="desc">
+              LINE LIFF 內的賣場首頁。Hero banner + 分類 pills + 2 欄商品 grid + 許願池 CTA + bottom
+              tab bar。
+            </p>
+            <div class="card-meta">
+              <span><b>mobile</b> · 390 px</span>
+              <span>→</span>
+            </div>
+          </div>
+        </a>
+
+        <!-- Store orders -->
+        <a class="card" href="store-orders.html" target="_blank">
+          <div
+            class="card-thumb thumb-orders"
+            style="display: flex; align-items: center; justify-content: center"
+          >
+            <div class="phone-thumb">
+              <div class="orders-thumb">
+                <div class="stats">
+                  <div class="stat-pill"></div>
+                  <div class="stat-pill active"></div>
+                  <div class="stat-pill"></div>
+                </div>
+                <div class="stats">
+                  <div class="stat-pill active" style="height: 8px"></div>
+                  <div class="stat-pill" style="height: 8px"></div>
+                  <div class="stat-pill" style="height: 8px"></div>
+                </div>
+                <div class="hero">
+                  <div class="lnt"></div>
+                  <div class="ln"></div>
+                  <div class="ln" style="width: 40%"></div>
+                </div>
+                <div class="ocard">
+                  <div class="oimg"></div>
+                  <div class="otxt">
+                    <div class="ln"></div>
+                    <div class="ln" style="width: 50%"></div>
+                  </div>
+                </div>
+                <div class="ocard">
+                  <div class="oimg"></div>
+                  <div class="otxt">
+                    <div class="ln"></div>
+                    <div class="ln" style="width: 50%"></div>
+                  </div>
+                </div>
+                <div class="ocard">
+                  <div class="oimg"></div>
+                  <div class="otxt">
+                    <div class="ln"></div>
+                    <div class="ln" style="width: 50%"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="card-body">
+            <span class="card-tag candy">🍡 蜜糖可愛 · Store</span>
+            <h3>顧客前台 · 我的訂單</h3>
+            <p class="desc">
+              訂單清單 + Sprint 4 結單流程。3 個 stats、5
+              種狀態、可結單卡片含勾選與「前往結單」入口。
+            </p>
+            <div class="card-meta">
+              <span><b>mobile</b> · 390 px</span>
+              <span>→</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <div class="note">
+        <div class="note-icon">i</div>
+        <div>
+          <h4>給 Claude Code 的話</h4>
+          <p>
+            這 3 個頁面是 <b>最終視覺</b>，不是要直接複製 HTML。請參考<br />
+            ・佈局結構（哪些區塊、用什麼間距）<br />
+            ・欄位順序與資訊密度<br />
+            ・互動狀態（active filter、checked checkbox、hover）<br />
+            ・空狀態與引導<br />
+            實作時，<b>用 <code>handoff/component-recipes.html</code> 的 component class 組合</b
+            >，不要重複造輪子。
+          </p>
+        </div>
       </div>
     </div>
-  </div>
-</body>
+  </body>
 </html>
