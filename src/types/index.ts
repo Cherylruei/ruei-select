@@ -321,6 +321,9 @@ export interface CustomerOrder {
   status: OrderStatus
   displayStatus: CustomerOrderDisplayStatus
   ordered_at: string
+  note: string | null
+  shipping_number: string | null
+  shipping_vendor: ShippingVendor | null
   items: CustomerOrderItem[]
 }
 

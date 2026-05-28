@@ -44,6 +44,9 @@ interface OrderRow {
   id: string
   status: string
   ordered_at: string
+  note: string | null
+  shipping_number: string | null
+  shipping_vendor: string | null
   order_items: OrderItemRow[]
 }
 
@@ -189,7 +192,7 @@ export async function GET(request: NextRequest) {
     const { data: rows, error } = (await (db as any)
       .from('orders')
       .select(
-        `id, status, ordered_at,
+        `id, status, ordered_at, note, shipping_number, shipping_vendor,
          order_items(
            id, quantity, unit_price, product_id, variant_id,
            products(id, name, product_images(url, sort_order)),
@@ -211,6 +214,10 @@ export async function GET(request: NextRequest) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       displayStatus: toDisplayStatus(row.status as any),
       ordered_at: row.ordered_at,
+      note: row.note,
+      shipping_number: row.shipping_number,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      shipping_vendor: row.shipping_vendor as any,
       items: row.order_items.map((item) => {
         const sortedImages = item.products
           ? [...item.products.product_images].sort((a, b) => a.sort_order - b.sort_order)

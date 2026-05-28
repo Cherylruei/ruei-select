@@ -1,54 +1,59 @@
 'use client'
 
-import type { CustomerOrderDisplayStatus } from '@/types'
-
-export type OrderFilterValue = CustomerOrderDisplayStatus | 'all'
+export type OrderFilterValue =
+  | 'all'
+  | 'pending_purchase'
+  | 'ordered'
+  | 'can_settle'
+  | 'shipped'
+  | 'completed'
+  | 'cancelled'
 
 interface OrderStatusFilterProps {
   value: OrderFilterValue
   onChange: (v: OrderFilterValue) => void
+  counts: Record<OrderFilterValue, number>
 }
 
-const OPTIONS: { value: OrderFilterValue; label: string }[] = [
+const TAB_LIST: { value: OrderFilterValue; label: string }[] = [
   { value: 'all', label: '全部' },
-  { value: '已訂購', label: '已訂購' },
-  { value: '已到貨', label: '已到貨' },
-  { value: '已出貨', label: '已出貨' },
-  { value: '已完成', label: '已完成' },
-  { value: '已取消', label: '已取消' },
+  { value: 'pending_purchase', label: '待採買' },
+  { value: 'ordered', label: '已訂購' },
+  { value: 'can_settle', label: '可結單' },
+  { value: 'shipped', label: '已出貨' },
+  { value: 'completed', label: '已完成' },
+  { value: 'cancelled', label: '已取消' },
 ]
 
-export default function OrderStatusFilter({ value, onChange }: OrderStatusFilterProps) {
+export default function OrderStatusFilter({ value, onChange, counts }: OrderStatusFilterProps) {
   return (
-    <div className='relative'>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value as OrderFilterValue)}
-        className='appearance-none pl-3 pr-8 py-2 text-[13px] font-medium bg-surface border border-line rounded-md text-fg focus:outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] cursor-pointer transition'
-        aria-label='篩選訂單狀態'
-        data-testid='order-status-filter'
-      >
-        {OPTIONS.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-      {/* 下拉箭頭 */}
-      <span className='pointer-events-none absolute right-2.5 top-1/2 -translate-y-1/2'>
-        <svg
-          viewBox='0 0 24 24'
-          width='14'
-          height='14'
-          fill='none'
-          stroke='currentColor'
-          className='text-fg-subtle'
-          strokeWidth='2'
-          aria-hidden='true'
-        >
-          <path d='M6 9l6 6 6-6' />
-        </svg>
-      </span>
+    <div
+      className='flex gap-1.5 overflow-x-auto -mx-5 px-5'
+      style={{ scrollbarWidth: 'none' } as React.CSSProperties}
+      role='tablist'
+      aria-label='篩選訂單狀態'
+    >
+      {TAB_LIST.map((tab) => {
+        const count = counts[tab.value] ?? 0
+        const active = value === tab.value
+        return (
+          <button
+            key={tab.value}
+            role='tab'
+            aria-selected={active}
+            onClick={() => onChange(tab.value)}
+            className={[
+              'shrink-0 inline-flex items-center h-8 px-3.5 rounded-pill',
+              'font-display font-bold text-xs whitespace-nowrap transition-colors',
+              active ? 'bg-primary text-white shadow-pink' : 'bg-surface text-fg-muted',
+            ].join(' ')}
+            style={active ? undefined : { border: '1px solid #f0d9cb' }}
+            data-testid={`order-filter-${tab.value}`}
+          >
+            {tab.label} · {count}
+          </button>
+        )
+      })}
     </div>
   )
 }

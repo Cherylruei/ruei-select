@@ -115,7 +115,7 @@ export default function StoreLayout({ children, params }: StoreLayoutProps) {
 
   // approved
   return (
-    <div data-variant='candy' className='min-h-screen bg-[var(--neutral-50)] flex flex-col'>
+    <div data-variant='candy' className='min-h-screen bg-app flex flex-col'>
       {auth.store && (
         <StoreHeader name={auth.store.name} avatarUrl={auth.store.avatar_url} slug={slug} />
       )}
@@ -129,20 +129,20 @@ export default function StoreLayout({ children, params }: StoreLayoutProps) {
 
 function StoreSkeleton() {
   return (
-    <div className='min-h-screen bg-[var(--neutral-50)]'>
+    <div data-variant='candy' className='min-h-screen bg-app'>
       {/* header skeleton */}
-      <div className='h-14 bg-white border-b border-[var(--neutral-200)] flex items-center px-4 gap-3'>
-        <div className='w-9 h-9 rounded-full bg-[var(--neutral-100)] animate-pulse' />
-        <div className='h-4 w-32 rounded bg-[var(--neutral-100)] animate-pulse' />
+      <div className='h-14 bg-surface border-b border-line flex items-center px-4 gap-3'>
+        <div className='w-9 h-9 rounded-full bg-ink-100 animate-pulse' />
+        <div className='h-4 w-32 rounded bg-ink-100 animate-pulse' />
       </div>
       {/* content skeleton */}
       <div className='max-w-5xl mx-auto px-4 pt-6 grid grid-cols-2 gap-3 lg:grid-cols-4'>
         {Array.from({ length: 4 }).map((_, i) => (
-          <div key={i} className='bg-white rounded-xl overflow-hidden shadow-[var(--sh-xs)]'>
-            <div className='aspect-square bg-[var(--neutral-100)] animate-pulse' />
+          <div key={i} className='bg-surface rounded-xl overflow-hidden shadow-sm'>
+            <div className='aspect-square bg-ink-100 animate-pulse' />
             <div className='p-3 flex flex-col gap-2'>
-              <div className='h-3 w-full rounded bg-[var(--neutral-100)] animate-pulse' />
-              <div className='h-3 w-2/3 rounded bg-[var(--neutral-100)] animate-pulse' />
+              <div className='h-3 w-full rounded bg-ink-100 animate-pulse' />
+              <div className='h-3 w-2/3 rounded bg-ink-100 animate-pulse' />
             </div>
           </div>
         ))}
@@ -155,9 +155,9 @@ function StoreSkeleton() {
 
 function PendingPage({ storeName }: { storeName: string }) {
   return (
-    <div className='min-h-screen bg-[var(--neutral-50)] flex items-center justify-center px-4'>
+    <div data-variant='candy' className='min-h-screen bg-app flex items-center justify-center px-4'>
       <div className='text-center max-w-sm'>
-        <div className='w-20 h-20 rounded-full bg-gradient-to-br from-[var(--color-warning,#c4a828)] to-[#9a8020] flex items-center justify-center mx-auto mb-6 shadow-[var(--sh-md)]'>
+        <div className='w-20 h-20 rounded-full bg-gradient-to-br from-[#c4a828] to-[#9a8020] flex items-center justify-center mx-auto mb-6 shadow-md'>
           <svg
             viewBox='0 0 24 24'
             width='32'
@@ -172,12 +172,12 @@ function PendingPage({ storeName }: { storeName: string }) {
           </svg>
         </div>
         <h1
-          className='text-xl font-bold text-[var(--neutral-800)] mb-3'
+          className='text-xl font-bold text-fg mb-3'
           style={{ fontFamily: 'var(--font-display)' }}
         >
           申請正在審核中
         </h1>
-        <p className='text-sm text-[var(--neutral-500)] leading-relaxed'>
+        <p className='text-sm text-fg-muted leading-relaxed'>
           {storeName ? `「${storeName}」` : ''}商家審核通過後即可進入賣場選購。
           <br />
           請耐心等候。
@@ -199,7 +199,7 @@ function NotMemberPage({
   avatarUrl: string | null
 }) {
   return (
-    <div className='min-h-screen bg-[var(--neutral-50)] flex items-center justify-center px-4'>
+    <div data-variant='candy' className='min-h-screen bg-app flex items-center justify-center px-4'>
       <div className='text-center max-w-sm'>
         {avatarUrl ? (
           <Image
@@ -207,10 +207,10 @@ function NotMemberPage({
             alt={storeName}
             width={80}
             height={80}
-            className='w-20 h-20 rounded-full object-cover mx-auto mb-6 shadow-[var(--sh-md)] ring-2 ring-[var(--neutral-200)]'
+            className='w-20 h-20 rounded-full object-cover mx-auto mb-6 shadow-md ring-2 ring-line'
           />
         ) : (
-          <div className='w-20 h-20 rounded-full bg-gradient-to-br from-[var(--forest-400)] to-[var(--forest-base)] flex items-center justify-center mx-auto mb-6 shadow-[var(--sh-md)]'>
+          <div className='w-20 h-20 rounded-full bg-gradient-to-br from-forest-400 to-forest-500 flex items-center justify-center mx-auto mb-6 shadow-md'>
             <svg
               viewBox='0 0 24 24'
               width='32'
@@ -227,17 +227,17 @@ function NotMemberPage({
           </div>
         )}
         <h1
-          className='text-xl font-bold text-[var(--neutral-800)] mb-3'
+          className='text-xl font-bold text-fg mb-3'
           style={{ fontFamily: 'var(--font-display)' }}
         >
           您尚未加入此賣場
         </h1>
-        <p className='text-sm text-[var(--neutral-500)] leading-relaxed mb-6'>
+        <p className='text-sm text-fg-muted leading-relaxed mb-6'>
           {storeName ? `「${storeName}」` : '此賣場'}需要申請加入後才能瀏覽商品。
         </p>
         <Link
           href={`/store/${slug}/join`}
-          className='inline-flex items-center gap-2 px-6 py-3 bg-[var(--forest-base)] hover:bg-[var(--forest-deep)] text-white text-sm font-semibold rounded-full transition-colors shadow-[var(--sh-sm)]'
+          className='inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary-hv text-white text-sm font-display font-semibold rounded-pill transition-colors shadow-pink'
         >
           前往申請加入
         </Link>
@@ -250,9 +250,9 @@ function NotMemberPage({
 
 function ErrorPage() {
   return (
-    <div className='min-h-screen bg-[var(--neutral-50)] flex items-center justify-center px-4'>
+    <div data-variant='candy' className='min-h-screen bg-app flex items-center justify-center px-4'>
       <div className='text-center max-w-sm'>
-        <div className='w-20 h-20 rounded-full bg-gradient-to-br from-[var(--sakura-400)] to-[var(--sakura-base)] flex items-center justify-center mx-auto mb-6 shadow-[var(--sh-md)]'>
+        <div className='w-20 h-20 rounded-full bg-gradient-to-br from-sakura-400 to-sakura-500 flex items-center justify-center mx-auto mb-6 shadow-md'>
           <svg
             viewBox='0 0 24 24'
             width='32'
@@ -267,14 +267,12 @@ function ErrorPage() {
           </svg>
         </div>
         <h1
-          className='text-xl font-bold text-[var(--neutral-800)] mb-3'
+          className='text-xl font-bold text-fg mb-3'
           style={{ fontFamily: 'var(--font-display)' }}
         >
           發生錯誤
         </h1>
-        <p className='text-sm text-[var(--neutral-500)] leading-relaxed'>
-          無法載入賣場，請稍後再試。
-        </p>
+        <p className='text-sm text-fg-muted leading-relaxed'>無法載入賣場，請稍後再試。</p>
       </div>
     </div>
   )

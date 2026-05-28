@@ -32,7 +32,10 @@ export default function StoreHeader({ name, avatarUrl, slug }: StoreHeaderProps)
   ]
 
   return (
-    <header className='sticky top-0 z-10 bg-white border-b border-[var(--neutral-200)] shadow-[var(--sh-xs)]'>
+    <header
+      className='sticky top-0 z-10 bg-surface border-b shadow-sm'
+      style={{ borderColor: 'var(--border)' }}
+    >
       <div className='flex items-center gap-3 px-4 h-14 max-w-5xl mx-auto'>
         <div className='flex items-center gap-3 flex-1 min-w-0'>
           {avatarUrl ? (
@@ -41,10 +44,10 @@ export default function StoreHeader({ name, avatarUrl, slug }: StoreHeaderProps)
               alt={name}
               width={36}
               height={36}
-              className='w-9 h-9 rounded-full object-cover ring-1 ring-[var(--neutral-200)] shrink-0'
+              className='w-9 h-9 rounded-full object-cover ring-1 ring-line shrink-0'
             />
           ) : (
-            <div className='w-9 h-9 rounded-full bg-gradient-to-br from-[var(--forest-400)] to-[var(--forest-base)] flex items-center justify-center shrink-0'>
+            <div className='w-9 h-9 rounded-full bg-gradient-to-br from-forest-400 to-forest-500 flex items-center justify-center shrink-0'>
               <svg
                 viewBox='0 0 24 24'
                 width='18'
@@ -61,7 +64,7 @@ export default function StoreHeader({ name, avatarUrl, slug }: StoreHeaderProps)
             </div>
           )}
           <span
-            className='text-[15px] font-bold text-[var(--neutral-800)] truncate'
+            className='text-[15px] font-bold text-fg truncate'
             style={{ fontFamily: 'var(--font-display)' }}
           >
             {name}
@@ -77,8 +80,8 @@ export default function StoreHeader({ name, avatarUrl, slug }: StoreHeaderProps)
               className={[
                 'px-4 py-1.5 rounded-full text-sm font-medium transition-colors',
                 item.active
-                  ? 'bg-[var(--forest-50)] text-[var(--forest-base)]'
-                  : 'text-[var(--neutral-600)] hover:text-[var(--neutral-800)] hover:bg-[var(--neutral-100)]',
+                  ? 'bg-primary-bg text-primary font-semibold'
+                  : 'text-fg-muted hover:text-fg hover:bg-sunken',
               ].join(' ')}
               aria-current={item.active ? 'page' : undefined}
             >
