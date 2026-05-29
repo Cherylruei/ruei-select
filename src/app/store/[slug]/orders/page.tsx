@@ -32,6 +32,12 @@ function calcOrderTotal(order: CustomerOrder): number {
 
 type PageState = 'loading' | 'ready' | 'empty' | 'error'
 
+interface StatsData {
+  pending: number
+  canSettle: number
+  shipped: number
+}
+
 // ── 主元件 ────────────────────────────────────────────────────────────────────
 
 export default function OrdersPage() {
@@ -79,7 +85,7 @@ export default function OrdersPage() {
   // ── 統計 ──────────────────────────────────────────────────────────────────
 
   const stats = useMemo(
-    () => ({
+    (): StatsData => ({
       pending: orders.filter((o) => o.status === 'pending_purchase' || o.status === 'ordered')
         .length,
       canSettle: orders.filter((o) => o.status === 'allocated' || o.status === 'settled').length,
@@ -91,7 +97,6 @@ export default function OrdersPage() {
   const filterCounts = useMemo(
     (): Record<OrderFilterValue, number> => ({
       all: orders.length,
-      pending_purchase: orders.filter((o) => o.status === 'pending_purchase').length,
       ordered: orders.filter((o) => o.status === 'ordered').length,
       can_settle: orders.filter((o) => o.status === 'allocated' || o.status === 'settled').length,
       shipped: orders.filter((o) => o.status === 'shipped').length,
@@ -115,8 +120,6 @@ export default function OrdersPage() {
         return orders.filter((o) => !settleIds.has(o.id))
       case 'can_settle':
         return []
-      case 'pending_purchase':
-        return orders.filter((o) => o.status === 'pending_purchase')
       case 'ordered':
         return orders.filter((o) => o.status === 'ordered')
       case 'shipped':
@@ -173,139 +176,177 @@ export default function OrdersPage() {
 
   return (
     <div className='pb-6'>
-      {/* ── 統計列 + 篩選 tabs（sticky）─────────────────────── */}
-      <div className='sticky top-14 z-[9] bg-app border-b' style={{ borderColor: '#f7e5d8' }}>
-        {/* 統計格 */}
+      {/* ── Mobile sticky header（lg:hidden）─────────────────────── */}
+      <div
+        className='lg:hidden sticky top-14 z-[9] bg-app border-b'
+        style={{ borderColor: '#f7e5d8' }}
+      >
         <div className='px-5 pt-3 pb-3'>
-          <div
-            className='grid grid-cols-3 bg-surface rounded-xl shadow-sm overflow-hidden'
-            style={{ border: '1px solid #f0d9cb' }}
-          >
-            <div className='px-2 py-2.5 text-center border-r' style={{ borderColor: '#f7e5d8' }}>
-              <div
-                className='font-display font-bold text-xl leading-none'
-                style={{ color: '#e89322' }}
-              >
-                {stats.pending}
-              </div>
-              <div className='text-[10px] text-fg-muted mt-1 tracking-wider'>待採買</div>
-            </div>
-            <div
-              className={[
-                'px-2 py-2.5 text-center border-r relative',
-                stats.canSettle > 0 ? 'bg-primary-bg/60' : '',
-              ].join(' ')}
-              style={{ borderColor: '#f7e5d8' }}
-            >
-              {stats.canSettle > 0 && (
-                <span className='absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-1 rounded-full bg-primary' />
-              )}
-              <div
-                className='font-display font-bold text-xl leading-none'
-                style={{ color: '#d94466' }}
-              >
-                {stats.canSettle}
-              </div>
-              <div className='text-[10px] mt-1 tracking-wider' style={{ color: '#b82f50' }}>
-                可結單
-              </div>
-            </div>
-            <div className='px-2 py-2.5 text-center'>
-              <div
-                className='font-display font-bold text-xl leading-none'
-                style={{ color: '#5e9763' }}
-              >
-                {stats.shipped}
-              </div>
-              <div className='text-[10px] text-fg-muted mt-1 tracking-wider'>已出貨</div>
-            </div>
-          </div>
+          <StatsRowWidget stats={stats} />
         </div>
-
-        {/* 篩選 tabs */}
         <div className='px-5 pb-3'>
           <OrderStatusFilter value={filterValue} onChange={setFilterValue} counts={filterCounts} />
         </div>
       </div>
 
-      {/* ── 內容區域 ───────────────────────────────────────── */}
-      <div className='px-5 pt-3'>
-        {/* 空狀態 */}
-        {pageState === 'empty' && (
-          <div className='flex flex-col items-center justify-center py-16 text-center'>
-            <div className='w-16 h-16 rounded-full bg-sunken flex items-center justify-center mb-4'>
-              <svg
-                viewBox='0 0 24 24'
-                width='28'
-                height='28'
-                fill='none'
-                stroke='var(--border-strong)'
-                strokeWidth='1.5'
-                aria-hidden='true'
+      {/* ── Desktop 2-col grid · Mobile single col ─────────────── */}
+      <div className='px-5 pt-3 lg:grid lg:grid-cols-[300px_1fr] lg:gap-8 lg:px-6 lg:pt-6 lg:items-start'>
+        {/* ── Desktop sidebar（hidden on mobile）─────────────────── */}
+        <aside className='hidden lg:block'>
+          <div className='sticky top-20 space-y-4'>
+            <StatsRowWidget stats={stats} />
+            {showSettleCard ? (
+              <SettleCard
+                orders={settleOrders}
+                allTotal={allSettleTotal}
+                selectedIds={selectedSettleIds}
+                onToggle={toggleSettle}
+                subtotal={settleSubtotal}
+                slug={slug}
+              />
+            ) : (
+              <div
+                className='rounded-xl px-5 py-6 text-center bg-surface'
+                style={{ border: '1px solid #f0d9cb' }}
               >
-                <path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z' />
-                <polyline points='14 2 14 8 20 8' />
-                <line x1='16' y1='13' x2='8' y2='13' />
-                <line x1='16' y1='17' x2='8' y2='17' />
-              </svg>
-            </div>
-            <p className='text-sm text-fg-muted mb-4'>目前尚無訂單，快去選購吧！</p>
-            <Link
-              href={`/store/${slug}`}
-              className='inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary hover:bg-primary-hv text-white text-[13px] font-display font-bold rounded-pill transition-colors shadow-pink'
-            >
-              去逛商品
-            </Link>
-          </div>
-        )}
-
-        {/* 可結單漸層卡 */}
-        {showSettleCard && (
-          <SettleCard
-            orders={settleOrders}
-            allTotal={allSettleTotal}
-            selectedIds={selectedSettleIds}
-            onToggle={toggleSettle}
-            subtotal={settleSubtotal}
-            slug={slug}
-          />
-        )}
-
-        {/* 其他訂單 */}
-        {otherOrders.length > 0 && (
-          <div className='space-y-3 mt-4'>
-            {filterValue === 'all' && showSettleCard && (
-              <div className='flex items-center gap-3 pb-1 px-1'>
-                <span className='font-display font-bold text-xs tracking-wider text-fg-muted uppercase whitespace-nowrap'>
-                  其他訂單
-                </span>
-                <span
-                  className='flex-1 h-px'
-                  style={{
-                    background: 'linear-gradient(to right, #e6c7b4, transparent)',
-                  }}
-                />
+                <div className='text-2xl mb-2'>✿</div>
+                <p className='text-xs text-fg-muted'>目前無可結單訂單</p>
               </div>
             )}
-            {otherOrders.map((order) => (
-              <OtherOrderCard key={order.id} order={order} />
-            ))}
-            <div className='py-6 flex items-center justify-center gap-3'>
-              <span className='h-px w-12' style={{ background: '#e6c7b4' }} />
-              <span className='text-[11px] text-fg-subtle font-mono tracking-wider'>
-                沒有更早的訂單了 ✿
-              </span>
-              <span className='h-px w-12' style={{ background: '#e6c7b4' }} />
-            </div>
           </div>
-        )}
+        </aside>
 
-        {/* 篩選後無結果（排除空狀態） */}
-        {pageState === 'ready' && !showSettleCard && otherOrders.length === 0 && (
-          <div className='py-16 text-center'>
-            <p className='text-sm text-fg-muted'>目前沒有符合條件的訂單</p>
+        {/* ── 主內容（右側 PC · 全寬 mobile）────────────────────── */}
+        <div>
+          {/* Desktop 篩選 tabs */}
+          <div className='hidden lg:block mb-5'>
+            <OrderStatusFilter
+              value={filterValue}
+              onChange={setFilterValue}
+              counts={filterCounts}
+            />
           </div>
+
+          {/* 空狀態 */}
+          {pageState === 'empty' && (
+            <div className='flex flex-col items-center justify-center py-16 text-center'>
+              <div className='w-16 h-16 rounded-full bg-sunken flex items-center justify-center mb-4'>
+                <svg
+                  viewBox='0 0 24 24'
+                  width='28'
+                  height='28'
+                  fill='none'
+                  stroke='var(--border-strong)'
+                  strokeWidth='1.5'
+                  aria-hidden='true'
+                >
+                  <path d='M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z' />
+                  <polyline points='14 2 14 8 20 8' />
+                  <line x1='16' y1='13' x2='8' y2='13' />
+                  <line x1='16' y1='17' x2='8' y2='17' />
+                </svg>
+              </div>
+              <p className='text-sm text-fg-muted mb-4'>目前尚無訂單，快去選購吧！</p>
+              <Link
+                href={`/store/${slug}`}
+                className='inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary hover:bg-primary-hv text-white text-[13px] font-display font-bold rounded-pill transition-colors shadow-pink'
+              >
+                去逛商品
+              </Link>
+            </div>
+          )}
+
+          {/* Mobile 可結單漸層卡 */}
+          {showSettleCard && (
+            <div className='lg:hidden'>
+              <SettleCard
+                orders={settleOrders}
+                allTotal={allSettleTotal}
+                selectedIds={selectedSettleIds}
+                onToggle={toggleSettle}
+                subtotal={settleSubtotal}
+                slug={slug}
+              />
+            </div>
+          )}
+
+          {/* 其他訂單 */}
+          {otherOrders.length > 0 && (
+            <div className='mt-4 lg:mt-0'>
+              {filterValue === 'all' && showSettleCard && (
+                <div className='flex items-center gap-3 pb-1 px-1 mb-3'>
+                  <span className='font-display font-bold text-xs tracking-wider text-fg-muted uppercase whitespace-nowrap'>
+                    其他訂單
+                  </span>
+                  <span
+                    className='flex-1 h-px'
+                    style={{ background: 'linear-gradient(to right, #e6c7b4, transparent)' }}
+                  />
+                </div>
+              )}
+              <div className='space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4'>
+                {otherOrders.map((order) => (
+                  <OtherOrderCard key={order.id} order={order} />
+                ))}
+              </div>
+              <div className='py-6 flex items-center justify-center gap-3'>
+                <span className='h-px w-12' style={{ background: '#e6c7b4' }} />
+                <span className='text-[11px] text-fg-subtle font-mono tracking-wider'>
+                  沒有更早的訂單了 ✿
+                </span>
+                <span className='h-px w-12' style={{ background: '#e6c7b4' }} />
+              </div>
+            </div>
+          )}
+
+          {/* 篩選後無結果（排除空狀態） */}
+          {pageState === 'ready' && !showSettleCard && otherOrders.length === 0 && (
+            <div className='py-16 text-center'>
+              <p className='text-sm text-fg-muted'>目前沒有符合條件的訂單</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── 統計列 Widget ─────────────────────────────────────────────────────────────
+
+function StatsRowWidget({ stats }: { stats: StatsData }) {
+  return (
+    <div
+      className='grid grid-cols-3 bg-surface rounded-xl shadow-sm overflow-hidden'
+      style={{ border: '1px solid #f0d9cb' }}
+    >
+      <div className='px-2 py-2.5 text-center border-r' style={{ borderColor: '#f7e5d8' }}>
+        <div className='font-display font-bold text-xl leading-none' style={{ color: '#e89322' }}>
+          {stats.pending}
+        </div>
+        <div className='text-[10px] text-fg-muted mt-1 tracking-wider'>待採買</div>
+      </div>
+      <div
+        className={[
+          'px-2 py-2.5 text-center border-r relative',
+          stats.canSettle > 0 ? 'bg-primary-bg/60' : '',
+        ].join(' ')}
+        style={{ borderColor: '#f7e5d8' }}
+      >
+        {stats.canSettle > 0 && (
+          <span className='absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-1 rounded-full bg-primary' />
         )}
+        <div className='font-display font-bold text-xl leading-none' style={{ color: '#d94466' }}>
+          {stats.canSettle}
+        </div>
+        <div className='text-[10px] mt-1 tracking-wider' style={{ color: '#b82f50' }}>
+          可結單
+        </div>
+      </div>
+      <div className='px-2 py-2.5 text-center'>
+        <div className='font-display font-bold text-xl leading-none' style={{ color: '#5e9763' }}>
+          {stats.shipped}
+        </div>
+        <div className='text-[10px] text-fg-muted mt-1 tracking-wider'>已出貨</div>
       </div>
     </div>
   )
@@ -616,42 +657,44 @@ function OtherOrderCard({ order }: { order: CustomerOrder }) {
 function OrdersSkeleton() {
   return (
     <div className='pb-6'>
-      {/* 統計列骨架 */}
+      {/* Mobile: sticky stats + filter tabs */}
       <div
-        className='sticky top-14 z-[9] bg-app border-b px-5 pt-3 pb-3'
+        className='lg:hidden sticky top-14 z-[9] bg-app border-b'
         style={{ borderColor: '#f7e5d8' }}
       >
-        <div
-          className='grid grid-cols-3 bg-surface rounded-xl overflow-hidden h-[52px]'
-          style={{ border: '1px solid #f0d9cb' }}
-        >
-          {[0, 1, 2].map((i) => (
+        <div className='px-5 pt-3 pb-3'>
+          <div
+            className='grid grid-cols-3 bg-surface rounded-xl overflow-hidden h-[52px]'
+            style={{ border: '1px solid #f0d9cb' }}
+          >
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className={[
+                  'flex flex-col items-center justify-center py-2.5',
+                  i < 2 ? 'border-r' : '',
+                ].join(' ')}
+                style={i < 2 ? { borderColor: '#f7e5d8' } : undefined}
+              >
+                <div className='h-5 w-8 rounded-md bg-ink-100 animate-pulse mb-1' />
+                <div className='h-2 w-12 rounded bg-ink-100 animate-pulse' />
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className='px-5 pb-3 flex gap-1.5'>
+          {[72, 60, 60, 60, 60].map((w, i) => (
             <div
               key={i}
-              className={[
-                'flex flex-col items-center justify-center py-2.5',
-                i < 2 ? 'border-r' : '',
-              ].join(' ')}
-              style={i < 2 ? { borderColor: '#f7e5d8' } : undefined}
-            >
-              <div className='h-5 w-8 rounded-md bg-ink-100 animate-pulse mb-1' />
-              <div className='h-2 w-12 rounded bg-ink-100 animate-pulse' />
-            </div>
+              className='h-8 rounded-pill bg-ink-100 animate-pulse shrink-0'
+              style={{ width: w }}
+            />
           ))}
         </div>
       </div>
-      {/* 篩選 tabs 骨架 */}
-      <div className='px-5 pb-3 pt-3 flex gap-1.5'>
-        {[72, 60, 60, 60, 60].map((w, i) => (
-          <div
-            key={i}
-            className='h-8 rounded-pill bg-ink-100 animate-pulse shrink-0'
-            style={{ width: w }}
-          />
-        ))}
-      </div>
-      {/* 卡片骨架 */}
-      <div className='px-5 space-y-3 pt-1'>
+
+      {/* Mobile: card skeletons */}
+      <div className='lg:hidden px-5 space-y-3 pt-3'>
         {[0, 1, 2].map((i) => (
           <div
             key={i}
@@ -665,6 +708,59 @@ function OrdersSkeleton() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Desktop: 2-col skeleton */}
+      <div className='hidden lg:grid lg:grid-cols-[300px_1fr] lg:gap-8 lg:px-6 lg:pt-6 lg:items-start'>
+        {/* Sidebar skeleton */}
+        <div className='space-y-4'>
+          <div
+            className='grid grid-cols-3 bg-surface rounded-xl overflow-hidden h-[52px]'
+            style={{ border: '1px solid #f0d9cb' }}
+          >
+            {[0, 1, 2].map((i) => (
+              <div
+                key={i}
+                className={[
+                  'flex flex-col items-center justify-center py-2.5',
+                  i < 2 ? 'border-r' : '',
+                ].join(' ')}
+                style={i < 2 ? { borderColor: '#f7e5d8' } : undefined}
+              >
+                <div className='h-5 w-8 rounded-md bg-ink-100 animate-pulse mb-1' />
+                <div className='h-2 w-12 rounded bg-ink-100 animate-pulse' />
+              </div>
+            ))}
+          </div>
+          <div className='h-52 rounded-xl bg-ink-100 animate-pulse' />
+        </div>
+        {/* Main skeleton */}
+        <div>
+          <div className='flex gap-1.5 mb-5'>
+            {[72, 60, 60, 60, 60].map((w, i) => (
+              <div
+                key={i}
+                className='h-8 rounded-pill bg-ink-100 animate-pulse shrink-0'
+                style={{ width: w }}
+              />
+            ))}
+          </div>
+          <div className='grid grid-cols-2 gap-4'>
+            {[0, 1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className='bg-surface rounded-xl p-3 flex gap-3 shadow-sm'
+                style={{ border: '1px solid #f0d9cb' }}
+              >
+                <div className='w-14 h-14 rounded-md bg-ink-100 animate-pulse shrink-0' />
+                <div className='flex-1 flex flex-col gap-2 justify-center'>
+                  <div className='h-3 w-3/4 rounded bg-ink-100 animate-pulse' />
+                  <div className='h-3 w-1/2 rounded bg-ink-100 animate-pulse' />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     </div>
   )

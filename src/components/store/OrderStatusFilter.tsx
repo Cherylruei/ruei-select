@@ -2,7 +2,6 @@
 
 export type OrderFilterValue =
   | 'all'
-  | 'pending_purchase'
   | 'ordered'
   | 'can_settle'
   | 'shipped'
@@ -17,7 +16,6 @@ interface OrderStatusFilterProps {
 
 const TAB_LIST: { value: OrderFilterValue; label: string }[] = [
   { value: 'all', label: '全部' },
-  { value: 'pending_purchase', label: '待採買' },
   { value: 'ordered', label: '已訂購' },
   { value: 'can_settle', label: '可結單' },
   { value: 'shipped', label: '已出貨' },
@@ -28,7 +26,7 @@ const TAB_LIST: { value: OrderFilterValue; label: string }[] = [
 export default function OrderStatusFilter({ value, onChange, counts }: OrderStatusFilterProps) {
   return (
     <div
-      className='flex gap-1.5 overflow-x-auto -mx-5 px-5'
+      className='flex gap-1.5 overflow-x-auto -mx-5 px-5 lg:mx-0 lg:px-0 lg:overflow-visible lg:flex-wrap'
       style={{ scrollbarWidth: 'none' } as React.CSSProperties}
       role='tablist'
       aria-label='篩選訂單狀態'
