@@ -117,9 +117,14 @@ export default function StoreLayout({ children, params }: StoreLayoutProps) {
   return (
     <div data-variant='candy' className='min-h-screen bg-app flex flex-col'>
       {auth.store && (
-        <StoreHeader name={auth.store.name} avatarUrl={auth.store.avatar_url} slug={slug} />
+        <StoreHeader
+          name={auth.store.name}
+          avatarUrl={auth.store.avatar_url}
+          slug={slug}
+          memberName={auth.member?.name ?? null}
+        />
       )}
-      <main className='flex-1 max-w-5xl mx-auto w-full pb-20 lg:pb-8'>{children}</main>
+      <main className='flex-1 max-w-[1280px] mx-auto w-full pb-20 lg:pb-8'>{children}</main>
       <StoreBottomNav slug={slug} />
     </div>
   )
