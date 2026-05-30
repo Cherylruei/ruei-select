@@ -471,7 +471,11 @@ export default function OrdersPage() {
               </div>
 
               <Link
-                href={selectedSettleIds.size > 0 ? `/store/${slug}/orders/checkout` : '#'}
+                href={
+                  selectedSettleIds.size > 0
+                    ? `/store/${slug}/orders/checkout?ids=${Array.from(selectedSettleIds).join(',')}`
+                    : '#'
+                }
                 aria-disabled={selectedSettleIds.size === 0}
                 className={[
                   'mt-auto inline-flex items-center justify-center gap-1.5 h-12 px-5 rounded-full font-display font-bold text-sm transition',
@@ -796,7 +800,11 @@ function MobileSettleCard({
           </b>
         </div>
         <Link
-          href={selectedIds.size > 0 ? `/store/${slug}/orders/checkout` : '#'}
+          href={
+            selectedIds.size > 0
+              ? `/store/${slug}/orders/checkout?ids=${Array.from(selectedIds).join(',')}`
+              : '#'
+          }
           aria-disabled={selectedIds.size === 0}
           className={[
             'inline-flex items-center gap-1.5 h-10 px-5 rounded-pill font-display font-bold text-sm transition whitespace-nowrap',
