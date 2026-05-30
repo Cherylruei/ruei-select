@@ -504,7 +504,7 @@ function ShippingSection({
       key: 'cvs' as const,
       fee: 'NT$ 60',
       label: '超商店到店',
-      desc: '7-11 / 全家',
+      desc: '7-11 店到店',
       icon: (
         <svg
           width='18'
@@ -545,7 +545,7 @@ function ShippingSection({
       key: 'home' as const,
       fee: 'NT$ 210',
       label: '宅配',
-      desc: '黑貓 1-3 天送達',
+      desc: '黑貓 1-3 天（粗估）',
       icon: (
         <svg
           width='18'
@@ -632,7 +632,14 @@ function RecipientSection({
   const isCvs = shippingMethod === 'cvs' || shippingMethod === 'shopee'
   const isHome = shippingMethod === 'home'
   const districts = DISTRICTS[city] ?? ['第一區', '第二區', '第三區']
-  const methodLabel = shippingMethod === 'pickup' ? '自取' : isCvs ? '超商取貨' : '宅配地址'
+  const methodLabel =
+    shippingMethod === 'pickup'
+      ? '自取'
+      : shippingMethod === 'shopee'
+        ? '賣貨便取貨'
+        : shippingMethod === 'cvs'
+          ? '7-11 取貨'
+          : '宅配地址'
   return (
     <div
       className='bg-surface rounded-xl shadow-sm p-4 lg:p-6'
@@ -726,60 +733,18 @@ function RecipientSection({
 
         {isCvs && (
           <div>
-            <Lbl label='取貨門市' required />
-            <button
-              type='button'
-              onClick={() => onCvsBranch('7-11 大安復興店（示範）')}
-              className='w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-left'
+            <Lbl
+              label={shippingMethod === 'shopee' ? '取貨門市（賣貨便 · 7-11）' : '取貨門市（7-11）'}
+              required
+            />
+            <input
+              className={FLD}
               style={FLD_BORDER}
-            >
-              <span
-                className='w-8 h-8 rounded-md bg-primary-bg flex items-center justify-center shrink-0'
-                style={{ color: 'var(--c-primary-hv)' }}
-              >
-                <svg
-                  width='16'
-                  height='16'
-                  viewBox='0 0 24 24'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='1.8'
-                  strokeLinecap='round'
-                >
-                  <path d='M12 21s-7-6.5-7-12a7 7 0 1114 0c0 5.5-7 12-7 12z' />
-                  <circle cx='12' cy='9' r='2.5' />
-                </svg>
-              </span>
-              <div className='flex-1 leading-tight'>
-                {cvsBranch ? (
-                  <>
-                    <div className='font-display font-semibold text-sm text-fg'>{cvsBranch}</div>
-                    <div className='font-mono text-[10px] text-fg-subtle mt-0.5'>點此更換門市</div>
-                  </>
-                ) : (
-                  <>
-                    <div className='font-display font-semibold text-xs text-fg-muted'>
-                      點此選擇 7-11 / 全家門市
-                    </div>
-                    <div className='font-mono text-[10px] text-fg-subtle mt-0.5'>
-                      使用超商地圖選擇
-                    </div>
-                  </>
-                )}
-              </div>
-              <svg
-                width='14'
-                height='14'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='2'
-                strokeLinecap='round'
-                className='text-fg-subtle'
-              >
-                <path d='M9 6l6 6-6 6' />
-              </svg>
-            </button>
+              placeholder='門市名稱，例：大安復興店'
+              value={cvsBranch}
+              onChange={(e) => onCvsBranch(e.target.value)}
+            />
+            <p className='mt-1.5 text-[10px] text-fg-subtle'>請先查詢門市後手動填寫名稱</p>
           </div>
         )}
 
@@ -799,11 +764,15 @@ function RecipientSection({
 function PaymentSection({
   method,
   onChange,
-  codEnabled,
+  atmDisabled,
+  linepayDisabled,
+  codDisabled,
 }: {
   method: PaymentMethod
   onChange: (m: PaymentMethod) => void
-  codEnabled: boolean
+  atmDisabled: boolean
+  linepayDisabled: boolean
+  codDisabled: boolean
 }) {
   const atmIcon = (
     <svg
@@ -878,7 +847,7 @@ function PaymentSection({
         </span>
       </div>
       <p className='text-xs text-fg-subtle mb-3 lg:ml-9'>
-        宅配僅顯示匯款 / Line Pay · 超商與賣貨便可加開「貨到付款」
+        賣貨便僅限貨到付款 · 超商 / 宅配 / 自取僅限匯款或 LINE Pay
       </p>
       <div
         className='lg:hidden mb-2.5 px-3 py-2 rounded-md flex items-center gap-2'
@@ -898,15 +867,15 @@ function PaymentSection({
           <path d='M12 8v4M12 16h.01' />
         </svg>
         <span className='text-[11px] text-fg-muted leading-snug'>
-          選擇宅配 → 僅顯示<b className='text-fg'>匯款</b>；超商或賣貨便會多
-          <b className='text-fg'>貨到付款</b>
+          賣貨便<b className='text-fg'>僅限貨到付款</b>；超商 / 宅配 / 自取只能
+          <b className='text-fg'>匯款或 LINE Pay</b>
         </span>
       </div>
       <div className='space-y-2 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-3 lg:ml-9'>
         <PayBtn
           selected={method === 'atm'}
-          disabled={false}
-          onClick={() => onChange('atm')}
+          disabled={atmDisabled}
+          onClick={() => !atmDisabled && onChange('atm')}
           icon={atmIcon}
           iconColor='var(--c-primary-hv)'
           label='匯款 / ATM 轉帳'
@@ -914,21 +883,21 @@ function PaymentSection({
         />
         <PayBtn
           selected={method === 'linepay'}
-          disabled={false}
-          onClick={() => onChange('linepay')}
+          disabled={linepayDisabled}
+          onClick={() => !linepayDisabled && onChange('linepay')}
           icon={lineIcon}
           iconColor='#00b900'
-          label='Line Pay'
-          sub='即時付款 · 手續費 $0'
+          label='LINE Pay'
+          sub='即時付款'
         />
         <PayBtn
           selected={method === 'cod'}
-          disabled={!codEnabled}
-          onClick={() => codEnabled && onChange('cod')}
+          disabled={codDisabled}
+          onClick={() => !codDisabled && onChange('cod')}
           icon={codIcon}
           iconColor='inherit'
           label='貨到付款'
-          sub={codEnabled ? '到貨時現場付款' : '僅限超商 / 賣貨便（目前未選）'}
+          sub={!codDisabled ? '到貨時現場付款' : '僅限賣貨便'}
         />
       </div>
     </div>
@@ -1010,6 +979,9 @@ function CostCard({
             <span>運費（{SHIPPING_LABEL[shippingMethod]}）</span>
             <span className='font-mono'>+ NT$ {shippingFee.toLocaleString()}</span>
           </div>
+          {shippingMethod === 'home' && (
+            <p className='text-[10px] text-fg-subtle -mt-0.5'>＊宅配運費為粗估，請與賣家確認</p>
+          )}
           <div
             className='border-t pt-2 mt-2 flex justify-between items-baseline'
             style={{ borderColor: '#f7e5d8' }}
@@ -1064,7 +1036,9 @@ function SummaryAside({
       ? `${city}${district}\n${address || '（尚未填寫）'}`
       : shippingMethod === 'pickup'
         ? '面交取貨'
-        : '超商取貨'
+        : shippingMethod === 'shopee'
+          ? '賣貨便取貨（7-11）'
+          : '7-11 店到店'
   const shipIcon = (
     <svg
       width='16'
@@ -1130,6 +1104,11 @@ function SummaryAside({
             <div className='font-mono text-[10px] text-fg-subtle mt-0.5 whitespace-pre-line'>
               {addrLine}
             </div>
+            {shippingMethod === 'home' && (
+              <div className='font-mono text-[10px] text-fg-subtle mt-0.5'>
+                ＊運費粗估，請與賣家確認
+              </div>
+            )}
           </div>
         </div>
         <div className='flex items-start gap-2.5 pb-3 border-b' style={{ borderColor: '#f7e5d8' }}>
@@ -1151,10 +1130,9 @@ function SummaryAside({
             <span>運費（{SHIPPING_LABEL[shippingMethod]}）</span>
             <span className='font-mono'>+ NT$ {shippingFee.toLocaleString()}</span>
           </div>
-          <div className='flex justify-between text-fg-muted'>
-            <span>金流手續費</span>
-            <span className='font-mono'>+ NT$ 0</span>
-          </div>
+          {shippingMethod === 'home' && (
+            <p className='text-[10px] text-fg-subtle -mt-1'>＊宅配運費為粗估，請與賣家確認</p>
+          )}
           <div
             className='pt-2 mt-2 border-t flex justify-between items-baseline'
             style={{ borderColor: '#f7e5d8' }}
@@ -1268,7 +1246,9 @@ function CheckoutContent() {
   }, [slug, selectedIds])
 
   useEffect(() => {
-    if (paymentMethod === 'cod' && (shippingMethod === 'pickup' || shippingMethod === 'home')) {
+    if (shippingMethod === 'shopee') {
+      setPaymentMethod('cod')
+    } else if (paymentMethod === 'cod') {
       setPaymentMethod('atm')
     }
   }, [shippingMethod, paymentMethod])
@@ -1276,7 +1256,9 @@ function CheckoutContent() {
   const subtotal = useMemo(() => orders.reduce((s, o) => s + calcTotal(o), 0), [orders])
   const shippingFee = SHIPPING_FEE[shippingMethod]
   const total = subtotal + shippingFee
-  const codEnabled = shippingMethod === 'cvs' || shippingMethod === 'shopee'
+  const atmDisabled = shippingMethod === 'shopee'
+  const linepayDisabled = shippingMethod === 'shopee'
+  const codDisabled = shippingMethod !== 'shopee'
 
   if (pageState === 'loading') return <CheckoutSkeleton />
 
@@ -1408,7 +1390,9 @@ function CheckoutContent() {
           <PaymentSection
             method={paymentMethod}
             onChange={setPaymentMethod}
-            codEnabled={codEnabled}
+            atmDisabled={atmDisabled}
+            linepayDisabled={linepayDisabled}
+            codDisabled={codDisabled}
           />
           <NoteSection note={note} onChange={setNote} />
           <div className='lg:hidden'>
