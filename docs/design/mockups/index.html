@@ -1,812 +1,325 @@
 <!doctype html>
 <html lang="zh-Hant">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>芮選 · Sprint 4 高擬真頁面</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
-    <style>
-      body {
-        font-family: var(--font-body);
-        background: var(--bg-app);
-        color: var(--fg-default);
-        margin: 0;
-      }
-      .wrap {
-        max-width: 1080px;
-        margin: 0 auto;
-        padding: 64px 32px 96px;
-      }
-      h1 {
-        font-family: var(--font-display);
-        font-size: 48px;
-        font-weight: 900;
-        letter-spacing: -0.02em;
-        line-height: 1.05;
-        margin: 16px 0 12px;
-      }
-      .kicker {
-        font-family: var(--font-mono);
-        font-size: 11px;
-        letter-spacing: 0.2em;
-        color: var(--c-primary);
-        text-transform: uppercase;
-      }
-      p.intro {
-        color: var(--fg-muted);
-        line-height: 1.65;
-        max-width: 620px;
-      }
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>芮選 · 頁面藍圖 Roadmap</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="design-tokens.css" />
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: var(--font-body); background: var(--bg-app); color: var(--fg-default); margin: 0; }
+    .wrap { max-width: 1180px; margin: 0 auto; padding: 64px 32px 96px; }
 
-      .grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        margin-top: 40px;
-      }
-      @media (max-width: 900px) {
-        .grid {
-          grid-template-columns: 1fr;
-        }
-      }
+    .pill-tag {
+      display: inline-flex; align-items: center;
+      padding: 4px 12px; border-radius: var(--r-pill);
+      font-family: var(--font-display); font-size: 12px; font-weight: 600;
+      background: var(--c-primary-bg); color: var(--c-primary);
+    }
+    h1 { font-family: var(--font-display); font-size: 46px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.06; margin: 16px 0 12px; }
+    p.intro { color: var(--fg-muted); line-height: 1.65; max-width: 640px; font-size: 15px; }
 
-      .card {
-        display: flex;
-        flex-direction: column;
-        background: var(--bg-surface);
-        border: 1px solid var(--border);
-        border-radius: var(--r-2xl);
-        overflow: hidden;
-        text-decoration: none;
-        color: inherit;
-        transition:
-          box-shadow 200ms var(--ease-out),
-          transform 200ms var(--ease-out),
-          border-color 200ms;
-      }
-      .card:hover {
-        box-shadow: var(--shadow-lg);
-        border-color: transparent;
-        transform: translateY(-3px);
-      }
+    /* progress legend */
+    .legend { display: flex; align-items: center; gap: 18px; margin-top: 24px; flex-wrap: wrap; }
+    .legend-item { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--fg-muted); }
+    .swatch { width: 12px; height: 12px; border-radius: 4px; }
+    .swatch.done { background: var(--c-primary); }
+    .swatch.planned { background: transparent; border: 1.5px dashed var(--border-strong); }
+    .progress-track { flex: 1; min-width: 160px; height: 8px; border-radius: 999px; background: var(--bg-sunken); overflow: hidden; }
+    .progress-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--c-primary), var(--c-accent, #FFB347)); }
+    .progress-num { font-family: var(--font-mono); font-size: 12px; color: var(--fg-subtle); white-space: nowrap; }
 
-      .card-thumb {
-        aspect-ratio: 16 / 11;
-        position: relative;
-        overflow: hidden;
-      }
-      .thumb-admin {
-        background: linear-gradient(135deg, #f1f6f1 0%, #fbfaf7 100%);
-      }
-      .thumb-store {
-        background: linear-gradient(135deg, #fff6f1 0%, #ffe9e0 100%);
-      }
-      .thumb-orders {
-        background: linear-gradient(135deg, #ffe9e0 0%, #ece7ff 100%);
-      }
-      .thumb-mini {
-        position: absolute;
-        inset: 16px;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        overflow: hidden;
-      }
-      .phone-thumb {
-        width: 70%;
-        max-width: 160px;
-        margin: 16px auto;
-        aspect-ratio: 9 / 16;
-        background: white;
-        border-radius: 18px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-        overflow: hidden;
-      }
+    /* section */
+    .section { margin-top: 52px; }
+    .section-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 6px; }
+    .section-head h2 { font-family: var(--font-display); font-size: 26px; font-weight: 800; margin: 0; }
+    .variant-tag {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 3px 10px; border-radius: var(--r-pill);
+      font-family: var(--font-display); font-size: 11px; font-weight: 700;
+    }
+    .variant-tag.forest { background: var(--forest-100); color: var(--forest-700); }
+    .variant-tag.candy { background: #FFD9E4; color: #E8527C; }
+    .section-sub { font-family: var(--font-mono); font-size: 11px; color: var(--fg-subtle); letter-spacing: 0.08em; }
+    .section-desc { color: var(--fg-muted); font-size: 13px; margin: 0 0 22px; }
 
-      .card-body {
-        padding: 24px;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-      }
-      .card-tag {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 3px 10px;
-        border-radius: var(--r-pill);
-        font-family: var(--font-display);
-        font-size: 11px;
-        font-weight: 700;
-        background: var(--bg-sunken);
-        color: var(--fg-muted);
-        align-self: flex-start;
-        margin-bottom: 8px;
-      }
-      .card-tag.forest {
-        background: var(--forest-100);
-        color: var(--forest-700);
-      }
-      .card-tag.candy {
-        background: #ffd9e4;
-        color: #e8527c;
-      }
+    .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+    @media (max-width: 1000px) { .grid { grid-template-columns: 1fr 1fr; } }
+    @media (max-width: 660px) { .grid { grid-template-columns: 1fr; } }
 
-      .card h3 {
-        font-family: var(--font-display);
-        font-size: 22px;
-        margin: 0;
-      }
-      .card .desc {
-        color: var(--fg-muted);
-        font-size: 13px;
-        margin-top: 6px;
-        flex: 1;
-      }
+    .card {
+      display: flex; flex-direction: column;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      text-decoration: none; color: inherit;
+      transition: box-shadow 200ms var(--ease-out), transform 200ms var(--ease-out), border-color 200ms;
+    }
+    .card.is-done:hover { box-shadow: var(--shadow-lg); border-color: transparent; transform: translateY(-3px); }
+    .card.is-planned { border-style: dashed; cursor: default; }
+    .card.is-planned .thumb { filter: grayscale(0.55) opacity(0.62); }
 
-      .card-meta {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        margin-top: 16px;
-        padding-top: 16px;
-        border-top: 1px dashed var(--border);
-        font-family: var(--font-mono);
-        font-size: 11px;
-        color: var(--fg-subtle);
-      }
-      .card-meta b {
-        color: var(--c-primary);
-        font-family: var(--font-body);
-        font-weight: 600;
-      }
+    .thumb {
+      position: relative; aspect-ratio: 16 / 10; overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .thumb.forest { background: linear-gradient(135deg, #EAF2EA 0%, #F7FAF6 100%); }
+    .thumb.candy  { background: linear-gradient(135deg, #FFEFE9 0%, #FFE3EC 100%); }
+    .thumb.candy.is-pc { background: linear-gradient(135deg, #FFE9E0 0%, #ECE7FF 100%); }
+    .glyph { width: 46%; height: 46%; opacity: 0.9; }
+    .thumb.forest .glyph { color: var(--forest-600, #4E7C52); }
+    .thumb.candy .glyph { color: #F1789C; }
 
-      /* Mini admin preview */
-      .admin-thumb {
-        display: grid;
-        grid-template-columns: 30px 1fr;
-        height: 100%;
-        font-size: 5px;
-      }
-      .admin-thumb .side {
-        background: white;
-        border-right: 1px solid #e6e3d9;
-        padding: 8px 4px;
-      }
-      .admin-thumb .side .dot {
-        width: 6px;
-        height: 6px;
-        border-radius: 999px;
-        background: #f25c7a;
-        margin-bottom: 6px;
-      }
-      .admin-thumb .side .nav {
-        height: 4px;
-        background: #e6e3d9;
-        border-radius: 2px;
-        margin-bottom: 4px;
-      }
-      .admin-thumb .side .nav.act {
-        background: #ffc9d4;
-      }
-      .admin-thumb .main {
-        padding: 8px 6px;
-        background: #fbfaf7;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-      }
-      .admin-thumb .row {
-        display: flex;
-        gap: 4px;
-      }
-      .admin-thumb .stat {
-        flex: 1;
-        height: 24px;
-        background: white;
-        border-radius: 4px;
-        border: 1px solid #e6e3d9;
-      }
-      .admin-thumb .stat::before {
-        content: '';
-        display: block;
-        width: 8px;
-        height: 8px;
-        background: #ffc9d4;
-        border-radius: 2px;
-        margin: 3px;
-      }
-      .admin-thumb .tbl {
-        flex: 1;
-        background: white;
-        border-radius: 4px;
-        border: 1px solid #e6e3d9;
-        padding: 4px;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .admin-thumb .tbl .r {
-        height: 4px;
-        background: #f4f2ec;
-        border-radius: 2px;
-      }
-      .admin-thumb .tbl .r:first-child {
-        background: #e6e3d9;
-      }
+    .thumb-badges { position: absolute; inset: 0; padding: 11px; display: flex; flex-direction: column; justify-content: space-between; pointer-events: none; }
+    .tb-row { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+    .tb-chip {
+      font-family: var(--font-mono); font-size: 9.5px; font-weight: 600; letter-spacing: 0.04em;
+      padding: 2px 7px; border-radius: 999px; background: rgba(255,255,255,0.82); color: #6B5E55;
+      backdrop-filter: blur(3px);
+    }
+    .tb-chip.sprint { background: rgba(43,43,43,0.74); color: #fff; }
+    .tb-route {
+      font-family: var(--font-mono); font-size: 10.5px; font-weight: 600;
+      padding: 3px 8px; border-radius: 7px; background: rgba(255,255,255,0.9); color: #423A34;
+      max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+    }
+    .planned-ribbon {
+      position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);
+      font-family: var(--font-display); font-weight: 700; font-size: 12px;
+      padding: 5px 13px; border-radius: 999px;
+      background: rgba(43,43,43,0.78); color: #fff; letter-spacing: 0.06em;
+      pointer-events: none;
+    }
 
-      /* Mini store preview */
-      .store-thumb {
-        padding: 10px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
-      }
-      .store-thumb .banner {
-        height: 24px;
-        background: linear-gradient(135deg, #ff6e94, #9a8cff);
-        border-radius: 6px;
-      }
-      .store-thumb .pills {
-        display: flex;
-        gap: 3px;
-      }
-      .store-thumb .pill {
-        height: 8px;
-        flex: 1;
-        background: #ffd9e4;
-        border-radius: 999px;
-      }
-      .store-thumb .pill:first-child {
-        background: #ff6e94;
-      }
-      .store-thumb .grid2 {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 4px;
-        flex: 1;
-      }
-      .store-thumb .pcard {
-        background: #ffe9e0;
-        border-radius: 6px;
-        padding: 4px;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .store-thumb .pimg {
-        flex: 1;
-        background: white;
-        border-radius: 4px;
-      }
-      .store-thumb .ptxt {
-        height: 4px;
-        background: white;
-        border-radius: 1px;
-        width: 80%;
-      }
-      .store-thumb .pprice {
-        height: 5px;
-        background: #ff6e94;
-        border-radius: 1px;
-        width: 50%;
-      }
-      .store-thumb .tab {
-        height: 12px;
-        background: white;
-        border-radius: 6px;
-      }
+    .card-body { padding: 18px 18px 16px; flex: 1; display: flex; flex-direction: column; }
+    .card h3 { font-family: var(--font-display); font-size: 18px; margin: 0; line-height: 1.25; }
+    .card h3 .comp { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--fg-subtle); display: block; margin-top: 3px; }
+    .card .desc { color: var(--fg-muted); font-size: 12.5px; margin-top: 8px; flex: 1; line-height: 1.55; }
 
-      /* Mini orders preview */
-      .orders-thumb {
-        padding: 10px;
-        height: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 5px;
-      }
-      .orders-thumb .stats {
-        display: flex;
-        gap: 3px;
-      }
-      .orders-thumb .stat-pill {
-        flex: 1;
-        height: 14px;
-        background: white;
-        border-radius: 4px;
-      }
-      .orders-thumb .stat-pill.active {
-        background: #ff6e94;
-      }
-      .orders-thumb .hero {
-        height: 60px;
-        background: linear-gradient(135deg, #ff6e94, #e8527c);
-        border-radius: 8px;
-        padding: 4px;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .orders-thumb .hero .ln {
-        height: 3px;
-        background: rgba(255, 255, 255, 0.4);
-        border-radius: 1px;
-      }
-      .orders-thumb .hero .lnt {
-        height: 4px;
-        background: white;
-        border-radius: 1px;
-        width: 60%;
-      }
-      .orders-thumb .ocard {
-        background: white;
-        border-radius: 6px;
-        padding: 4px;
-        display: flex;
-        gap: 3px;
-      }
-      .orders-thumb .oimg {
-        width: 16px;
-        height: 16px;
-        background: #ffe9e0;
-        border-radius: 3px;
-      }
-      .orders-thumb .otxt {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        gap: 2px;
-      }
-      .orders-thumb .otxt .ln {
-        height: 3px;
-        background: #f4f2ec;
-        border-radius: 1px;
-        width: 80%;
-      }
+    .card-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 14px; padding-top: 13px;
+      border-top: 1px dashed var(--border);
+      font-family: var(--font-mono); font-size: 11px; color: var(--fg-subtle);
+    }
+    .meta-vp { display: inline-flex; align-items: center; gap: 6px; }
+    .pc-link {
+      font-family: var(--font-display); font-weight: 700; font-size: 11px;
+      color: var(--c-primary); text-decoration: none;
+      padding: 2px 8px; border-radius: 999px; background: var(--c-primary-bg);
+    }
+    .pc-link:hover { background: var(--c-primary); color: #fff; }
+    .go { color: var(--c-primary); font-weight: 600; font-family: var(--font-body); }
+    .planned-tag { color: var(--fg-subtle); }
 
-      .pill-tag {
-        display: inline-flex;
-        align-items: center;
-        padding: 4px 12px;
-        border-radius: var(--r-pill);
-        font-family: var(--font-display);
-        font-size: 12px;
-        font-weight: 600;
-        background: var(--c-primary-bg);
-        color: var(--c-primary);
-      }
-      .note {
-        margin-top: 48px;
-        background: var(--bg-surface);
-        border: 1px solid var(--border);
-        border-radius: var(--r-xl);
-        padding: 24px 28px;
-        display: flex;
-        gap: 20px;
-      }
-      .note-icon {
-        flex-shrink: 0;
-        width: 44px;
-        height: 44px;
-        border-radius: var(--r-md);
-        background: var(--c-secondary-bg);
-        color: var(--c-secondary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-family: var(--font-display);
-        font-weight: 900;
-        font-size: 20px;
-      }
-      .note h4 {
-        font-family: var(--font-display);
-        font-size: 16px;
-        margin: 0 0 4px;
-      }
-      .note p {
-        color: var(--fg-muted);
-        font-size: 13px;
-        margin: 0;
-        line-height: 1.6;
-      }
-      .note code {
-        font-family: var(--font-mono);
-        font-size: 12px;
-        background: var(--bg-sunken);
-        padding: 1px 6px;
-        border-radius: 4px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="wrap">
-      <span class="pill-tag">Sprint 4 · Reference Pages</span>
-      <h1>給開發者看的<br />高擬真參考頁面</h1>
-      <p class="intro">
-        用真實業務資料填的 3 個頁面。Claude Code 用這個當「最終樣子」來反推 component 與 layout，
-        不需要你逐個解釋。打開後可直接看到細節：欄位、欄位順序、間距、互動狀態、空狀態。
-      </p>
+    .note {
+      margin-top: 56px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      padding: 24px 28px;
+      display: flex; gap: 20px;
+    }
+    .note-icon {
+      flex-shrink: 0; width: 44px; height: 44px; border-radius: var(--r-md);
+      background: var(--c-secondary-bg); color: var(--c-secondary);
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-display); font-weight: 900; font-size: 20px;
+    }
+    .note h4 { font-family: var(--font-display); font-size: 16px; margin: 0 0 4px; }
+    .note p { color: var(--fg-muted); font-size: 13px; margin: 0; line-height: 1.6; }
+    .note code { font-family: var(--font-mono); font-size: 12px; background: var(--bg-sunken); padding: 1px 6px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="pill-tag">芮選 · ruei-select</span>
+    <h1>頁面藍圖 Roadmap</h1>
+    <p class="intro">
+      Sprint 1–5 的所有畫面一次排好。實心卡片是已繪製、可直接給 Claude Code 當「最終樣子」反推 component 的高擬真 mockup；
+      虛線卡片是已排程但<b>尚未繪製</b>——開發到該畫面請停下通知設計補圖，別自行發明視覺。
+    </p>
 
-      <div class="grid">
-        <!-- Admin -->
-        <a class="card" href="admin-dashboard.html" target="_blank">
-          <div class="card-thumb thumb-admin">
-            <div class="thumb-mini">
-              <div class="admin-thumb">
-                <div class="side">
-                  <div class="dot"></div>
-                  <div class="nav act"></div>
-                  <div class="nav"></div>
-                  <div class="nav"></div>
-                  <div class="nav"></div>
-                  <div class="nav"></div>
-                </div>
-                <div class="main">
-                  <div class="row">
-                    <div class="stat"></div>
-                    <div class="stat"></div>
-                    <div class="stat"></div>
-                    <div class="stat"></div>
-                  </div>
-                  <div class="tbl">
-                    <div class="r"></div>
-                    <div class="r"></div>
-                    <div class="r"></div>
-                    <div class="r"></div>
-                    <div class="r"></div>
-                    <div class="r"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card-body">
-            <span class="card-tag forest">🌲 森林櫻花 · Admin</span>
-            <h3>商家後台 · 總覽</h3>
-            <p class="desc">
-              Dashboard 入口頁。Sidebar + 4 個 stat 卡 + 最近訂單表 + 今日待辦 + 熱銷排行 +
-              廠商表現。
-            </p>
-            <div class="card-meta">
-              <span><b>desktop</b> · 1280 px</span>
-              <span>→</span>
-            </div>
-          </div>
-        </a>
+    <div class="legend">
+      <span class="legend-item"><span class="swatch done"></span>已繪製</span>
+      <span class="legend-item"><span class="swatch planned"></span>尚未繪製</span>
+      <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+      <span class="progress-num" id="progressNum"></span>
+    </div>
 
-        <!-- Admin · 訂單管理 -->
-        <a class="card" href="admin-orders.html" target="_blank">
-          <div class="card-thumb thumb-admin">
-            <div class="thumb-mini">
-              <div class="admin-thumb">
-                <div class="side">
-                  <div class="dot"></div>
-                  <div class="nav"></div>
-                  <div class="nav act"></div>
-                  <div class="nav"></div>
-                  <div class="nav"></div>
-                  <div class="nav"></div>
-                </div>
-                <div class="main" style="background: #fbfaf7">
-                  <!-- pipeline -->
-                  <div style="display: flex; gap: 2px">
-                    <div
-                      style="
-                        flex: 1;
-                        height: 16px;
-                        background: white;
-                        border: 1px solid #e6e3d9;
-                        border-radius: 3px;
-                      "
-                    ></div>
-                    <div
-                      style="
-                        flex: 1;
-                        height: 16px;
-                        background: white;
-                        border: 1px solid #e6e3d9;
-                        border-radius: 3px;
-                      "
-                    ></div>
-                    <div
-                      style="
-                        flex: 1;
-                        height: 16px;
-                        background: white;
-                        border: 1px solid #e6e3d9;
-                        border-radius: 3px;
-                      "
-                    ></div>
-                    <div
-                      style="
-                        flex: 1;
-                        height: 16px;
-                        background: white;
-                        border: 1px solid #e6e3d9;
-                        border-radius: 3px;
-                      "
-                    ></div>
-                    <div
-                      style="
-                        flex: 1;
-                        height: 16px;
-                        background: white;
-                        border: 1px solid #e6e3d9;
-                        border-radius: 3px;
-                      "
-                    ></div>
-                  </div>
-                  <!-- status chips row -->
-                  <div style="display: flex; gap: 2px">
-                    <div
-                      style="height: 5px; width: 18px; background: #f25c7a; border-radius: 99px"
-                    ></div>
-                    <div
-                      style="height: 5px; width: 14px; background: #fbebd2; border-radius: 99px"
-                    ></div>
-                    <div
-                      style="height: 5px; width: 12px; background: #d6eafb; border-radius: 99px"
-                    ></div>
-                    <div
-                      style="height: 5px; width: 14px; background: #cfe9d9; border-radius: 99px"
-                    ></div>
-                    <div
-                      style="height: 5px; width: 12px; background: #ffd9e4; border-radius: 99px"
-                    ></div>
-                  </div>
-                  <!-- selected bulk bar -->
-                  <div style="height: 7px; background: #ffe4ea; border-radius: 2px"></div>
-                  <!-- table rows -->
-                  <div class="tbl" style="gap: 3px">
-                    <div class="r" style="background: #ffd9e4; height: 5px"></div>
-                    <div class="r" style="background: #ffe4ea; height: 5px"></div>
-                    <div class="r" style="height: 5px"></div>
-                    <div class="r" style="height: 5px"></div>
-                    <div class="r" style="height: 5px"></div>
-                    <div class="r" style="height: 5px"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card-body">
-            <span class="card-tag forest">🌲 森林櫻花 · Admin</span>
-            <h3>商家後台 · 訂單管理</h3>
-            <p class="desc">
-              5 階段 pipeline + 狀態 tabs + 批次選取/向廠商下單 + 行內展開時程。Sprint 4
-              訂單生命週期的主操作頁。
-            </p>
-            <div class="card-meta">
-              <span><b>desktop</b> · 1280 px</span>
-              <span>→</span>
-            </div>
-          </div>
-        </a>
+    <div id="sections"></div>
 
-        <!-- Admin · 代客建單 -->
-        <a class="card" href="admin-orders-new.html" target="_blank">
-          <div class="card-thumb thumb-admin">
-            <div class="thumb-mini">
-              <div class="admin-thumb">
-                <div class="side">
-                  <div class="dot"></div>
-                  <div class="nav"></div>
-                  <div class="nav act"></div>
-                  <div class="nav"></div>
-                  <div class="nav"></div>
-                  <div class="nav"></div>
-                </div>
-                <div class="main" style="background: #fbfaf7">
-                  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 4px; flex: 1">
-                    <div style="display: flex; flex-direction: column; gap: 3px">
-                      <div
-                        style="
-                          background: white;
-                          border: 1px solid #e6e3d9;
-                          border-radius: 3px;
-                          padding: 3px;
-                          height: 14px;
-                        "
-                      ></div>
-                      <div
-                        style="
-                          background: white;
-                          border: 1px solid #e6e3d9;
-                          border-radius: 3px;
-                          padding: 3px;
-                          height: 14px;
-                        "
-                      ></div>
-                      <div
-                        style="
-                          background: white;
-                          border: 1px solid #e6e3d9;
-                          border-radius: 3px;
-                          padding: 3px;
-                          height: 14px;
-                        "
-                      ></div>
-                      <div
-                        style="
-                          background: white;
-                          border: 1px solid #e6e3d9;
-                          border-radius: 3px;
-                          padding: 3px;
-                          height: 14px;
-                        "
-                      ></div>
-                    </div>
-                    <div
-                      style="
-                        background: #ffe4ea;
-                        border-radius: 3px;
-                        display: flex;
-                        flex-direction: column;
-                        justify-content: space-between;
-                        padding: 3px;
-                      "
-                    >
-                      <div style="height: 6px; background: #ffc9d4; border-radius: 1px"></div>
-                      <div style="height: 5px; background: #f25c7a; border-radius: 99px"></div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card-body">
-            <span class="card-tag forest">🌲 森林櫻花 · Admin</span>
-            <h3>商家後台 · 代客建單</h3>
-            <p class="desc">
-              分步表單 + sticky 訂單摘要。Step 2 選商品 3 種輸入方式（搜尋 / 供應商瀏覽 /
-              貼連結）含未選/搜尋中/已選 3 狀態。
-            </p>
-            <div class="card-meta">
-              <span><b>desktop</b> · 1280 px</span>
-              <span>→</span>
-            </div>
-          </div>
-        </a>
-
-        <!-- Store products -->
-        <a class="card" href="store-products.html" target="_blank">
-          <div
-            class="card-thumb thumb-store"
-            style="display: flex; align-items: center; justify-content: center"
-          >
-            <div class="phone-thumb">
-              <div class="store-thumb">
-                <div class="banner"></div>
-                <div class="pills">
-                  <div class="pill"></div>
-                  <div class="pill"></div>
-                  <div class="pill"></div>
-                  <div class="pill"></div>
-                </div>
-                <div class="grid2">
-                  <div class="pcard">
-                    <div class="pimg"></div>
-                    <div class="ptxt"></div>
-                    <div class="pprice"></div>
-                  </div>
-                  <div class="pcard">
-                    <div class="pimg"></div>
-                    <div class="ptxt"></div>
-                    <div class="pprice"></div>
-                  </div>
-                  <div class="pcard">
-                    <div class="pimg"></div>
-                    <div class="ptxt"></div>
-                    <div class="pprice"></div>
-                  </div>
-                  <div class="pcard">
-                    <div class="pimg"></div>
-                    <div class="ptxt"></div>
-                    <div class="pprice"></div>
-                  </div>
-                </div>
-                <div class="tab"></div>
-              </div>
-            </div>
-          </div>
-          <div class="card-body">
-            <span class="card-tag candy">🍡 蜜糖可愛 · Store</span>
-            <h3>顧客前台 · 商品列表</h3>
-            <p class="desc">
-              LINE LIFF 內的賣場首頁。Hero banner + 分類 pills + 2 欄商品 grid + 許願池 CTA + bottom
-              tab bar。
-            </p>
-            <div class="card-meta">
-              <span><b>mobile</b> · 390 px</span>
-              <span>→</span>
-            </div>
-          </div>
-        </a>
-
-        <!-- Store orders -->
-        <a class="card" href="store-orders.html" target="_blank">
-          <div
-            class="card-thumb thumb-orders"
-            style="display: flex; align-items: center; justify-content: center"
-          >
-            <div class="phone-thumb">
-              <div class="orders-thumb">
-                <div class="stats">
-                  <div class="stat-pill"></div>
-                  <div class="stat-pill active"></div>
-                  <div class="stat-pill"></div>
-                </div>
-                <div class="stats">
-                  <div class="stat-pill active" style="height: 8px"></div>
-                  <div class="stat-pill" style="height: 8px"></div>
-                  <div class="stat-pill" style="height: 8px"></div>
-                </div>
-                <div class="hero">
-                  <div class="lnt"></div>
-                  <div class="ln"></div>
-                  <div class="ln" style="width: 40%"></div>
-                </div>
-                <div class="ocard">
-                  <div class="oimg"></div>
-                  <div class="otxt">
-                    <div class="ln"></div>
-                    <div class="ln" style="width: 50%"></div>
-                  </div>
-                </div>
-                <div class="ocard">
-                  <div class="oimg"></div>
-                  <div class="otxt">
-                    <div class="ln"></div>
-                    <div class="ln" style="width: 50%"></div>
-                  </div>
-                </div>
-                <div class="ocard">
-                  <div class="oimg"></div>
-                  <div class="otxt">
-                    <div class="ln"></div>
-                    <div class="ln" style="width: 50%"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="card-body">
-            <span class="card-tag candy">🍡 蜜糖可愛 · Store</span>
-            <h3>顧客前台 · 我的訂單</h3>
-            <p class="desc">
-              訂單清單 + Sprint 4 結單流程。3 個 stats、5
-              種狀態、可結單卡片含勾選與「前往結單」入口。
-            </p>
-            <div class="card-meta">
-              <span><b>mobile</b> · 390 px</span>
-              <span>→</span>
-            </div>
-          </div>
-        </a>
-      </div>
-
-      <div class="note">
-        <div class="note-icon">i</div>
-        <div>
-          <h4>給 Claude Code 的話</h4>
-          <p>
-            這 3 個頁面是 <b>最終視覺</b>，不是要直接複製 HTML。請參考<br />
-            ・佈局結構（哪些區塊、用什麼間距）<br />
-            ・欄位順序與資訊密度<br />
-            ・互動狀態（active filter、checked checkbox、hover）<br />
-            ・空狀態與引導<br />
-            實作時，<b>用 <code>handoff/component-recipes.html</code> 的 component class 組合</b
-            >，不要重複造輪子。
-          </p>
-        </div>
+    <div class="note">
+      <div class="note-icon">✿</div>
+      <div>
+        <h4>怎麼維護這份藍圖</h4>
+        <p>
+          畫好一張新 mockup 後，只要把 <code>index.html</code> 內 <code>PAGES</code> 陣列那筆的
+          <code>status</code> 改成 <code>'done'</code> 並補上 <code>file</code>，卡片就會自動變成可點。
+          同步把 <a href="INDEX.md" style="color:var(--c-primary)">INDEX.md</a> 對應列的 ⬜ 改成 ✅。不用新增卡片——藍圖已排好。
+        </p>
       </div>
     </div>
-  </body>
+  </div>
+
+  <script>
+    // ============================================================
+    //  PAGES — 芮選 Sprint 1–5 完整頁面藍圖
+    //  改一筆的 status:'done' + file 即可讓卡片變可點
+    // ============================================================
+    const PAGES = [
+      // ---------- ADMIN (forest · desktop) ----------
+      { group:'admin', sprint:1, route:'/admin/login', comp:'<AdminLogin/>', title:'商家登入', status:'planned', kind:'login', vp:'desktop',
+        desc:'商家 LINE LIFF 登入，取得賣場身份。' },
+      { group:'admin', sprint:1, route:'/admin/setup', comp:'<StoreSetup/>', title:'賣場建立精靈', status:'planned', kind:'setup', vp:'desktop',
+        desc:'名稱 / 介紹 / 頭像上傳 + 新增供應商 + 生成並複製邀請連結。' },
+      { group:'admin', sprint:1, route:'/admin/suppliers', comp:'<AdminSuppliers/>', title:'供應商管理', status:'planned', kind:'suppliers', vp:'desktop',
+        desc:'供應商 CRUD 列表 + 新增 / 編輯 / 刪除。' },
+      { group:'admin', sprint:1, route:'/admin/customers', comp:'<AdminCustomers/>', title:'顧客審核名單', status:'planned', kind:'customers', vp:'desktop',
+        desc:'待審核名單 → 通過 / 拒絕，含空狀態頁。' },
+      { group:'admin', sprint:3, route:'/admin', comp:'<AdminDashboard/>', title:'總覽 Dashboard', status:'done', file:'admin-dashboard.html', kind:'dashboard', vp:'desktop',
+        desc:'Sidebar + 4 stat 卡 + 最近訂單表 + 今日待辦 + 熱銷排行 + 廠商表現。' },
+      { group:'admin', sprint:2, route:'/admin/products', comp:'<AdminProducts/>', title:'商品管理', status:'planned', kind:'products', vp:'desktop',
+        desc:'商品列表依廠商分類 + 上 / 下架切換。' },
+      { group:'admin', sprint:2, route:'/admin/products/new', comp:'<AdminProductNew/>', title:'新增商品', status:'planned', kind:'product-new', vp:'desktop',
+        desc:'貼原文 → AI 文案優化（原文 vs 優化對比）→ 規格自動偵測 → 匯率換算 → 圖片上傳。' },
+      { group:'admin', sprint:2, route:'/admin/products/[id]/edit', comp:'<AdminProductEdit/>', title:'編輯商品', status:'planned', kind:'product-edit', vp:'desktop',
+        desc:'同新增結構，帶入既有商品資料。' },
+      { group:'admin', sprint:4, route:'/admin/orders', comp:'<AdminOrders/>', title:'訂單管理', status:'done', file:'admin-orders.html', kind:'orders', vp:'desktop',
+        desc:'5 階段 pipeline + 狀態 tabs + 批次選取 / 向廠商下單 + 行內展開時程。' },
+      { group:'admin', sprint:4, route:'/admin/orders/new', comp:'<AdminOrdersNew/>', title:'協助建立訂單', status:'done', file:'admin-orders-new.html', kind:'order-new', vp:'desktop',
+        desc:'分步表單 + sticky 訂單摘要。Step 2 商品 3 種輸入方式。' },
+      { group:'admin', sprint:4, route:'/admin/orders/[id]', comp:'<AdminOrderDetail/>', title:'訂單詳情 / 配貨', status:'planned', kind:'order-detail', vp:'desktop',
+        desc:'顧客資訊 + 商品 + 採購時間軸 + 自動 / 手動配貨 + 狀態相依操作。' },
+      { group:'admin', sprint:4, route:'/admin/orders/[id]/checkout', comp:'<AdminOrderCheckout/>', title:'代客結單', status:'done', file:'admin-orders-checkout.html', kind:'checkout', vp:'desktop',
+        desc:'結單對象提示卡 + 物流四選一 RadioCard + 收件 / 付款聯動 + sticky 結單摘要。' },
+      { group:'admin', sprint:4, route:'/admin/orders/[id]/shipping', comp:'<AdminOrderShipping/>', title:'出貨管理', status:'planned', kind:'shipping', vp:'desktop',
+        desc:'已結單收件資訊 + 複製至賣貨便 + 填物流單號 → 已出貨。' },
+      { group:'admin', sprint:4, route:'/admin/wishlists', comp:'<AdminWishlists/>', title:'許願池後台', status:'planned', kind:'wishlist', vp:'desktop',
+        desc:'顧客許願清單 + 標記狀態（待處理 / 已注意 / 已上架）。參考 dashboard 卡片網格。' },
+      { group:'admin', sprint:5, route:'/admin/products/quick', comp:'<AdminProductQuick/>', title:'現場快速上架', status:'planned', kind:'quick', vp:'mobile',
+        desc:'手機優化：拍照 + 商品名 + 售價 → 30 秒內立即上架。' },
+      { group:'admin', sprint:5, route:'/admin/analytics', comp:'<AdminAnalytics/>', title:'數據 Dashboard', status:'planned', kind:'analytics', vp:'desktop',
+        desc:'月營業額 / 毛利 / 顧客消費 / 廠商排行 / 下單時段 / 到貨週期分析。' },
+
+      // ---------- STORE (candy · mobile 390 + PC) ----------
+      { group:'store', sprint:3, route:'/store/[slug]/login', comp:'<StoreLogin/>', title:'顧客登入', status:'planned', kind:'login', vp:'mobile',
+        desc:'顧客 LINE LIFF 快速登入。' },
+      { group:'store', sprint:3, route:'/store/[slug]/register', comp:'<StoreRegister/>', title:'顧客申請', status:'planned', kind:'customers', vp:'mobile',
+        desc:'填姓名 / 手機 / LINE ID → 「待商家核准」狀態頁。' },
+      { group:'store', sprint:3, route:'/store/[slug]', comp:'<StoreProducts/>', title:'商品列表', status:'done', file:'store-products.html', pc:'store-products-pc.html', kind:'products', vp:'mobile',
+        desc:'Hero banner + 分類 pills + 商品 grid + 許願池 CTA + bottom tab。' },
+      { group:'store', sprint:3, route:'/store/[slug]/products/[id]', comp:'<StoreProductDetail/>', title:'商品詳細', status:'planned', kind:'product-detail', vp:'mobile',
+        desc:'圖片輪播 + 規格選擇 + 數量 + 下單確認彈窗（無購物車，下單即購買）。' },
+      { group:'store', sprint:4, route:'/store/[slug]/orders', comp:'<StoreOrders/>', title:'我的訂單', status:'done', file:'store-orders.html', pc:'store-orders-pc.html', kind:'orders', vp:'mobile',
+        desc:'stats + 可結單漸層卡（勾選與小計）+ 其他訂單列表。' },
+      { group:'store', sprint:4, route:'/store/[slug]/orders/checkout', comp:'<StoreCheckout/>', title:'結單', status:'done', file:'store-orders-checkout.html', pc:'store-orders-checkout-pc.html', kind:'checkout', vp:'mobile',
+        desc:'物流四選一 RadioCard + 收件 / 付款聯動（含超商 SPEC）+ sticky 底欄 CTA。' },
+      { group:'store', sprint:4, route:'/store/[slug]/wishlist', comp:'<StoreWishlist/>', title:'許願清單', status:'planned', kind:'wishlist', vp:'mobile',
+        desc:'顧客自己的許願清單（含狀態）+「＋ 許願」入口。' },
+      { group:'store', sprint:4, route:'/store/[slug]/wishlist/new', comp:'<StoreWishlistNew/>', title:'新增許願', status:'planned', kind:'wishlist-new', vp:'mobile',
+        desc:'商品名（必填）/ 照片（必填上傳）/ 連結（選填）/ 型號規格（選填）。' },
+    ];
+
+    // ---- glyphs (stroke icons) ----
+    const ICONS = {
+      login:'<path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4"/><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/>',
+      setup:'<path d="M12 2l2.4 5 5.6.8-4 4 1 5.6L12 19.8 7 21.4l1-5.6-4-4 5.6-.8L12 2z"/>',
+      suppliers:'<path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M3 9v7l9 5 9-5V9"/><path d="M12 14v7"/>',
+      customers:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5"/><path d="M16 8.5a3 3 0 010-5.5M21 20c0-2.6-1.6-4.5-4-5.2"/>',
+      dashboard:'<rect x="3" y="3" width="8" height="9" rx="1.4"/><rect x="13" y="3" width="8" height="5" rx="1.4"/><rect x="13" y="11" width="8" height="10" rx="1.4"/><rect x="3" y="15" width="8" height="6" rx="1.4"/>',
+      products:'<rect x="3" y="3" width="8" height="8" rx="1.4"/><rect x="13" y="3" width="8" height="8" rx="1.4"/><rect x="3" y="13" width="8" height="8" rx="1.4"/><rect x="13" y="13" width="8" height="8" rx="1.4"/>',
+      'product-new':'<rect x="3" y="4" width="14" height="16" rx="2"/><path d="M7 9h6M7 13h4"/><circle cx="18" cy="16" r="4.5" fill="currentColor" stroke="none"/><path d="M18 14v4M16 16h4" stroke="#fff" stroke-width="1.6"/>',
+      'product-edit':'<rect x="3" y="4" width="13" height="16" rx="2"/><path d="M7 9h5M7 13h3"/><path d="M17 14.5l3.5 3.5-4 1 .5-4 3.5-3.5z" fill="currentColor" stroke="none"/>',
+      orders:'<path d="M6 3h12l1 18-7-3-7 3L6 3z"/><path d="M9 8h6M9 12h6"/>',
+      'order-new':'<path d="M5 4h10l1 9"/><path d="M5 4l1 14h6"/><path d="M8 8h6"/><circle cx="17" cy="17" r="4.5" fill="currentColor" stroke="none"/><path d="M17 15v4M15 17h4" stroke="#fff" stroke-width="1.6"/>',
+      'order-detail':'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>',
+      checkout:'<circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/>',
+      shipping:'<path d="M3 8h11v9H3z"/><path d="M14 11h4l3 3v3h-7"/><circle cx="7" cy="18" r="2"/><circle cx="17.5" cy="18" r="2"/>',
+      wishlist:'<path d="M12 4l2.4 5 5.6.8-4 4 1 5.6L12 17.8 7 19.4l1-5.6-4-4 5.6-.8L12 4z"/>',
+      'wishlist-new':'<path d="M11 4l2 4.5 5 .7-3.6 3.5.9 5-4.3-2.3" /><path d="M11 4L9 8.7l-5 .7 3.6 3.5-.9 5L11 15.6" /><path d="M18 17v6M15 20h6"/>',
+      quick:'<rect x="3" y="7" width="18" height="13" rx="2"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l1.5-2.5h5L16 7"/>',
+      analytics:'<path d="M4 20V4"/><path d="M4 20h16"/><rect x="7" y="12" width="3" height="5"/><rect x="12" y="8" width="3" height="9"/><rect x="17" y="5" width="3" height="12"/>',
+      'product-detail':'<rect x="4" y="3" width="16" height="18" rx="2"/><rect x="7" y="6" width="10" height="7" rx="1"/><path d="M8 16h8M8 19h5"/>',
+    };
+
+    const GROUPS = {
+      admin: { title:'商家後台 Admin', variant:'forest', sub:'FOREST · DESKTOP 1280',
+        desc:'森林系。Sidebar layout，桌面寬版操作密度。' },
+      store: { title:'顧客前台 Store', variant:'candy', sub:'CANDY · MOBILE 390 (+ PC 1280)',
+        desc:'蜜糖系。預設手機 390px，多數頁面另有 PC 寬版。' },
+    };
+
+    function icon(kind, cls){
+      const p = ICONS[kind] || ICONS.dashboard;
+      return `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${p}</svg>`;
+    }
+
+    function cardHTML(pg){
+      const g = GROUPS[pg.group];
+      const done = pg.status === 'done';
+      const isPC = false;
+      const thumbCls = `thumb ${g.variant}`;
+      const vpLabel = pg.vp === 'mobile' ? 'mobile · 390' : 'desktop · 1280';
+      const inner = `
+        <div class="${thumbCls}">
+          ${icon(pg.kind, 'glyph')}
+          <div class="thumb-badges">
+            <div class="tb-row">
+              <span class="tb-chip sprint">S${pg.sprint}</span>
+              <span class="tb-chip">${pg.vp === 'mobile' ? '◻ 390' : '▭ 1280'}</span>
+            </div>
+            <div class="tb-row"><span class="tb-route">${pg.route}</span></div>
+          </div>
+          ${done ? '' : '<span class="planned-ribbon">尚未繪製</span>'}
+        </div>
+        <div class="card-body">
+          <h3>${pg.title}<span class="comp">${pg.comp.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</span></h3>
+          <p class="desc">${pg.desc}</p>
+          <div class="card-meta">
+            <span class="meta-vp">${vpLabel}</span>
+            ${done
+              ? (pg.pc ? `<a class="pc-link" href="${pg.pc}" target="_blank" onclick="event.stopPropagation()">PC ↗</a>` : '<span class="go">開啟 →</span>')
+              : '<span class="planned-tag">待設計</span>'}
+          </div>
+        </div>`;
+      if (done) {
+        return `<a class="card is-done" href="${pg.file}" target="_blank">${inner}</a>`;
+      }
+      return `<div class="card is-planned">${inner}</div>`;
+    }
+
+    function render(){
+      const root = document.getElementById('sections');
+      let html = '';
+      for (const key of ['admin','store']){
+        const g = GROUPS[key];
+        const pages = PAGES.filter(p => p.group === key).sort((a,b)=> a.sprint - b.sprint);
+        const doneN = pages.filter(p=>p.status==='done').length;
+        html += `
+          <div class="section">
+            <div class="section-head">
+              <h2>${g.title}</h2>
+              <span class="variant-tag ${g.variant}">${g.variant === 'forest' ? '🌲 森林' : '🍭 蜜糖'}</span>
+              <span class="section-sub">${g.sub} · ${doneN}/${pages.length} 已繪製</span>
+            </div>
+            <p class="section-desc">${g.desc}</p>
+            <div class="grid">${pages.map(cardHTML).join('')}</div>
+          </div>`;
+      }
+      root.innerHTML = html;
+
+      const total = PAGES.length;
+      const done = PAGES.filter(p=>p.status==='done').length;
+      document.getElementById('progressFill').style.width = (done/total*100).toFixed(0) + '%';
+      document.getElementById('progressNum').textContent = `${done} / ${total} 頁已繪製`;
+    }
+    render();
+  </script>
+</body>
 </html>

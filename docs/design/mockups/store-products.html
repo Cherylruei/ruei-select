@@ -1,337 +1,700 @@
 <!doctype html>
 <html lang="zh-Hant" data-variant="candy">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>芮選 · 小美的選物店</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="design-tokens.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="_tailwind-config.js"></script>
-  <style>
-    body { font-family: var(--font-body); }
-
-    /* === Maturity dial-up: tighter radii + warm hairlines === */
-    [data-variant="candy"] {
-      --r-sm: 10px;
-      --r-md: 14px;
-      --r-lg: 18px;
-      --r-xl: 22px;
-      --r-2xl: 28px;
-      --line-warm:        #F0D9CB;
-      --line-warm-strong: #E6C7B4;
-      --line-warm-soft:   #F7E5D8;
-    }
-    .card-line  { border: 1px solid var(--line-warm); }
-    .card-line-strong { border: 1px solid var(--line-warm-strong); }
-    .divider-warm { border-color: var(--line-warm-soft); }
-
-    .placeholder-img {
-      background: repeating-linear-gradient(135deg, #FFE9E0, #FFE9E0 8px, #FFD9E4 8px, #FFD9E4 16px);
-    }
-    .placeholder-img-2 {
-      background: repeating-linear-gradient(135deg, #ECE7FF, #ECE7FF 8px, #DDD3FF 8px, #DDD3FF 16px);
-    }
-    .placeholder-img-3 {
-      background: repeating-linear-gradient(135deg, #FFEAD0, #FFEAD0 8px, #FFDDB0 8px, #FFDDB0 16px);
-    }
-    .placeholder-img-4 {
-      background: repeating-linear-gradient(135deg, #D9F4ED, #D9F4ED 8px, #C2EBDF 8px, #C2EBDF 16px);
-    }
-    /* Mobile screen container */
-    .phone {
-      width: 100%;
-      max-width: 420px;
-      margin: 0 auto;
-      min-height: 100vh;
-      background: var(--bg-app);
-      position: relative;
-      box-shadow: 0 0 80px rgba(255, 110, 148, 0.12);
-    }
-    @media (min-width: 768px) {
-      .phone {
-        margin: 24px auto;
-        min-height: calc(100vh - 48px);
-        border-radius: var(--r-2xl);
-        overflow: hidden;
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>芮選 · 小美的選物店</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="_tailwind-config.js"></script>
+    <style>
+      body {
+        font-family: var(--font-body);
       }
-    }
-    /* Desktop side label */
-    .desktop-hint {
-      display: none;
-      position: fixed; left: 24px; top: 24px;
-      font-family: var(--font-mono); font-size: 11px;
-      color: var(--fg-subtle); letter-spacing: 0.15em;
-      text-transform: uppercase;
-    }
-    @media (min-width: 1024px) {
-      .desktop-hint { display: block; }
-    }
-    .logo-body { fill: #FFD9E4; }
-    .logo-eye { fill: #3B2A2A; }
-    .logo-blush { fill: #FF6E94; opacity: 0.7; }
-    .logo-sparkle { fill: #FFB347; }
 
-    /* Sparkle decoration */
-    .sparkle {
-      position: absolute; pointer-events: none;
-      font-size: 14px; color: var(--c-accent);
-      animation: twinkle 2s ease-in-out infinite;
-    }
-    @keyframes twinkle {
-      0%, 100% { transform: scale(1); opacity: 0.6; }
-      50% { transform: scale(1.2); opacity: 1; }
-    }
-  </style>
-</head>
-<body style="background: linear-gradient(160deg, #FFF6F1 0%, #FCEAE0 55%, #F6DCD0 100%);">
+      /* === Maturity dial-up: tighter radii + warm hairlines === */
+      [data-variant='candy'] {
+        --r-sm: 10px;
+        --r-md: 14px;
+        --r-lg: 18px;
+        --r-xl: 22px;
+        --r-2xl: 28px;
+        --line-warm: #f0d9cb;
+        --line-warm-strong: #e6c7b4;
+        --line-warm-soft: #f7e5d8;
+      }
+      .card-line {
+        border: 1px solid var(--line-warm);
+      }
+      .card-line-strong {
+        border: 1px solid var(--line-warm-strong);
+      }
+      .divider-warm {
+        border-color: var(--line-warm-soft);
+      }
 
-  <span class="desktop-hint">MOBILE · 390 PX · LINE LIFF</span>
+      .placeholder-img {
+        background: repeating-linear-gradient(
+          135deg,
+          #ffe9e0,
+          #ffe9e0 8px,
+          #ffd9e4 8px,
+          #ffd9e4 16px
+        );
+      }
+      .placeholder-img-2 {
+        background: repeating-linear-gradient(
+          135deg,
+          #ece7ff,
+          #ece7ff 8px,
+          #ddd3ff 8px,
+          #ddd3ff 16px
+        );
+      }
+      .placeholder-img-3 {
+        background: repeating-linear-gradient(
+          135deg,
+          #ffead0,
+          #ffead0 8px,
+          #ffddb0 8px,
+          #ffddb0 16px
+        );
+      }
+      .placeholder-img-4 {
+        background: repeating-linear-gradient(
+          135deg,
+          #d9f4ed,
+          #d9f4ed 8px,
+          #c2ebdf 8px,
+          #c2ebdf 16px
+        );
+      }
+      /* Mobile screen container */
+      .phone {
+        width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
+        min-height: 100vh;
+        background: var(--bg-app);
+        position: relative;
+        box-shadow: 0 0 80px rgba(255, 110, 148, 0.12);
+      }
+      @media (min-width: 768px) {
+        .phone {
+          margin: 24px auto;
+          min-height: calc(100vh - 48px);
+          border-radius: var(--r-2xl);
+          overflow: hidden;
+        }
+      }
+      /* Desktop side label */
+      .desktop-hint {
+        display: none;
+        position: fixed;
+        left: 24px;
+        top: 24px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--fg-subtle);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+      @media (min-width: 1024px) {
+        .desktop-hint {
+          display: block;
+        }
+      }
+      .logo-body {
+        fill: #ffd9e4;
+      }
+      .logo-eye {
+        fill: #3b2a2a;
+      }
+      .logo-blush {
+        fill: #ff6e94;
+        opacity: 0.7;
+      }
+      .logo-sparkle {
+        fill: #ffb347;
+      }
 
-  <div class="phone">
+      /* Sparkle decoration */
+      .sparkle {
+        position: absolute;
+        pointer-events: none;
+        font-size: 14px;
+        color: var(--c-accent);
+        animation: twinkle 2s ease-in-out infinite;
+      }
+      @keyframes twinkle {
+        0%,
+        100% {
+          transform: scale(1);
+          opacity: 0.6;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 1;
+        }
+      }
+    </style>
+  </head>
+  <body style="background: linear-gradient(160deg, #fff6f1 0%, #fceae0 55%, #f6dcd0 100%)">
+    <span class="desktop-hint">MOBILE · 390 PX · LINE LIFF</span>
 
-    <!-- ===== Top header ===== -->
-    <header class="px-5 pt-6 pb-4 sticky top-0 z-20 bg-app/90 backdrop-blur-md border-b" style="border-color: var(--line-warm-soft);">
-      <div class="flex items-center justify-between">
-        <!-- Brand -->
-        <div class="flex items-center gap-2.5">
-          <svg width="40" height="40" viewBox="0 0 44 44">
-            <rect class="logo-sparkle" x="35" y="6" width="6" height="6" transform="rotate(45 38 9)" rx="1" />
-            <rect class="logo-sparkle" x="4" y="32" width="4" height="4" transform="rotate(45 6 34)" rx="0.8" />
-            <rect class="logo-body" x="6" y="10" width="32" height="28" rx="14" />
-            <circle class="logo-blush" cx="13" cy="27" r="2.5"/>
-            <circle class="logo-blush" cx="31" cy="27" r="2.5"/>
-            <ellipse class="logo-eye" cx="17" cy="22" rx="1.6" ry="2.4"/>
-            <ellipse class="logo-eye" cx="27" cy="22" rx="1.6" ry="2.4"/>
-            <ellipse class="logo-blush" cx="22" cy="29" rx="3" ry="1.4"/>
-          </svg>
-          <div class="leading-tight">
-            <div class="font-display font-bold text-lg" style="color:#E8527C">小美的選物店</div>
-            <div class="font-mono text-[10px] text-fg-subtle">RUEI · SELECT</div>
+    <div class="phone">
+      <!-- ===== Top header ===== -->
+      <header
+        class="px-5 pt-6 pb-4 sticky top-0 z-20 bg-app/90 backdrop-blur-md border-b"
+        style="border-color: var(--line-warm-soft)"
+      >
+        <div class="flex items-center justify-between">
+          <!-- Brand -->
+          <div class="flex items-center gap-2.5">
+            <svg width="40" height="40" viewBox="0 0 44 44">
+              <rect
+                class="logo-sparkle"
+                x="35"
+                y="6"
+                width="6"
+                height="6"
+                transform="rotate(45 38 9)"
+                rx="1"
+              />
+              <rect
+                class="logo-sparkle"
+                x="4"
+                y="32"
+                width="4"
+                height="4"
+                transform="rotate(45 6 34)"
+                rx="0.8"
+              />
+              <rect class="logo-body" x="6" y="10" width="32" height="28" rx="14" />
+              <circle class="logo-blush" cx="13" cy="27" r="2.5" />
+              <circle class="logo-blush" cx="31" cy="27" r="2.5" />
+              <ellipse class="logo-eye" cx="17" cy="22" rx="1.6" ry="2.4" />
+              <ellipse class="logo-eye" cx="27" cy="22" rx="1.6" ry="2.4" />
+              <ellipse class="logo-blush" cx="22" cy="29" rx="3" ry="1.4" />
+            </svg>
+            <div class="leading-tight">
+              <div class="font-display font-bold text-lg" style="color: #e8527c">小美的選物店</div>
+              <div class="font-mono text-[10px] text-fg-subtle">RUEI · SELECT</div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-1.5">
+            <button
+              class="w-10 h-10 rounded-pill bg-surface flex items-center justify-center shadow-sm card-line"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+              >
+                <circle cx="11" cy="11" r="6" />
+                <path d="M20 20l-4-4" stroke-linecap="round" />
+              </svg>
+            </button>
+            <button
+              class="w-10 h-10 rounded-pill bg-surface flex items-center justify-center shadow-sm relative card-line"
+            >
+              <svg
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              >
+                <path d="M6 16V11a6 6 0 1112 0v5l2 2H4l2-2z" />
+                <path d="M10 20a2 2 0 004 0" />
+              </svg>
+              <span
+                class="absolute top-1.5 right-1.5 w-2 h-2 rounded-pill bg-primary ring-2 ring-white"
+              ></span>
+            </button>
           </div>
         </div>
+      </header>
 
-        <div class="flex items-center gap-1.5">
-          <button class="w-10 h-10 rounded-pill bg-surface flex items-center justify-center shadow-sm card-line">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4" stroke-linecap="round"/></svg>
+      <!-- ===== Welcome banner ===== -->
+      <section class="px-5 pt-4 pb-4 relative">
+        <span class="sparkle" style="top: 18px; right: 38px">✦</span>
+        <span class="sparkle" style="bottom: 18px; left: 24px; animation-delay: 0.7s">✦</span>
+        <div
+          class="rounded-xl p-5 relative overflow-hidden"
+          style="
+            background: linear-gradient(135deg, #ff6e94 0%, #9a8cff 100%);
+            box-shadow:
+              0 14px 32px -12px rgba(154, 140, 255, 0.45),
+              0 0 0 1px rgba(255, 110, 148, 0.18);
+          "
+        >
+          <div class="relative z-10">
+            <div
+              class="inline-flex items-center gap-1.5 font-mono text-[10px] text-white tracking-[0.18em] uppercase px-2 py-1 rounded-pill bg-white/15 whitespace-nowrap"
+              style="border: 1px solid rgba(255, 255, 255, 0.28)"
+            >
+              ★ 本週新到貨
+            </div>
+            <h2 class="font-display font-bold text-white text-xl mt-2.5 leading-tight">
+              日本職人小物<br />陪你度過甜甜的夏天
+            </h2>
+            <p class="text-white/85 text-xs mt-2 font-mono tracking-wide">
+              5 件預購中 · 7 月初到貨
+            </p>
+            <button
+              class="mt-3 inline-flex items-center gap-1.5 h-8 px-4 rounded-pill bg-white text-primary font-display font-bold text-xs shadow-sm whitespace-nowrap"
+            >
+              看新品 →
+            </button>
+          </div>
+          <div class="absolute -right-8 -top-8 w-32 h-32 rounded-pill bg-white/12"></div>
+          <div class="absolute -right-2 bottom-2 w-12 h-12 rounded-pill bg-white/10"></div>
+        </div>
+      </section>
+
+      <!-- ===== Category pills ===== -->
+      <section class="px-5 pb-4">
+        <div
+          class="flex gap-2 overflow-x-auto -mx-5 px-5 pb-2 scrollbar-thin"
+          style="scrollbar-width: none"
+        >
+          <button
+            class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-primary text-white font-display font-bold text-sm shadow-pink whitespace-nowrap"
+          >
+            全部 · 24
           </button>
-          <button class="w-10 h-10 rounded-pill bg-surface flex items-center justify-center shadow-sm relative card-line">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M6 16V11a6 6 0 1112 0v5l2 2H4l2-2z"/><path d="M10 20a2 2 0 004 0"/></svg>
-            <span class="absolute top-1.5 right-1.5 w-2 h-2 rounded-pill bg-primary ring-2 ring-white"></span>
+          <button
+            class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-surface text-fg-default font-display font-semibold text-sm card-line whitespace-nowrap"
+          >
+            服飾
+          </button>
+          <button
+            class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-surface text-fg-default font-display font-semibold text-sm card-line whitespace-nowrap"
+          >
+            零食
+          </button>
+          <button
+            class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-surface text-fg-default font-display font-semibold text-sm card-line whitespace-nowrap"
+          >
+            飲品
+          </button>
+          <button
+            class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-surface text-fg-default font-display font-semibold text-sm card-line whitespace-nowrap"
+          >
+            生活
+          </button>
+          <button
+            class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-surface text-fg-default font-display font-semibold text-sm card-line whitespace-nowrap"
+          >
+            美妝
           </button>
         </div>
-      </div>
-    </header>
+      </section>
 
-    <!-- ===== Welcome banner ===== -->
-    <section class="px-5 pt-4 pb-4 relative">
-      <span class="sparkle" style="top:18px;right:38px;">✦</span>
-      <span class="sparkle" style="bottom:18px;left:24px;animation-delay:0.7s">✦</span>
-      <div class="rounded-xl p-5 relative overflow-hidden" style="background: linear-gradient(135deg, #FF6E94 0%, #9A8CFF 100%); box-shadow: 0 14px 32px -12px rgba(154,140,255,0.45), 0 0 0 1px rgba(255,110,148,0.18);">
-        <div class="relative z-10">
-          <div class="inline-flex items-center gap-1.5 font-mono text-[10px] text-white tracking-[0.18em] uppercase px-2 py-1 rounded-pill bg-white/15 whitespace-nowrap" style="border:1px solid rgba(255,255,255,0.28);">★ 本週新到貨</div>
-          <h2 class="font-display font-bold text-white text-xl mt-2.5 leading-tight">日本職人小物<br/>陪你度過甜甜的夏天</h2>
-          <p class="text-white/85 text-xs mt-2 font-mono tracking-wide">5 件預購中 · 7 月初到貨</p>
-          <button class="mt-3 inline-flex items-center gap-1.5 h-8 px-4 rounded-pill bg-white text-primary font-display font-bold text-xs shadow-sm whitespace-nowrap">
-            看新品 →
+      <!-- ===== Product grid ===== -->
+      <section class="px-5 pb-32">
+        <div class="flex items-center gap-3 mb-3">
+          <h3 class="font-display font-bold text-lg leading-none">為你精選</h3>
+          <span class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase"
+            >24 items</span
+          >
+          <span
+            class="flex-1 h-px"
+            style="background: linear-gradient(to right, var(--line-warm-strong), transparent)"
+          ></span>
+          <button
+            class="inline-flex items-center gap-1 text-xs text-fg-muted font-display font-semibold h-7 px-2.5 rounded-pill card-line bg-surface whitespace-nowrap"
+          >
+            排序
+            <svg
+              width="11"
+              height="11"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
           </button>
         </div>
-        <div class="absolute -right-8 -top-8 w-32 h-32 rounded-pill bg-white/12"></div>
-        <div class="absolute -right-2 bottom-2 w-12 h-12 rounded-pill bg-white/10"></div>
-      </div>
-    </section>
 
-    <!-- ===== Category pills ===== -->
-    <section class="px-5 pb-4">
-      <div class="flex gap-2 overflow-x-auto -mx-5 px-5 pb-2 scrollbar-thin" style="scrollbar-width:none;">
-        <button class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-primary text-white font-display font-bold text-sm shadow-pink whitespace-nowrap">全部 · 24</button>
-        <button class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-surface text-fg-default font-display font-semibold text-sm card-line whitespace-nowrap">服飾</button>
-        <button class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-surface text-fg-default font-display font-semibold text-sm card-line whitespace-nowrap">零食</button>
-        <button class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-surface text-fg-default font-display font-semibold text-sm card-line whitespace-nowrap">飲品</button>
-        <button class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-surface text-fg-default font-display font-semibold text-sm card-line whitespace-nowrap">生活</button>
-        <button class="shrink-0 inline-flex items-center h-9 px-4 rounded-pill bg-surface text-fg-default font-display font-semibold text-sm card-line whitespace-nowrap">美妝</button>
-      </div>
-    </section>
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Product card 1 -->
+          <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
+            <div
+              class="aspect-square placeholder-img relative"
+              style="border-bottom: 1px solid var(--line-warm-soft)"
+            >
+              <button
+                class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  class="text-primary"
+                >
+                  <path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z" />
+                </svg>
+              </button>
+              <span
+                class="absolute top-2 left-2 inline-flex items-center h-5 px-2 rounded-pill bg-primary text-white font-display font-bold text-[10px] whitespace-nowrap"
+                >熱銷</span
+              >
+            </div>
+            <div class="p-3">
+              <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">
+                日本直送・棉麻寬褲
+              </div>
+              <div class="flex items-center gap-1.5 mt-1.5">
+                <span
+                  class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap"
+                  style="background: #f5ebdb; color: #6b502c; border: 1px solid #e0ccaa"
+                  >MIKI</span
+                >
+                <span class="font-mono text-[10px] text-fg-subtle">預購 2–3 週</span>
+              </div>
+              <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
+                <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
+                <span class="font-display font-bold text-lg text-primary leading-none">1,280</span>
+              </div>
+            </div>
+          </article>
 
-    <!-- ===== Product grid ===== -->
-    <section class="px-5 pb-32">
-      <div class="flex items-center gap-3 mb-3">
-        <h3 class="font-display font-bold text-lg leading-none">為你精選</h3>
-        <span class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">24 items</span>
-        <span class="flex-1 h-px" style="background:linear-gradient(to right, var(--line-warm-strong), transparent);"></span>
-        <button class="inline-flex items-center gap-1 text-xs text-fg-muted font-display font-semibold h-7 px-2.5 rounded-pill card-line bg-surface whitespace-nowrap">
-          排序
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-        </button>
-      </div>
+          <!-- Product card 2 -->
+          <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
+            <div
+              class="aspect-square placeholder-img-3 relative"
+              style="border-bottom: 1px solid var(--line-warm-soft)"
+            >
+              <button
+                class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  class="text-primary"
+                >
+                  <path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z" />
+                </svg>
+              </button>
+              <span
+                class="absolute top-2 left-2 inline-flex items-center h-5 px-2 rounded-pill bg-accent text-white font-display font-bold text-[10px] whitespace-nowrap"
+                >新</span
+              >
+            </div>
+            <div class="p-3">
+              <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">
+                英國有機蜂蜜檸檬茶
+              </div>
+              <div class="flex items-center gap-1.5 mt-1.5">
+                <span
+                  class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap"
+                  style="background: #f5ebdb; color: #6b502c; border: 1px solid #e0ccaa"
+                  >Penny Lane</span
+                >
+                <span class="font-mono text-[10px] text-fg-subtle">現貨</span>
+              </div>
+              <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
+                <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
+                <span class="font-display font-bold text-lg text-primary leading-none">340</span>
+              </div>
+            </div>
+          </article>
 
-      <div class="grid grid-cols-2 gap-3">
+          <!-- Product card 3 -->
+          <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
+            <div
+              class="aspect-square placeholder-img-4 relative"
+              style="border-bottom: 1px solid var(--line-warm-soft)"
+            >
+              <button
+                class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  class="text-fg-muted"
+                >
+                  <path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z" />
+                </svg>
+              </button>
+              <span
+                class="absolute top-2 left-2 inline-flex items-center h-5 px-2 rounded-pill bg-warning text-white font-display font-bold text-[10px] whitespace-nowrap"
+                >最後 3 件</span
+              >
+            </div>
+            <div class="p-3">
+              <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">
+                抹茶手工餅乾組
+              </div>
+              <div class="flex items-center gap-1.5 mt-1.5">
+                <span
+                  class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap"
+                  style="background: #f5ebdb; color: #6b502c; border: 1px solid #e0ccaa"
+                  >五分埔</span
+                >
+                <span class="font-mono text-[10px] text-fg-subtle">現貨</span>
+              </div>
+              <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
+                <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
+                <span class="font-display font-bold text-lg text-primary leading-none">480</span>
+              </div>
+            </div>
+          </article>
 
-        <!-- Product card 1 -->
-        <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
-          <div class="aspect-square placeholder-img relative" style="border-bottom:1px solid var(--line-warm-soft);">
-            <button class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="text-primary"><path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z"/></svg>
-            </button>
-            <span class="absolute top-2 left-2 inline-flex items-center h-5 px-2 rounded-pill bg-primary text-white font-display font-bold text-[10px] whitespace-nowrap">熱銷</span>
-          </div>
-          <div class="p-3">
-            <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">日本直送・棉麻寬褲</div>
-            <div class="flex items-center gap-1.5 mt-1.5">
-              <span class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap" style="background:#F5EBDB;color:#6B502C;border:1px solid #E0CCAA;">MIKI</span>
-              <span class="font-mono text-[10px] text-fg-subtle">預購 2–3 週</span>
+          <!-- Product card 4 -->
+          <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
+            <div
+              class="aspect-square placeholder-img-2 relative"
+              style="border-bottom: 1px solid var(--line-warm-soft)"
+            >
+              <button
+                class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  class="text-fg-muted"
+                >
+                  <path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z" />
+                </svg>
+              </button>
             </div>
-            <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
-              <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
-              <span class="font-display font-bold text-lg text-primary leading-none">1,280</span>
+            <div class="p-3">
+              <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">
+                櫻花粉保溫瓶 500ml
+              </div>
+              <div class="flex items-center gap-1.5 mt-1.5">
+                <span
+                  class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap"
+                  style="background: #f5ebdb; color: #6b502c; border: 1px solid #e0ccaa"
+                  >MIKI</span
+                >
+                <span class="font-mono text-[10px] text-fg-subtle">預購</span>
+              </div>
+              <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
+                <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
+                <span class="font-display font-bold text-lg text-primary leading-none">1,980</span>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
 
-        <!-- Product card 2 -->
-        <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
-          <div class="aspect-square placeholder-img-3 relative" style="border-bottom:1px solid var(--line-warm-soft);">
-            <button class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" class="text-primary"><path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z"/></svg>
-            </button>
-            <span class="absolute top-2 left-2 inline-flex items-center h-5 px-2 rounded-pill bg-accent text-white font-display font-bold text-[10px] whitespace-nowrap">新</span>
-          </div>
-          <div class="p-3">
-            <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">英國有機蜂蜜檸檬茶</div>
-            <div class="flex items-center gap-1.5 mt-1.5">
-              <span class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap" style="background:#F5EBDB;color:#6B502C;border:1px solid #E0CCAA;">Penny Lane</span>
-              <span class="font-mono text-[10px] text-fg-subtle">現貨</span>
+          <!-- Product card 5 -->
+          <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
+            <div
+              class="aspect-square placeholder-img relative"
+              style="border-bottom: 1px solid var(--line-warm-soft)"
+            >
+              <button
+                class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  class="text-fg-muted"
+                >
+                  <path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z" />
+                </svg>
+              </button>
+              <span
+                class="absolute top-2 left-2 inline-flex items-center h-5 px-2 rounded-pill bg-secondary text-white font-display font-bold text-[10px] whitespace-nowrap"
+                >預購</span
+              >
             </div>
-            <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
-              <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
-              <span class="font-display font-bold text-lg text-primary leading-none">340</span>
+            <div class="p-3">
+              <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">
+                LoFt 限定收納盒
+              </div>
+              <div class="flex items-center gap-1.5 mt-1.5">
+                <span
+                  class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap"
+                  style="background: #f5ebdb; color: #6b502c; border: 1px solid #e0ccaa"
+                  >日本職人</span
+                >
+                <span class="font-mono text-[10px] text-fg-subtle">預購 3 週</span>
+              </div>
+              <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
+                <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
+                <span class="font-display font-bold text-lg text-primary leading-none">680</span>
+              </div>
             </div>
-          </div>
-        </article>
+          </article>
 
-        <!-- Product card 3 -->
-        <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
-          <div class="aspect-square placeholder-img-4 relative" style="border-bottom:1px solid var(--line-warm-soft);">
-            <button class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="text-fg-muted"><path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z"/></svg>
-            </button>
-            <span class="absolute top-2 left-2 inline-flex items-center h-5 px-2 rounded-pill bg-warning text-white font-display font-bold text-[10px] whitespace-nowrap">最後 3 件</span>
-          </div>
-          <div class="p-3">
-            <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">抹茶手工餅乾組</div>
-            <div class="flex items-center gap-1.5 mt-1.5">
-              <span class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap" style="background:#F5EBDB;color:#6B502C;border:1px solid #E0CCAA;">五分埔</span>
-              <span class="font-mono text-[10px] text-fg-subtle">現貨</span>
+          <!-- Product card 6 -->
+          <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
+            <div
+              class="aspect-square placeholder-img-3 relative"
+              style="border-bottom: 1px solid var(--line-warm-soft)"
+            >
+              <button
+                class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  class="text-fg-muted"
+                >
+                  <path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z" />
+                </svg>
+              </button>
             </div>
-            <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
-              <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
-              <span class="font-display font-bold text-lg text-primary leading-none">480</span>
+            <div class="p-3">
+              <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">
+                日本咖啡濾掛組
+              </div>
+              <div class="flex items-center gap-1.5 mt-1.5">
+                <span
+                  class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap"
+                  style="background: #f5ebdb; color: #6b502c; border: 1px solid #e0ccaa"
+                  >MIKI</span
+                >
+                <span class="font-mono text-[10px] text-fg-subtle">現貨</span>
+              </div>
+              <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
+                <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
+                <span class="font-display font-bold text-lg text-primary leading-none">580</span>
+              </div>
             </div>
-          </div>
-        </article>
-
-        <!-- Product card 4 -->
-        <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
-          <div class="aspect-square placeholder-img-2 relative" style="border-bottom:1px solid var(--line-warm-soft);">
-            <button class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="text-fg-muted"><path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z"/></svg>
-            </button>
-            
-          </div>
-          <div class="p-3">
-            <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">櫻花粉保溫瓶 500ml</div>
-            <div class="flex items-center gap-1.5 mt-1.5">
-              <span class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap" style="background:#F5EBDB;color:#6B502C;border:1px solid #E0CCAA;">MIKI</span>
-              <span class="font-mono text-[10px] text-fg-subtle">預購</span>
-            </div>
-            <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
-              <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
-              <span class="font-display font-bold text-lg text-primary leading-none">1,980</span>
-            </div>
-          </div>
-        </article>
-
-        <!-- Product card 5 -->
-        <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
-          <div class="aspect-square placeholder-img relative" style="border-bottom:1px solid var(--line-warm-soft);">
-            <button class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="text-fg-muted"><path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z"/></svg>
-            </button>
-            <span class="absolute top-2 left-2 inline-flex items-center h-5 px-2 rounded-pill bg-secondary text-white font-display font-bold text-[10px] whitespace-nowrap">預購</span>
-          </div>
-          <div class="p-3">
-            <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">LoFt 限定收納盒</div>
-            <div class="flex items-center gap-1.5 mt-1.5">
-              <span class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap" style="background:#F5EBDB;color:#6B502C;border:1px solid #E0CCAA;">日本職人</span>
-              <span class="font-mono text-[10px] text-fg-subtle">預購 3 週</span>
-            </div>
-            <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
-              <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
-              <span class="font-display font-bold text-lg text-primary leading-none">680</span>
-            </div>
-          </div>
-        </article>
-
-        <!-- Product card 6 -->
-        <article class="bg-surface rounded-lg overflow-hidden shadow-sm card-line relative">
-          <div class="aspect-square placeholder-img-3 relative" style="border-bottom:1px solid var(--line-warm-soft);">
-            <button class="absolute top-2 right-2 w-8 h-8 rounded-pill bg-white/90 flex items-center justify-center shadow-sm">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="text-fg-muted"><path d="M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z"/></svg>
-            </button>
-            
-          </div>
-          <div class="p-3">
-            <div class="font-display font-bold text-sm leading-tight line-clamp-2 min-h-[2.6em]">日本咖啡濾掛組</div>
-            <div class="flex items-center gap-1.5 mt-1.5">
-              <span class="inline-flex items-center h-[18px] px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap" style="background:#F5EBDB;color:#6B502C;border:1px solid #E0CCAA;">MIKI</span>
-              <span class="font-mono text-[10px] text-fg-subtle">現貨</span>
-            </div>
-            <div class="flex items-baseline justify-between mt-2 pt-2 border-t divider-warm">
-              <span class="font-mono text-[10px] text-fg-subtle">NT$</span>
-              <span class="font-display font-bold text-lg text-primary leading-none">580</span>
-            </div>
-          </div>
-        </article>
-
-      </div>
-
-      <!-- Wishlist nudge -->
-      <div class="mt-6 p-4 rounded-xl flex items-center gap-3" style="background:linear-gradient(135deg,#F4F0FF 0%,#ECE7FF 100%);border:1px solid #D9D0FA;">
-        <div class="w-12 h-12 rounded-pill bg-secondary text-white flex items-center justify-center shrink-0 shadow-green">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z"/></svg>
+          </article>
         </div>
-        <div class="flex-1">
-          <div class="font-display font-bold text-sm">找不到想要的？</div>
-          <p class="text-xs text-fg-muted mt-0.5">丟進許願池，小美幫你跨海找</p>
-        </div>
-        <button class="h-8 px-3.5 rounded-pill bg-secondary text-white font-display font-bold text-xs shadow-green shrink-0 whitespace-nowrap">許願</button>
-      </div>
-    </section>
 
-    <!-- ===== Bottom tab bar ===== -->
-    <nav class="fixed bottom-0 left-0 right-0 z-30 max-w-[420px] mx-auto bg-surface/95 backdrop-blur-md" style="border-top:1px solid var(--line-warm);">
-      <div class="grid grid-cols-4 px-3 py-2">
-        <a class="flex flex-col items-center gap-1 py-1.5 text-primary">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>
-          <span class="font-display font-bold text-[11px]">商品</span>
-        </a>
-        <a class="flex flex-col items-center gap-1 py-1.5 text-fg-muted relative">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 10h8M8 14h5"/></svg>
-          <span class="font-display font-semibold text-[11px]">訂單</span>
-          <span class="absolute top-1 right-6 w-1.5 h-1.5 rounded-pill bg-primary"></span>
-        </a>
-        <a class="flex flex-col items-center gap-1 py-1.5 text-fg-muted">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z"/></svg>
-          <span class="font-display font-semibold text-[11px]">許願池</span>
-        </a>
-        <a class="flex flex-col items-center gap-1 py-1.5 text-fg-muted">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-          <span class="font-display font-semibold text-[11px]">我的</span>
-        </a>
-      </div>
-    </nav>
-  </div>
-</body>
+        <!-- Wishlist nudge -->
+        <div
+          class="mt-6 p-4 rounded-xl flex items-center gap-3"
+          style="
+            background: linear-gradient(135deg, #f4f0ff 0%, #ece7ff 100%);
+            border: 1px solid #d9d0fa;
+          "
+        >
+          <div
+            class="w-12 h-12 rounded-pill bg-secondary text-white flex items-center justify-center shrink-0 shadow-green"
+          >
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <div class="font-display font-bold text-sm">找不到想要的？</div>
+            <p class="text-xs text-fg-muted mt-0.5">丟進許願池，小美幫你跨海找</p>
+          </div>
+          <button
+            class="h-8 px-3.5 rounded-pill bg-secondary text-white font-display font-bold text-xs shadow-green shrink-0 whitespace-nowrap"
+          >
+            許願
+          </button>
+        </div>
+      </section>
+
+      <!-- ===== Bottom tab bar ===== -->
+      <nav
+        class="fixed bottom-0 left-0 right-0 z-30 max-w-[420px] mx-auto bg-surface/95 backdrop-blur-md"
+        style="border-top: 1px solid var(--line-warm)"
+      >
+        <div class="grid grid-cols-4 px-3 py-2">
+          <a class="flex flex-col items-center gap-1 py-1.5 text-primary">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M5 8h14l-1 12H6L5 8z" />
+              <path d="M9 8V6a3 3 0 016 0v2" fill="none" stroke="currentColor" stroke-width="1.5" />
+            </svg>
+            <span class="font-display font-bold text-[11px]">商品</span>
+          </a>
+          <a class="flex flex-col items-center gap-1 py-1.5 text-fg-muted relative">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <rect x="4" y="5" width="16" height="16" rx="2" />
+              <path d="M8 10h8M8 14h5" />
+            </svg>
+            <span class="font-display font-semibold text-[11px]">訂單</span>
+            <span class="absolute top-1 right-6 w-1.5 h-1.5 rounded-pill bg-primary"></span>
+          </a>
+          <a class="flex flex-col items-center gap-1 py-1.5 text-fg-muted">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z" />
+            </svg>
+            <span class="font-display font-semibold text-[11px]">許願池</span>
+          </a>
+          <a class="flex flex-col items-center gap-1 py-1.5 text-fg-muted">
+            <svg
+              width="22"
+              height="22"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+            </svg>
+            <span class="font-display font-semibold text-[11px]">我的</span>
+          </a>
+        </div>
+      </nav>
+    </div>
+  </body>
 </html>

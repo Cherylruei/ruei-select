@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="zh-Hant" data-variant="candy">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>芮選 · 結單</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="_tailwind-config.js"></script>
+    <style>
+      body {
+        font-family: var(--font-body);
+      }
+      [data-variant='candy'] {
+        --r-sm: 10px;
+        --r-md: 14px;
+        --r-lg: 20px;
+        --r-xl: 24px;
+        --r-2xl: 28px;
+        --line-warm: #f0d9cb;
+        --line-warm-strong: #e6c7b4;
+        --line-warm-soft: #f7e5d8;
+      }
+      .card-line {
+        border: 1px solid var(--line-warm);
+      }
+      .divider-warm {
+        border-color: var(--line-warm-soft);
+      }
+
+      .placeholder-img-pink {
+        background: repeating-linear-gradient(
+          135deg,
+          #ffe9e0,
+          #ffe9e0 6px,
+          #ffd9e4 6px,
+          #ffd9e4 12px
+        );
+      }
+      .placeholder-img-mint {
+        background: repeating-linear-gradient(
+          135deg,
+          #d9f4ed,
+          #d9f4ed 6px,
+          #c2ebdf 6px,
+          #c2ebdf 12px
+        );
+      }
+      .placeholder-img-mango {
+        background: repeating-linear-gradient(
+          135deg,
+          #ffead0,
+          #ffead0 6px,
+          #ffddb0 6px,
+          #ffddb0 12px
+        );
+      }
+
+      .phone {
+        width: 100%;
+        max-width: 420px;
+        margin: 0 auto;
+        min-height: 100vh;
+        background: var(--bg-app);
+        position: relative;
+        box-shadow: 0 0 80px rgba(255, 110, 148, 0.12);
+      }
+      @media (min-width: 768px) {
+        .phone {
+          margin: 24px auto;
+          min-height: calc(100vh - 48px);
+          border-radius: var(--r-2xl);
+          overflow: hidden;
+        }
+      }
+      .desktop-hint {
+        display: none;
+        position: fixed;
+        left: 24px;
+        top: 24px;
+        font-family: var(--font-mono);
+        font-size: 11px;
+        color: var(--fg-subtle);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+      }
+      @media (min-width: 1024px) {
+        .desktop-hint {
+          display: block;
+        }
+      }
+
+      .logo-body {
+        fill: #ffd9e4;
+      }
+      .logo-eye {
+        fill: #3b2a2a;
+      }
+      .logo-blush {
+        fill: #ff6e94;
+        opacity: 0.7;
+      }
+
+      /* ---------- RadioCard (大圓角候選卡) ---------- */
+      .rc {
+        position: relative;
+        padding: 14px 12px 12px;
+        border-radius: var(--r-md);
+        border: 1.5px solid var(--line-warm);
+        background: var(--bg-surface);
+        transition:
+          border-color 0.18s,
+          background 0.18s,
+          box-shadow 0.18s,
+          transform 0.12s var(--ease-spring);
+        cursor: pointer;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        min-height: 116px;
+      }
+      .rc:hover {
+        border-color: var(--line-warm-strong);
+      }
+      .rc.is-selected {
+        border-color: var(--c-primary);
+        background: var(--c-primary-bg);
+        box-shadow:
+          0 10px 22px -10px rgba(255, 110, 148, 0.5),
+          0 0 0 1px var(--c-primary);
+      }
+      .rc.is-locked {
+        cursor: not-allowed;
+        background: #fbf2ea;
+        border-color: var(--line-warm-soft);
+        color: var(--fg-subtle);
+      }
+      .rc-icon {
+        width: 34px;
+        height: 34px;
+        border-radius: 999px;
+        background: #fbf2ea;
+        color: var(--fg-muted);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.18s;
+      }
+      .rc.is-selected .rc-icon {
+        background: var(--c-primary);
+        color: #fff;
+      }
+      .rc-tick {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        background: var(--c-primary);
+        color: #fff;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+      .rc.is-selected .rc-tick {
+        display: inline-flex;
+      }
+
+      /* ---------- 付款方式 (radio list) ---------- */
+      .pay {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 14px;
+        border-radius: var(--r-md);
+        border: 1.5px solid var(--line-warm);
+        background: var(--bg-surface);
+        cursor: pointer;
+        transition: all 0.18s;
+      }
+      .pay:hover {
+        border-color: var(--line-warm-strong);
+      }
+      .pay.is-selected {
+        border-color: var(--c-primary);
+        background: var(--c-primary-bg);
+      }
+      .pay.is-disabled {
+        background: #fbf2ea;
+        border-color: var(--line-warm-soft);
+        cursor: not-allowed;
+        color: var(--fg-subtle);
+      }
+      .pay-dot {
+        width: 18px;
+        height: 18px;
+        border-radius: 999px;
+        border: 2px solid var(--line-warm-strong);
+        background: #fff;
+        flex-shrink: 0;
+        position: relative;
+      }
+      .pay.is-selected .pay-dot {
+        border-color: var(--c-primary);
+      }
+      .pay.is-selected .pay-dot::after {
+        content: '';
+        position: absolute;
+        inset: 3px;
+        border-radius: 999px;
+        background: var(--c-primary);
+      }
+      .pay.is-disabled .pay-dot {
+        border-color: var(--line-warm);
+        background: #f6e9de;
+      }
+
+      /* ---------- Inputs (candy) ---------- */
+      .fld {
+        width: 100%;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--line-warm);
+        border-radius: var(--r-md);
+        padding: 11px 14px;
+        font-size: 14px;
+        outline: none;
+        transition:
+          border-color 0.18s,
+          box-shadow 0.18s;
+        color: var(--fg-default);
+      }
+      .fld:focus {
+        border-color: var(--c-primary);
+        box-shadow: 0 0 0 4px var(--c-primary-bg);
+      }
+      .fld::placeholder {
+        color: var(--ink-400);
+      }
+      .fld-lbl {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-size: 12.5px;
+        color: var(--fg-default);
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-bottom: 6px;
+      }
+      .fld-req {
+        color: var(--c-primary);
+        font-family: var(--font-body);
+      }
+
+      summary::-webkit-details-marker {
+        display: none;
+      }
+      .chev {
+        transition: transform 0.25s;
+      }
+      details[open] .chev {
+        transform: rotate(180deg);
+      }
+    </style>
+  </head>
+  <body style="background: linear-gradient(160deg, #fff6f1 0%, #fceae0 55%, #f6dcd0 100%)">
+    <span class="desktop-hint">MOBILE · 390 PX · /STORE/[SLUG]/ORDERS/CHECKOUT</span>
+
+    <div class="phone pb-32">
+      <!-- ===== Top bar ===== -->
+      <header
+        class="px-5 pt-6 pb-4 sticky top-0 z-20 bg-app/90 backdrop-blur-md border-b"
+        style="border-color: var(--line-warm-soft)"
+      >
+        <div class="flex items-center justify-between">
+          <button
+            class="w-10 h-10 rounded-pill bg-surface flex items-center justify-center shadow-sm card-line"
+            aria-label="back"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <path d="M15 6l-6 6 6 6" />
+            </svg>
+          </button>
+          <div class="flex items-center gap-2">
+            <svg width="28" height="28" viewBox="0 0 44 44">
+              <rect class="logo-body" x="6" y="10" width="32" height="28" rx="14" />
+              <circle class="logo-blush" cx="13" cy="27" r="2.5" />
+              <circle class="logo-blush" cx="31" cy="27" r="2.5" />
+              <ellipse class="logo-eye" cx="17" cy="22" rx="1.6" ry="2.4" />
+              <ellipse class="logo-eye" cx="27" cy="22" rx="1.6" ry="2.4" />
+              <ellipse class="logo-blush" cx="22" cy="29" rx="3" ry="1.4" />
+            </svg>
+            <span class="font-display font-bold text-md whitespace-nowrap">結單</span>
+          </div>
+          <div class="w-10 h-10"></div>
+        </div>
+
+        <!-- step indicator -->
+        <div class="mt-3 flex items-center gap-2 px-1">
+          <div class="flex items-center gap-1.5">
+            <span
+              class="w-5 h-5 rounded-pill bg-primary text-white font-display font-bold text-[10px] flex items-center justify-center"
+              >1</span
+            >
+            <span class="font-display font-bold text-[11px]" style="color: var(--c-primary-hv)"
+              >填寫資訊</span
+            >
+          </div>
+          <span
+            class="flex-1 h-px"
+            style="background: linear-gradient(to right, var(--c-primary), var(--line-warm-strong))"
+          ></span>
+          <div class="flex items-center gap-1.5">
+            <span
+              class="w-5 h-5 rounded-pill bg-surface text-fg-subtle font-display font-bold text-[10px] flex items-center justify-center card-line"
+              >2</span
+            >
+            <span class="font-display font-semibold text-[11px] text-fg-subtle">確認送出</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- ===== 已選商品摘要（可折疊） ===== -->
+      <section class="px-5 pt-4">
+        <details open class="rounded-xl bg-surface card-line shadow-sm overflow-hidden">
+          <summary class="flex items-center justify-between px-4 py-3 cursor-pointer list-none">
+            <div class="flex items-center gap-2.5">
+              <span
+                class="w-8 h-8 rounded-pill bg-primary-bg flex items-center justify-center"
+                style="color: var(--c-primary-hv)"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <path d="M5 8h14l-1 12H6L5 8z" />
+                  <path d="M9 8V6a3 3 0 016 0v2" />
+                </svg>
+              </span>
+              <div>
+                <div class="font-display font-bold text-sm leading-tight">3 件商品結單</div>
+                <div class="font-mono text-[10px] text-fg-subtle mt-0.5">
+                  RS-2410 · RS-2411 · RS-2412
+                </div>
+              </div>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono font-bold text-md" style="color: #d94466">NT$ 2,440</span>
+              <svg
+                class="chev text-fg-muted"
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+              >
+                <path d="M6 9l6 6 6-6" />
+              </svg>
+            </div>
+          </summary>
+          <div class="border-t divider-warm">
+            <div class="flex items-center gap-3 px-4 py-2.5 border-b divider-warm">
+              <div class="w-10 h-10 rounded-md placeholder-img-pink shrink-0 card-line"></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-display font-semibold text-sm leading-tight truncate">
+                  日本直送・棉麻寬褲
+                </div>
+                <div class="font-mono text-[10px] text-fg-subtle">米白 · M · × 1</div>
+              </div>
+              <span class="font-mono font-semibold text-sm whitespace-nowrap">NT$ 1,280</span>
+            </div>
+            <div class="flex items-center gap-3 px-4 py-2.5 border-b divider-warm">
+              <div class="w-10 h-10 rounded-md placeholder-img-mango shrink-0 card-line"></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-display font-semibold text-sm leading-tight truncate">
+                  英國蜂蜜檸檬茶
+                </div>
+                <div class="font-mono text-[10px] text-fg-subtle">原味 · × 2</div>
+              </div>
+              <span class="font-mono font-semibold text-sm whitespace-nowrap">NT$ 680</span>
+            </div>
+            <div class="flex items-center gap-3 px-4 py-2.5">
+              <div class="w-10 h-10 rounded-md placeholder-img-mint shrink-0 card-line"></div>
+              <div class="flex-1 min-w-0">
+                <div class="font-display font-semibold text-sm leading-tight truncate">
+                  抹茶手工餅乾組
+                </div>
+                <div class="font-mono text-[10px] text-fg-subtle">× 1</div>
+              </div>
+              <span class="font-mono font-semibold text-sm whitespace-nowrap">NT$ 480</span>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- ===== 物流方式 ===== -->
+      <section class="px-5 pt-5">
+        <div class="flex items-baseline justify-between mb-3 px-1">
+          <h2 class="font-display font-bold text-md">物流方式</h2>
+          <span class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase"
+            >SHIPPING</span
+          >
+        </div>
+
+        <div class="grid grid-cols-2 gap-2.5">
+          <!-- 自取 -->
+          <label class="rc" data-ship="pickup">
+            <span class="rc-tick"
+              ><svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+              >
+                <path d="M5 12l4 4 10-10" /></svg
+            ></span>
+            <div class="flex items-center justify-between">
+              <div class="rc-icon">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <path d="M5 11h14M7 11V8a2 2 0 012-2h6a2 2 0 012 2v3M6 11l1 9h10l1-9" />
+                </svg>
+              </div>
+              <span class="font-mono text-[10px] font-semibold text-fg-muted">免運</span>
+            </div>
+            <div>
+              <div class="font-display font-bold text-sm leading-tight">自取</div>
+              <div class="text-[11px] text-fg-muted leading-snug mt-0.5">約定時間到店面交</div>
+            </div>
+          </label>
+
+          <!-- 超商店到店 -->
+          <label class="rc" data-ship="cvs">
+            <span class="rc-tick"
+              ><svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+              >
+                <path d="M5 12l4 4 10-10" /></svg
+            ></span>
+            <div class="flex items-center justify-between">
+              <div class="rc-icon">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <rect x="4" y="7" width="16" height="13" rx="1.5" />
+                  <path d="M4 11h16M9 7V5h6v2" />
+                </svg>
+              </div>
+              <span class="font-mono text-[10px] font-semibold text-fg-muted">NT$ 60</span>
+            </div>
+            <div>
+              <div class="font-display font-bold text-sm leading-tight">超商店到店</div>
+              <div class="text-[11px] text-fg-muted leading-snug mt-0.5">7-11</div>
+            </div>
+          </label>
+
+          <!-- 賣貨便 -->
+          <label class="rc" data-ship="shopee">
+            <span class="rc-tick"
+              ><svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+              >
+                <path d="M5 12l4 4 10-10" /></svg
+            ></span>
+            <div class="flex items-center justify-between">
+              <div class="rc-icon">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <path d="M4 8h16l-2 12H6L4 8z" />
+                  <path d="M9 8V6a3 3 0 016 0v2" />
+                  <circle cx="12" cy="14" r="1.4" fill="currentColor" />
+                </svg>
+              </div>
+              <span class="font-mono text-[10px] font-semibold text-fg-muted">NT$ 38</span>
+            </div>
+            <div>
+              <div class="font-display font-bold text-sm leading-tight">賣貨便</div>
+              <div class="text-[11px] text-fg-muted leading-snug mt-0.5">7-11</div>
+            </div>
+          </label>
+
+          <!-- 宅配 (selected) -->
+          <label class="rc is-selected" data-ship="home">
+            <span class="rc-tick"
+              ><svg
+                width="11"
+                height="11"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="3"
+                stroke-linecap="round"
+              >
+                <path d="M5 12l4 4 10-10" /></svg
+            ></span>
+            <div class="flex items-center justify-between">
+              <div class="rc-icon">
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <rect x="3" y="9" width="13" height="9" rx="1" />
+                  <path d="M16 12h3l2 3v3h-5" />
+                  <circle cx="7" cy="19" r="2" />
+                  <circle cx="17" cy="19" r="2" />
+                </svg>
+              </div>
+              <span class="font-mono text-[10px] font-bold" style="color: var(--c-primary-hv)"
+                >NT$ 210</span
+              >
+            </div>
+            <div>
+              <div class="font-display font-bold text-sm leading-tight">宅配</div>
+              <div class="text-[11px] text-fg-muted leading-snug mt-0.5">黑貓 1-3 天送達</div>
+            </div>
+          </label>
+        </div>
+      </section>
+
+      <!-- ===== 收件資訊 (current state: 宅配) ===== -->
+      <section class="px-5 pt-5">
+        <div class="flex items-baseline justify-between mb-3 px-1">
+          <h2 class="font-display font-bold text-md">收件資訊</h2>
+          <span class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase"
+            >RECIPIENT</span
+          >
+        </div>
+
+        <div class="rounded-xl bg-surface card-line shadow-sm p-4 space-y-3">
+          <div>
+            <div class="fld-lbl">收件人姓名 <span class="fld-req">*</span></div>
+            <input class="fld" placeholder="請輸入姓名" value="陳小美" />
+          </div>
+          <div>
+            <div class="fld-lbl">手機號碼 <span class="fld-req">*</span></div>
+            <input class="fld" inputmode="tel" placeholder="0912-345-678" value="0922-845-356" />
+          </div>
+          <div class="grid grid-cols-[110px_1fr] gap-2.5">
+            <div>
+              <div class="fld-lbl">縣市 <span class="fld-req">*</span></div>
+              <select
+                class="fld"
+                style="
+                  appearance: none;
+                  background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23A38B7B%22 stroke-width=%222%22><path d=%22M6 9l6 6 6-6%22/></svg>');
+                  background-repeat: no-repeat;
+                  background-position: right 12px center;
+                  padding-right: 30px;
+                "
+              >
+                <option>台北市</option>
+                <option>新北市</option>
+                <option>桃園市</option>
+              </select>
+            </div>
+            <div>
+              <div class="fld-lbl">行政區 <span class="fld-req">*</span></div>
+              <select
+                class="fld"
+                style="
+                  appearance: none;
+                  background-image: url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23A38B7B%22 stroke-width=%222%22><path d=%22M6 9l6 6 6-6%22/></svg>');
+                  background-repeat: no-repeat;
+                  background-position: right 12px center;
+                  padding-right: 30px;
+                "
+              >
+                <option>大安區</option>
+                <option>信義區</option>
+                <option>中正區</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <div class="fld-lbl">詳細地址 <span class="fld-req">*</span></div>
+            <input
+              class="fld"
+              placeholder="路 / 街 / 巷 / 弄 / 號 / 樓"
+              value="復興南路一段 280 號 5 樓"
+            />
+          </div>
+        </div>
+
+        <!-- 替代狀態 spec：超商門市選擇 (僅 spec 用，灰底虛線標示) -->
+        <details class="mt-3 rounded-xl bg-surface card-line">
+          <summary class="flex items-center justify-between px-4 py-2.5 cursor-pointer list-none">
+            <div class="flex items-center gap-2">
+              <span
+                class="inline-flex items-center h-4 px-1.5 rounded-pill bg-sunken font-mono text-[9px] font-semibold text-fg-subtle tracking-wider uppercase"
+                >SPEC</span
+              >
+              <span class="font-display font-semibold text-xs text-fg-muted"
+                >若選「超商 / 賣貨便」改顯示這個</span
+              >
+            </div>
+            <svg
+              class="chev text-fg-subtle"
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.2"
+              stroke-linecap="round"
+            >
+              <path d="M6 9l6 6 6-6" />
+            </svg>
+          </summary>
+          <div class="px-4 pb-4 pt-2 border-t divider-warm space-y-3">
+            <div>
+              <div class="fld-lbl">收件人姓名 <span class="fld-req">*</span></div>
+              <input class="fld" placeholder="請輸入姓名" />
+            </div>
+            <div>
+              <div class="fld-lbl">手機號碼 <span class="fld-req">*</span></div>
+              <input class="fld" inputmode="tel" placeholder="0912-345-678" />
+            </div>
+            <div>
+              <div class="fld-lbl">取貨門市 <span class="fld-req">*</span></div>
+              <button
+                class="w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-md card-line bg-surface text-left"
+              >
+                <span
+                  class="w-8 h-8 rounded-md bg-primary-bg flex items-center justify-center"
+                  style="color: var(--c-primary-hv)"
+                >
+                  <svg
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="1.8"
+                    stroke-linecap="round"
+                  >
+                    <path d="M12 21s-7-6.5-7-12a7 7 0 1114 0c0 5.5-7 12-7 12z" />
+                    <circle cx="12" cy="9" r="2.5" />
+                  </svg>
+                </span>
+                <div class="flex-1 leading-tight">
+                  <div class="font-display font-semibold text-xs text-fg-muted">
+                    點此選擇 7-11 / 全家門市
+                  </div>
+                  <div class="font-mono text-[10px] text-fg-subtle mt-0.5">使用超商地圖選擇</div>
+                </div>
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  class="text-fg-subtle"
+                >
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </details>
+      </section>
+
+      <!-- ===== 付款方式 ===== -->
+      <section class="px-5 pt-5">
+        <div class="flex items-baseline justify-between mb-3 px-1">
+          <h2 class="font-display font-bold text-md">付款方式</h2>
+          <span class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase"
+            >PAYMENT</span
+          >
+        </div>
+
+        <!-- 物流聯動提示 -->
+        <div
+          class="mb-2.5 px-3 py-2 rounded-md flex items-center gap-2"
+          style="background: #fbf2ea; border: 1px solid #f2e2d0"
+        >
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+            stroke-linecap="round"
+            class="text-fg-muted shrink-0"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <span class="text-[11px] text-fg-muted leading-snug"
+            >選擇宅配 → 僅顯示<b class="text-fg-default">匯款</b>；超商或賣貨便會多<b
+              class="text-fg-default"
+              >貨到付款</b
+            ></span
+          >
+        </div>
+
+        <div class="space-y-2">
+          <label class="pay is-selected">
+            <span class="pay-dot"></span>
+            <span
+              class="w-8 h-8 rounded-md bg-surface card-line flex items-center justify-center shrink-0"
+              style="color: var(--c-primary-hv)"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              >
+                <rect x="3" y="6" width="18" height="13" rx="2" />
+                <path d="M3 10h18M7 15h3" />
+              </svg>
+            </span>
+            <div class="flex-1 leading-tight">
+              <div class="font-display font-bold text-sm">匯款 / ATM 轉帳</div>
+              <div class="font-mono text-[10px] text-fg-subtle mt-0.5">
+                玉山銀行 808 · 末五碼對帳
+              </div>
+            </div>
+          </label>
+
+          <label class="pay">
+            <span class="pay-dot"></span>
+            <span
+              class="w-8 h-8 rounded-md bg-surface card-line flex items-center justify-center shrink-0"
+              style="color: #00b900"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M19 4H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z"
+                  opacity="0.15"
+                />
+                <path
+                  d="M19 4H5a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V6a2 2 0 00-2-2z"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.6"
+                />
+                <text
+                  x="12"
+                  y="15.5"
+                  text-anchor="middle"
+                  font-family="system-ui"
+                  font-weight="900"
+                  font-size="6.5"
+                  fill="currentColor"
+                >
+                  PAY
+                </text>
+              </svg>
+            </span>
+            <div class="flex-1 leading-tight">
+              <div class="font-display font-bold text-sm">Line Pay</div>
+              <div class="font-mono text-[10px] text-fg-subtle mt-0.5">即時付款 · 手續費 $0</div>
+            </div>
+          </label>
+
+          <label class="pay is-disabled">
+            <span class="pay-dot"></span>
+            <span
+              class="w-8 h-8 rounded-md bg-surface card-line flex items-center justify-center shrink-0"
+            >
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+              >
+                <rect x="4" y="7" width="16" height="13" rx="1.5" />
+                <path d="M4 11h16M9 7V5h6v2" />
+              </svg>
+            </span>
+            <div class="flex-1 leading-tight">
+              <div class="font-display font-bold text-sm">貨到付款</div>
+              <div class="font-mono text-[10px] mt-0.5">僅限超商 / 賣貨便（目前未選）</div>
+            </div>
+            <span
+              class="inline-flex items-center h-5 px-2 rounded-pill bg-sunken font-mono text-[9px] font-semibold text-fg-subtle tracking-wider"
+              >不可用</span
+            >
+          </label>
+        </div>
+      </section>
+
+      <!-- ===== 訂單備註 ===== -->
+      <section class="px-5 pt-5">
+        <div class="flex items-baseline justify-between mb-3 px-1">
+          <h2 class="font-display font-bold text-md">
+            訂單備註 <span class="font-body font-normal text-xs text-fg-subtle">（選填）</span>
+          </h2>
+          <span class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase">NOTE</span>
+        </div>
+        <textarea
+          class="fld resize-y"
+          rows="3"
+          placeholder="希望幾號前收到 / 包裝備註 / 給店主的話 ✿"
+        ></textarea>
+      </section>
+
+      <!-- ===== 費用明細 ===== -->
+      <section class="px-5 pt-5">
+        <div class="rounded-xl bg-surface card-line shadow-sm p-4">
+          <div class="flex items-center gap-2 mb-3">
+            <span
+              class="w-6 h-6 rounded-pill bg-primary-bg flex items-center justify-center"
+              style="color: var(--c-primary-hv)"
+            >
+              <svg
+                width="13"
+                height="13"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+              >
+                <path d="M3 6h18M3 12h18M3 18h12" />
+              </svg>
+            </span>
+            <h3 class="font-display font-bold text-sm">費用明細</h3>
+          </div>
+          <div class="space-y-1.5 text-sm">
+            <div class="flex justify-between text-fg-muted">
+              <span>商品小計</span><span class="font-mono">NT$ 2,440</span>
+            </div>
+            <div class="flex justify-between text-fg-muted">
+              <span>運費（宅配）</span><span class="font-mono">+ NT$ 210</span>
+            </div>
+            <div class="border-t divider-warm pt-2 mt-2 flex justify-between items-baseline">
+              <span class="font-display font-bold">總計</span>
+              <span class="font-mono font-bold text-xl" style="color: #d94466">NT$ 2,650</span>
+            </div>
+          </div>
+        </div>
+        <p class="mt-3 px-1 text-[11px] text-fg-subtle leading-relaxed">
+          送出後狀態變為「待付款」<br />店主收到款項 / 確認貨到付款後再安排寄出 ✿
+        </p>
+      </section>
+    </div>
+
+    <!-- ===== 固定底欄 CTA ===== -->
+    <div
+      class="fixed bottom-0 left-0 right-0 z-30 max-w-[420px] mx-auto"
+      style="
+        background: rgba(255, 246, 241, 0.96);
+        backdrop-filter: blur(10px);
+        border-top: 1px solid var(--line-warm);
+      "
+    >
+      <div class="px-5 py-3 flex items-center gap-3">
+        <div class="leading-tight">
+          <div class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">應付</div>
+          <div class="font-mono font-bold text-lg" style="color: #d94466">NT$ 2,650</div>
+        </div>
+        <button
+          class="flex-1 h-12 rounded-pill bg-primary text-white font-display font-bold text-sm shadow-pink hover:bg-primary-hv active:scale-[.97] transition flex items-center justify-center gap-1.5"
+        >
+          確認送單
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+          >
+            <path d="M9 6l6 6-6 6" />
+          </svg>
+        </button>
+      </div>
+    </div>
+
+    <script>
+      // RadioCard 切換
+      const ships = document.querySelectorAll('.rc')
+      ships.forEach((card) => {
+        card.addEventListener('click', () => {
+          ships.forEach((c) => c.classList.remove('is-selected'))
+          card.classList.add('is-selected')
+        })
+      })
+      // 付款方式 radio 切換（忽略 disabled）
+      const pays = document.querySelectorAll('.pay')
+      pays.forEach((p) => {
+        p.addEventListener('click', () => {
+          if (p.classList.contains('is-disabled')) return
+          pays.forEach((x) => x.classList.remove('is-selected'))
+          p.classList.add('is-selected')
+        })
+      })
+    </script>
+  </body>
+</html>
