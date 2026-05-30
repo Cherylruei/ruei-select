@@ -50,6 +50,9 @@ const STATUS_LABEL: Record<OrderStatus, string> = {
 
 // ── 主元件 ────────────────────────────────────────────────────────────────────
 
+const SHIPPING_VENDORS = ['黑貓', '7-11', '全家', '賣貨便', '其他'] as const
+type ShippingVendor = (typeof SHIPPING_VENDORS)[number]
+
 export default function OrderDetailClient({ params }: { params: Promise<{ id: string }> }) {
   const { id: orderId } = use(params)
   const [order, setOrder] = useState<AdminOrder | null>(null)
@@ -57,6 +60,8 @@ export default function OrderDetailClient({ params }: { params: Promise<{ id: st
   const [showConfirm, setShowConfirm] = useState(false)
   const [isPending, startTransition] = useTransition()
   const { toasts, toast, dismiss } = useToast()
+  const [shippingNumber, setShippingNumber] = useState('')
+  const [shippingVendor, setShippingVendor] = useState<ShippingVendor>('黑貓')
 
   const fetchOrder = useCallback(async () => {
     setLoading(true)
@@ -86,10 +91,17 @@ export default function OrderDetailClient({ params }: { params: Promise<{ id: st
     if (!nextStep || !order) return
     startTransition(async () => {
       try {
+        const isShipTransition = nextStep.status === 'shipped'
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const body: Record<string, any> = { status: nextStep.status }
+        if (isShipTransition && shippingNumber.trim()) {
+          body.shipping_number = shippingNumber.trim()
+          body.shipping_vendor = shippingVendor
+        }
         const res = await fetch(`/api/admin/orders/${orderId}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ status: nextStep.status }),
+          body: JSON.stringify(body),
         })
         const json = (await res.json()) as { success?: boolean; error?: string }
         if (json.success) {
@@ -281,6 +293,44 @@ export default function OrderDetailClient({ params }: { params: Promise<{ id: st
                   <div className='font-mono text-sm text-fg'>{order.shipping_number}</div>
                 </div>
               )}
+            </div>
+          </div>
+        )}
+
+        {/* ── 出貨資訊填寫（已結單，準備標記出貨）── */}
+        {order.status === 'settled' && (
+          <div className='bg-surface border border-line rounded-xl p-5'>
+            <h2 className='font-display font-semibold text-[15px] text-fg mb-4'>
+              填寫出貨資訊
+              <span className='font-body font-normal text-xs text-fg-subtle ml-2'>
+                （選填，點擊「標記為已出貨」後一併儲存）
+              </span>
+            </h2>
+            <div className='grid grid-cols-2 gap-3'>
+              <div>
+                <label className='block text-fg-subtle text-[13px] mb-1.5'>物流商</label>
+                <select
+                  value={shippingVendor}
+                  onChange={(e) => setShippingVendor(e.target.value as ShippingVendor)}
+                  className='w-full h-10 px-3 rounded-lg border border-line bg-surface text-sm outline-none focus:border-primary transition'
+                >
+                  {SHIPPING_VENDORS.map((v) => (
+                    <option key={v} value={v}>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className='block text-fg-subtle text-[13px] mb-1.5'>出貨單號</label>
+                <input
+                  type='text'
+                  value={shippingNumber}
+                  onChange={(e) => setShippingNumber(e.target.value)}
+                  placeholder='例：12345678901'
+                  className='w-full h-10 px-3 rounded-lg border border-line bg-surface text-sm font-mono outline-none focus:border-primary transition placeholder:text-fg-subtle'
+                />
+              </div>
             </div>
           </div>
         )}

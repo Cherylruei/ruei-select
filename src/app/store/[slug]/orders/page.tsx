@@ -42,6 +42,7 @@ export default function OrdersPage() {
   const [pageState, setPageState] = useState<PageState>('loading')
   const [filterValue, setFilterValue] = useState<OrderFilterValue>('all')
   const [selectedSettleIds, setSelectedSettleIds] = useState<Set<string>>(new Set())
+  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     if (!slug) return
@@ -73,7 +74,25 @@ export default function OrdersPage() {
     }
 
     load()
-  }, [slug])
+  }, [slug, refreshKey])
+
+  const handleCancelOrder = async (orderId: string) => {
+    let token = 'dev-mock-token'
+    if (process.env.NODE_ENV !== 'development') {
+      const liff = await initLiff()
+      token = liff.getAccessToken() ?? ''
+    }
+    const res = await fetch(`/api/orders/${orderId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ storeSlug: slug }),
+    })
+    if (!res.ok) {
+      const json = (await res.json()) as { error?: string }
+      throw new Error(json.error ?? '取消失敗')
+    }
+    setRefreshKey((k) => k + 1)
+  }
 
   // ── 統計 ──────────────────────────────────────────────────────────────────
 
@@ -590,7 +609,12 @@ export default function OrdersPage() {
             )}
             <div className='space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4'>
               {otherOrders.map((order) => (
-                <OtherOrderCard key={order.id} order={order} slug={slug} />
+                <OtherOrderCard
+                  key={order.id}
+                  order={order}
+                  slug={slug}
+                  onCancel={handleCancelOrder}
+                />
               ))}
             </div>
             <div className='py-6 flex items-center justify-center gap-3'>
@@ -834,9 +858,34 @@ function MobileSettleCard({
 
 // ── 其他訂單卡片 ──────────────────────────────────────────────────────────────
 
-function OtherOrderCard({ order, slug }: { order: CustomerOrder; slug: string }) {
+function OtherOrderCard({
+  order,
+  slug,
+  onCancel,
+}: {
+  order: CustomerOrder
+  slug: string
+  onCancel?: (id: string) => Promise<void>
+}) {
   const item = order.items[0]
   if (!item) return null
+
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  const [cancelling, setCancelling] = useState(false)
+  const [cancelError, setCancelError] = useState<string | null>(null)
+
+  const handleCancelClick = async () => {
+    if (!onCancel) return
+    setCancelling(true)
+    setCancelError(null)
+    try {
+      await onCancel(order.id)
+    } catch (err) {
+      setCancelError(err instanceof Error ? err.message : '取消失敗，請重試')
+      setCancelling(false)
+      setShowCancelConfirm(false)
+    }
+  }
 
   const total = calcOrderTotal(order)
   const specs = item.variant ? Object.values(item.variant.specs) : []
@@ -844,6 +893,7 @@ function OtherOrderCard({ order, slug }: { order: CustomerOrder; slug: string })
   const hasNote = order.note && (order.status === 'pending_purchase' || order.status === 'ordered')
   const isCompleted = order.status === 'completed'
   const isOrdered = order.status === 'ordered'
+  const isCancellable = order.status === 'ordered' || order.status === 'pending_purchase'
 
   return (
     <article
@@ -965,22 +1015,55 @@ function OtherOrderCard({ order, slug }: { order: CustomerOrder; slug: string })
       )}
 
       {/* Action buttons (ordered / completed) */}
-      {(isOrdered || isCompleted) && (
-        <div className='px-4 lg:px-5 pb-3 lg:pb-3.5 flex items-center justify-end gap-2'>
-          {isOrdered && (
+      {(isCancellable || isCompleted) && (
+        <div className='px-4 lg:px-5 pb-3 lg:pb-3.5 flex flex-col items-end gap-2'>
+          {cancelError && (
+            <p className='text-[11px] text-danger w-full text-right'>{cancelError}</p>
+          )}
+          {isCancellable && (
             <>
-              <button
-                className='h-8 px-3.5 rounded-pill bg-surface font-display font-semibold text-xs text-fg-muted hover:text-fg'
-                style={{ border: '1px solid #f0d9cb' }}
-              >
-                取消訂單
-              </button>
-              <button
-                className='h-8 px-3.5 rounded-pill bg-surface font-display font-semibold text-xs text-primary hover:bg-primary-bg'
-                style={{ border: '1px solid #f0d9cb' }}
-              >
-                追蹤進度 →
-              </button>
+              {showCancelConfirm ? (
+                <div className='flex items-center gap-2'>
+                  <span className='text-xs text-fg-muted'>確定取消？</span>
+                  <button
+                    type='button'
+                    disabled={cancelling}
+                    onClick={handleCancelClick}
+                    className='h-8 px-3.5 rounded-pill bg-danger text-white font-display font-semibold text-xs disabled:opacity-60'
+                  >
+                    {cancelling ? '取消中…' : '確定'}
+                  </button>
+                  <button
+                    type='button'
+                    disabled={cancelling}
+                    onClick={() => setShowCancelConfirm(false)}
+                    className='h-8 px-3.5 rounded-pill bg-surface font-display font-semibold text-xs text-fg-muted hover:text-fg'
+                    style={{ border: '1px solid #f0d9cb' }}
+                  >
+                    返回
+                  </button>
+                </div>
+              ) : (
+                <div className='flex items-center gap-2'>
+                  <button
+                    type='button'
+                    onClick={() => setShowCancelConfirm(true)}
+                    className='h-8 px-3.5 rounded-pill bg-surface font-display font-semibold text-xs text-fg-muted hover:text-fg'
+                    style={{ border: '1px solid #f0d9cb' }}
+                  >
+                    取消訂單
+                  </button>
+                  {isOrdered && (
+                    <button
+                      type='button'
+                      className='h-8 px-3.5 rounded-pill bg-surface font-display font-semibold text-xs text-primary hover:bg-primary-bg'
+                      style={{ border: '1px solid #f0d9cb' }}
+                    >
+                      追蹤進度 →
+                    </button>
+                  )}
+                </div>
+              )}
             </>
           )}
           {isCompleted && (

@@ -1,7 +1,7 @@
 'use client'
 
 import { Suspense, useEffect, useMemo, useState } from 'react'
-import { useParams, useSearchParams } from 'next/navigation'
+import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import Image from 'next/image'
 import Link from 'next/link'
 import { initLiff } from '@/lib/line/liff'
@@ -1012,6 +1012,9 @@ function SummaryAside({
   district,
   address,
   slug,
+  onSubmit,
+  submitting,
+  submitError,
 }: {
   subtotal: number
   shippingFee: number
@@ -1022,6 +1025,9 @@ function SummaryAside({
   district: string
   address: string
   slug: string
+  onSubmit: () => void
+  submitting: boolean
+  submitError: string | null
 }) {
   const payLabel =
     paymentMethod === 'atm' ? '匯款 / ATM' : paymentMethod === 'linepay' ? 'Line Pay' : '貨到付款'
@@ -1145,19 +1151,27 @@ function SummaryAside({
         </div>
       </div>
       <div className='p-5 pt-0 space-y-2'>
-        <button className='w-full h-12 rounded-full bg-primary text-white font-display font-bold text-sm shadow-pink hover:bg-primary-hv active:scale-[.98] transition flex items-center justify-center gap-1.5'>
-          確認送單
-          <svg
-            width='14'
-            height='14'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-          >
-            <path d='M9 6l6 6-6 6' />
-          </svg>
+        {submitError && <p className='text-xs text-danger text-center px-1'>{submitError}</p>}
+        <button
+          type='button'
+          disabled={submitting}
+          onClick={onSubmit}
+          className='w-full h-12 rounded-full bg-primary text-white font-display font-bold text-sm shadow-pink hover:bg-primary-hv active:scale-[.98] transition flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed'
+        >
+          {submitting ? '送出中…' : '確認送單'}
+          {!submitting && (
+            <svg
+              width='14'
+              height='14'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2.5'
+              strokeLinecap='round'
+            >
+              <path d='M9 6l6 6-6 6' />
+            </svg>
+          )}
         </button>
         <Link
           href={`/store/${slug}/orders`}
@@ -1198,6 +1212,7 @@ function CheckoutContent() {
   const params = useParams<{ slug: string }>()
   const slug = params.slug
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   const [orders, setOrders] = useState<CustomerOrder[]>([])
   const [pageState, setPageState] = useState<'loading' | 'ready' | 'error'>('loading')
@@ -1211,6 +1226,8 @@ function CheckoutContent() {
   const [cvsBranch, setCvsBranch] = useState('')
   const [note, setNote] = useState('')
   const [itemsOpen, setItemsOpen] = useState(true)
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   const selectedIds = useMemo(() => {
     const raw = searchParams.get('ids')
@@ -1259,6 +1276,69 @@ function CheckoutContent() {
   const atmDisabled = shippingMethod === 'shopee'
   const linepayDisabled = shippingMethod === 'shopee'
   const codDisabled = shippingMethod !== 'shopee'
+
+  const handleSubmit = async () => {
+    setSubmitError(null)
+
+    // 前端基本驗證
+    if (shippingMethod !== 'pickup') {
+      if (!name.trim()) {
+        setSubmitError('請填寫收件人姓名')
+        return
+      }
+      if (!phone.trim()) {
+        setSubmitError('請填寫手機號碼')
+        return
+      }
+    }
+    if (shippingMethod === 'home' && !address.trim()) {
+      setSubmitError('請填寫詳細地址')
+      return
+    }
+    if ((shippingMethod === 'cvs' || shippingMethod === 'shopee') && !cvsBranch.trim()) {
+      setSubmitError('請填寫取貨門市名稱')
+      return
+    }
+
+    setSubmitting(true)
+    try {
+      let token = 'dev-mock-token'
+      if (process.env.NODE_ENV !== 'development') {
+        const liff = await initLiff()
+        token = liff.getAccessToken() ?? ''
+      }
+
+      const res = await fetch('/api/settlements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({
+          storeSlug: slug,
+          orderIds: orders.map((o) => o.id),
+          shippingMethod,
+          paymentMethod,
+          recipientName: name,
+          recipientPhone: phone,
+          city,
+          district,
+          address,
+          cvsBranch,
+          note,
+        }),
+      })
+
+      const json = (await res.json()) as { success?: boolean; error?: string }
+      if (!res.ok || !json.success) {
+        setSubmitError(json.error ?? '送單失敗，請重試')
+        return
+      }
+
+      router.push(`/store/${slug}/orders?settled=1`)
+    } catch {
+      setSubmitError('網路錯誤，請重試')
+    } finally {
+      setSubmitting(false)
+    }
+  }
 
   if (pageState === 'loading') return <CheckoutSkeleton />
 
@@ -1418,6 +1498,9 @@ function CheckoutContent() {
               district={district}
               address={address}
               slug={slug}
+              onSubmit={handleSubmit}
+              submitting={submitting}
+              submitError={submitError}
             />
             <div className='rounded-xl bg-surface/70 p-4' style={{ border: '1px solid #f0d9cb' }}>
               <div className='font-display font-bold text-xs mb-1.5'>送出後會發生什麼?</div>
@@ -1448,19 +1531,26 @@ function CheckoutContent() {
             NT$ {total.toLocaleString()}
           </div>
         </div>
-        <button className='flex-1 h-12 rounded-full bg-primary text-white font-display font-bold text-sm shadow-pink hover:bg-primary-hv active:scale-[.97] transition flex items-center justify-center gap-1.5'>
-          確認送單
-          <svg
-            width='14'
-            height='14'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-          >
-            <path d='M9 6l6 6-6 6' />
-          </svg>
+        <button
+          type='button'
+          disabled={submitting}
+          onClick={handleSubmit}
+          className='flex-1 h-12 rounded-full bg-primary text-white font-display font-bold text-sm shadow-pink hover:bg-primary-hv active:scale-[.97] transition flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed'
+        >
+          {submitting ? '送出中…' : '確認送單'}
+          {!submitting && (
+            <svg
+              width='14'
+              height='14'
+              viewBox='0 0 24 24'
+              fill='none'
+              stroke='currentColor'
+              strokeWidth='2.5'
+              strokeLinecap='round'
+            >
+              <path d='M9 6l6 6-6 6' />
+            </svg>
+          )}
         </button>
       </div>
     </div>
