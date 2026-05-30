@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import { Noto_Sans_TC, Zen_Maru_Gothic, JetBrains_Mono } from 'next/font/google'
-import './design-tokens.css'
+import '../styles/design-tokens.css'
 import './globals.css'
 
 const notoSansTC = Noto_Sans_TC({

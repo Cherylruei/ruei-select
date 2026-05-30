@@ -15,7 +15,7 @@ function highlightKeyword(text: string, keyword: string) {
   return (
     <>
       {text.slice(0, idx)}
-      <mark className='bg-[var(--sakura-100)] text-[var(--sakura-deep)] rounded-sm px-0.5'>
+      <mark className='bg-primary-bg rounded-sm px-0.5' style={{ color: 'var(--c-primary-hv)' }}>
         {text.slice(idx, idx + keyword.length)}
       </mark>
       {text.slice(idx + keyword.length)}
@@ -25,52 +25,98 @@ function highlightKeyword(text: string, keyword: string) {
 
 function formatPrice(priceRange: StoreProductSummary['priceRange']) {
   if (priceRange.min === priceRange.max || priceRange.max === 0) {
-    return `NT$ ${priceRange.min.toLocaleString()}`
+    return priceRange.min.toLocaleString()
   }
-  return `NT$ ${priceRange.min.toLocaleString()} ~ ${priceRange.max.toLocaleString()}`
+  return `${priceRange.min.toLocaleString()} ~ ${priceRange.max.toLocaleString()}`
 }
 
 export default function ProductCard({ product, slug, keyword = '' }: ProductCardProps) {
   return (
     <Link
       href={`/store/${slug}/products/${product.id}`}
-      className='block bg-white rounded-xl overflow-hidden shadow-[var(--sh-xs)] hover:shadow-[var(--sh-sm)] transition-shadow active:scale-[.98]'
+      className='group block bg-surface rounded-xl overflow-hidden shadow-sm transition-[transform,box-shadow] hover:-translate-y-0.5 active:scale-[.98]'
+      style={{ border: '1px solid #f0d9cb' }}
       data-testid='product-card'
     >
-      <div className='aspect-square bg-[var(--neutral-100)] relative overflow-hidden'>
+      {/* Image area */}
+      <div
+        className='aspect-square bg-sunken relative overflow-hidden'
+        style={{ borderBottom: '1px solid #f7e5d8' }}
+      >
         {product.primaryImage ? (
           <Image
             src={product.primaryImage}
             alt={product.name}
             fill
             className='object-cover'
-            sizes='(max-width: 768px) 50vw, 33vw'
+            sizes='(max-width: 1024px) 50vw, 25vw'
           />
         ) : (
-          <div className='w-full h-full flex items-center justify-center'>
-            <svg
-              viewBox='0 0 24 24'
-              width='32'
-              height='32'
-              fill='none'
-              stroke='var(--neutral-300)'
-              strokeWidth='1.5'
-              aria-hidden='true'
-            >
-              <rect x='3' y='3' width='18' height='18' rx='2' />
-              <circle cx='8.5' cy='8.5' r='1.5' />
-              <path d='M21 15l-5-5L5 21' />
-            </svg>
-          </div>
+          <div
+            className='w-full h-full'
+            style={{
+              background:
+                'repeating-linear-gradient(135deg, #FFE9E0, #FFE9E0 8px, #FFD9E4 8px, #FFD9E4 16px)',
+            }}
+            aria-hidden='true'
+          />
         )}
+
+        {/* Heart button */}
+        <button
+          onClick={(e) => {
+            e.preventDefault()
+          }}
+          aria-label='加入收藏'
+          className={[
+            'absolute top-2.5 right-2.5 w-9 h-9 rounded-full flex items-center justify-center',
+            'bg-white/90 shadow-sm transition-opacity',
+            'opacity-0 group-hover:opacity-100 lg:flex',
+          ].join(' ')}
+        >
+          <svg
+            width='17'
+            height='17'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.8'
+            strokeLinecap='round'
+            className='text-primary'
+            aria-hidden='true'
+          >
+            <path d='M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z' />
+          </svg>
+        </button>
       </div>
-      <div className='p-3 flex flex-col gap-1'>
-        <p className='text-[13px] font-medium text-[var(--neutral-800)] leading-snug line-clamp-2'>
+
+      {/* Info */}
+      <div className='p-3 lg:p-3.5'>
+        <p className='font-display font-bold text-sm text-fg leading-snug line-clamp-2 min-h-[2.6em]'>
           {keyword ? highlightKeyword(product.name, keyword) : product.name}
         </p>
-        <p className='text-[12px] font-semibold text-[var(--sakura-base)] mt-0.5'>
-          {formatPrice(product.priceRange)}
-        </p>
+        {product.category && (
+          <div className='mt-1.5'>
+            <span
+              className='inline-flex items-center h-5 px-2 rounded-pill font-display font-semibold text-[10px] whitespace-nowrap'
+              style={{ background: '#F5EBDB', color: '#6B502C', border: '1px solid #E0CCAA' }}
+            >
+              {product.category}
+            </span>
+          </div>
+        )}
+        <div
+          className='flex items-baseline justify-between mt-2.5 pt-2.5'
+          style={{ borderTop: '1px solid #f7e5d8' }}
+        >
+          <span className='font-mono text-[10px] text-fg-subtle'>NT$</span>
+          <span
+            className='font-display font-bold text-xl leading-none'
+            style={{ color: '#D94466' }}
+          >
+            {formatPrice(product.priceRange)}
+          </span>
+        </div>
       </div>
     </Link>
   )
