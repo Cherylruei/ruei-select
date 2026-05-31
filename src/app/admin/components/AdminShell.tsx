@@ -15,6 +15,7 @@ const PAGE_TITLES: Record<string, string> = {
 
 // 這些頁面有自己的完整頁首，隱藏 desktop topbar 避免重複
 const CUSTOM_HEADER_PATHS = new Set([
+  '/admin/store',
   '/admin/suppliers',
   '/admin/products',
   '/admin/products/new',
