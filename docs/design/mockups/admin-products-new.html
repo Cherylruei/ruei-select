@@ -1,0 +1,631 @@
+<!doctype html>
+<html lang="zh-Hant" data-variant="forest">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>芮選 · 商家後台 · 新增商品</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="_tailwind-config.js"></script>
+  <style>
+    body { font-family: var(--font-body); }
+
+    .fld {
+      width: 100%; font-family: inherit; font-size: var(--fs-base); color: var(--fg-default);
+      background: var(--bg-surface); border: 1.5px solid var(--border); border-radius: var(--r-md);
+      padding: 10px 13px; outline: none;
+      transition: border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+    }
+    .fld:hover { border-color: var(--border-strong); }
+    .fld:focus { border-color: var(--c-primary); box-shadow: 0 0 0 4px var(--c-primary-bg); }
+    .fld::placeholder { color: var(--ink-400); }
+
+    .lbl { display:block; font-size:var(--fs-sm); font-weight:600; color:var(--fg-default); margin-bottom:7px; }
+    .lbl .opt { font-weight:500; color:var(--fg-subtle); font-size:12px; margin-left:4px; }
+
+    .ph { background: repeating-linear-gradient(135deg, var(--ink-100), var(--ink-100) 7px, var(--ink-50) 7px, var(--ink-50) 14px); }
+    .ph-a { background: repeating-linear-gradient(135deg, var(--sakura-100), var(--sakura-100) 8px, var(--sakura-50) 8px, var(--sakura-50) 16px); }
+
+    /* spec chip */
+    .spec-chip {
+      display: inline-flex; align-items: center; gap: 5px;
+      height: 28px; padding: 0 6px 0 11px; border-radius: var(--r-pill);
+      background: var(--bg-surface); border: 1.5px solid var(--border-strong);
+      font-size: 13px; font-weight: 600; color: var(--fg-default);
+    }
+    .spec-chip button { width:18px;height:18px;border-radius:999px;border:0;background:transparent;cursor:pointer;color:var(--fg-subtle);display:inline-flex;align-items:center;justify-content:center; }
+    .spec-chip button:hover { background: var(--bg-sunken); color: var(--c-danger); }
+
+    .mult { height:30px; padding:0 11px; border-radius:var(--r-pill); border:1.5px solid var(--border); background:var(--bg-surface); color:var(--fg-muted); font-family:var(--font-display); font-weight:600; font-size:12px; cursor:pointer; transition:all .15s; }
+    .mult:hover { border-color:var(--c-primary); color:var(--c-primary-hv); background:var(--c-primary-bg); }
+
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+    .reveal { animation: fadeUp .35s var(--ease-out) both; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+  </style>
+</head>
+<body class="bg-app text-fg">
+
+  <div class="flex min-h-screen">
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="w-60 shrink-0 bg-surface border-r border-line flex flex-col sticky top-0 h-screen">
+      <div class="px-5 py-5 border-b border-line">
+        <div class="flex items-center gap-2.5">
+          <svg width="36" height="36" viewBox="0 0 40 40">
+            <ellipse cx="32" cy="11" rx="5" ry="3" transform="rotate(35 32 11)" style="fill:var(--c-secondary);opacity:.85" />
+            <circle cx="20" cy="11" r="9" style="fill:var(--c-primary)"/>
+            <circle cx="28.56" cy="17.22" r="9" style="fill:var(--c-primary)"/>
+            <circle cx="25.29" cy="27.28" r="9" style="fill:var(--c-primary)"/>
+            <circle cx="14.71" cy="27.28" r="9" style="fill:var(--c-primary)"/>
+            <circle cx="11.44" cy="17.22" r="9" style="fill:var(--c-primary)"/>
+            <circle cx="20" cy="20" r="4.5" style="fill:var(--c-primary-bg)"/>
+          </svg>
+          <div class="leading-none">
+            <div class="font-display font-bold text-lg tracking-wide">芮選</div>
+            <div class="font-mono text-[9px] text-fg-subtle tracking-[0.2em] mt-1">RUEI · SELECT</div>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center gap-2 px-3 py-2 rounded-md bg-sunken">
+          <div class="w-2 h-2 rounded-pill bg-success"></div>
+          <span class="text-xs text-fg-muted">小美的選物店</span>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto no-scrollbar">
+        <div class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase px-3 mb-2">主要</div>
+        <a href="admin-dashboard.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20h16M7 16V10M12 16V6M17 16v-8"/></svg>
+          <span class="flex-1">總覽</span>
+        </a>
+        <a href="admin-orders.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
+          <span class="flex-1">訂單管理</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">6</span>
+        </a>
+        <a href="admin-products.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md bg-primary-bg font-semibold text-sm" style="color:var(--c-primary-hv)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8l8-4 8 4-8 4-8-4z"/><path d="M4 8v8l8 4 8-4V8"/></svg>
+          <span class="flex-1">商品管理</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-primary text-white">42</span>
+        </a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <span class="flex-1">顧客審核</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-warning text-white">3</span>
+        </a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z"/></svg>
+          <span class="flex-1">許願池</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">12</span>
+        </a>
+
+        <div class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase px-3 mt-5 mb-2">設定</div>
+        <a href="admin-suppliers.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M3 9v7l9 5 9-5V9"/></svg>
+          <span class="flex-1">供應商</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">6</span>
+        </a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.2-1.7l2-1.5-2-3.5-2.4.8a7 7 0 00-3-1.7L13 2h-2l-.4 2.4a7 7 0 00-3 1.7L5.2 5.3l-2 3.5 2 1.5A7 7 0 005 12c0 .6 0 1.2.2 1.7l-2 1.5 2 3.5 2.4-.8a7 7 0 003 1.7L11 22h2l.4-2.4a7 7 0 003-1.7l2.4.8 2-3.5-2-1.5c.1-.5.2-1.1.2-1.7z"/></svg>
+          <span class="flex-1">賣場設定</span>
+        </a>
+      </nav>
+
+      <div class="p-3 border-t border-line">
+        <div class="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-sunken cursor-pointer">
+          <div class="w-9 h-9 rounded-pill bg-secondary text-white font-display font-bold flex items-center justify-center">C</div>
+          <div class="flex-1 leading-tight">
+            <div class="font-semibold text-sm">Cheryl</div>
+            <div class="font-mono text-[10px] text-fg-subtle"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f093989582899cb082859599de8487">[email&#160;protected]</a></div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-fg-subtle"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main class="flex-1 min-w-0">
+
+      <!-- Top bar: breadcrumb + title + button group -->
+      <div class="px-9 py-5 border-b border-line bg-surface/80 backdrop-blur sticky top-0 z-20">
+        <div class="font-mono text-[11px] text-fg-subtle mb-2 flex items-center gap-1.5">
+          <a href="admin-products.html" class="hover:text-fg cursor-pointer">商品管理</a><span>/</span>
+          <span class="text-fg">新增商品</span>
+        </div>
+        <div class="flex items-end justify-between gap-4">
+          <h1 class="font-display font-bold text-2xl">新增商品</h1>
+          <div class="flex items-center gap-2">
+            <a href="admin-products.html" class="h-10 px-5 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition flex items-center">取消</a>
+            <button onclick="save('draft')" class="h-10 px-5 rounded-pill bg-secondary-bg text-secondary font-display font-semibold text-sm hover:bg-secondary hover:text-white transition">儲存草稿</button>
+            <button onclick="save('publish')" class="inline-flex items-center gap-2 h-10 rounded-pill bg-primary text-white px-5 font-display font-semibold shadow-pink hover:bg-primary-hv active:scale-[.97] transition">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12l4 4L19 6"/></svg>
+              儲存並上架
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Form ===== -->
+      <div class="px-9 py-7 max-w-[1180px]">
+        <div class="grid grid-cols-2 gap-x-10 gap-y-7">
+
+          <!-- Row: vendor/category  |  deadline/public -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="lbl">廠商 <span class="text-danger">*</span></label>
+              <select id="supSel" onchange="onSupplierChange()" class="fld cursor-pointer"></select>
+            </div>
+            <div>
+              <label class="lbl">分類</label>
+              <select id="catSel" class="fld cursor-pointer">
+                <option value="">不指定分類</option>
+                <option>女裝</option><option>配件</option><option>童裝</option><option>食品</option><option>生活</option><option>美妝</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex gap-4">
+            <div class="flex-1">
+              <label class="lbl">截單日期 <span class="opt">選填，預設 23:59</span></label>
+              <input type="datetime-local" class="fld cursor-pointer text-fg-muted" />
+            </div>
+            <div class="shrink-0">
+              <label class="lbl">設為公開</label>
+              <div class="flex items-center gap-2.5 h-[46px]">
+                <label class="switch">
+                  <input type="checkbox" checked />
+                  <span class="track"></span><span class="thumb"></span>
+                </label>
+                <span class="text-xs text-fg-muted leading-tight">可被搜尋索引</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Row: AI template + button  |  product name -->
+          <div>
+            <label class="lbl">AI 模板 <span class="opt">套用品類專屬文案風格</span></label>
+            <div class="flex items-center gap-2.5">
+              <select id="tplSel" class="fld cursor-pointer">
+                <option value="">無模板（AI 自由生成）</option>
+                <option>女裝・服飾</option><option>食品・零食</option><option>美妝・保養</option><option>生活・雜貨</option>
+              </select>
+              <button class="text-sm text-secondary font-semibold hover:underline whitespace-nowrap">管理模板</button>
+            </div>
+            <button id="aiBtn" onclick="runAI()" class="mt-3 inline-flex items-center gap-2 h-10 px-5 rounded-pill bg-secondary text-white font-display font-semibold text-sm shadow-green hover:bg-secondary-hv active:scale-[.97] transition">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"/><path d="M19 14l.9 2.1L22 17l-2.1.9L19 20l-.9-2.1L16 17l2.1-.9L19 14z"/></svg>
+              AI 優化文案
+            </button>
+          </div>
+          <div>
+            <label class="lbl">商品名稱 <span class="text-danger">*</span></label>
+            <input id="prodName" class="fld" placeholder="請輸入商品名稱" />
+          </div>
+
+          <!-- Row: raw text  |  description -->
+          <div>
+            <label class="lbl">原始商品文 <span class="opt">選填</span></label>
+            <textarea id="rawText" class="fld" style="min-height:150px;resize:vertical;line-height:1.6" placeholder="貼入廠商提供的原始商品說明文字（選填，AI 可在無原文的情況下依模板生成）"></textarea>
+          </div>
+          <div>
+            <label class="lbl">商品描述</label>
+            <textarea id="descText" class="fld" style="min-height:150px;resize:vertical;line-height:1.65" placeholder="商品描述（選填）"></textarea>
+          </div>
+
+          <!-- ===== 成本與定價 (full width) ===== -->
+          <div class="col-span-2 pt-2 border-t border-line">
+            <div class="flex items-baseline gap-2.5 mb-4 mt-1">
+              <h2 class="font-display font-bold text-md">成本與定價</h2>
+              <span class="text-xs text-fg-subtle">外幣批發價依今日匯率換算台幣成本，售價套用至所有規格</span>
+            </div>
+
+            <div class="grid grid-cols-2 gap-x-10 gap-y-5 items-start">
+              <!-- cost -->
+              <div>
+                <label class="lbl">批發價（成本）<span class="text-danger">*</span></label>
+                <div class="flex items-center gap-2.5">
+                  <div class="relative flex-1">
+                    <span id="curSym" class="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono text-fg-muted">¥</span>
+                    <input id="wholesale" type="number" min="0" value="3800" oninput="recompute()" class="fld pl-9 font-mono" />
+                  </div>
+                  <select id="curSel" onchange="onCurrencyChange()" class="fld cursor-pointer" style="max-width:138px">
+                    <option value="JPY">JPY 日幣</option>
+                    <option value="GBP">GBP 英鎊</option>
+                    <option value="USD">USD 美金</option>
+                    <option value="HKD">HKD 港幣</option>
+                    <option value="TWD">TWD 台幣</option>
+                  </select>
+                </div>
+                <!-- conversion -->
+                <div id="convBox" class="mt-3 flex items-center gap-3 px-4 py-3 rounded-md" style="background:var(--c-accent-bg)">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--c-accent)" stroke-width="1.8" stroke-linecap="round" class="shrink-0"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg>
+                  <div class="text-sm leading-snug">
+                    <span id="convLine" class="font-mono text-fg-muted">¥3,800 × 0.217</span>
+                    <span class="mx-1 text-fg-subtle">=</span>
+                    <span class="font-display font-bold">台幣成本約 NT$ <span id="costTWD">825</span></span>
+                  </div>
+                  <span class="font-mono text-[10px] text-fg-subtle ml-auto shrink-0">匯率更新 09:12</span>
+                </div>
+              </div>
+
+              <!-- price -->
+              <div>
+                <label class="lbl">售價（TWD）<span class="text-danger">*</span></label>
+                <div class="flex items-center gap-3 flex-wrap">
+                  <div class="relative" style="max-width:200px">
+                    <span class="absolute left-3.5 top-1/2 -translate-y-1/2 font-mono" style="color:var(--c-primary-hv)">NT$</span>
+                    <input id="price" type="number" min="0" value="1280" oninput="recompute()" class="fld pl-12 font-mono text-lg font-semibold" style="color:var(--c-primary-hv)" />
+                  </div>
+                  <div class="flex items-center gap-1.5">
+                    <span class="text-xs text-fg-subtle mr-0.5">建議</span>
+                    <button onclick="setSuggested(1.8)" class="mult">×1.8</button>
+                    <button onclick="setSuggested(2)" class="mult">×2.0</button>
+                    <button onclick="setSuggested(2.5)" class="mult">×2.5</button>
+                  </div>
+                </div>
+                <!-- margin strip -->
+                <div class="mt-3 flex items-stretch gap-3">
+                  <div class="flex-1 flex items-center justify-between px-4 py-2.5 rounded-md bg-sunken">
+                    <span class="font-mono text-[10px] text-fg-subtle uppercase tracking-wider">毛利</span>
+                    <span class="font-display font-bold text-lg" id="marginVal" style="color:var(--c-success)">36%</span>
+                  </div>
+                  <div class="flex-1 flex items-center justify-between px-4 py-2.5 rounded-md bg-sunken">
+                    <span class="font-mono text-[10px] text-fg-subtle uppercase tracking-wider">每件賺</span>
+                    <span class="font-mono font-semibold" id="profitVal" style="color:var(--c-success)">NT$ 455</span>
+                  </div>
+                </div>
+                <p id="priceHint" class="hidden text-xs text-fg-subtle mt-2">此為基準售價，下方「各規格獨立定價」可逐項調整。</p>
+              </div>
+            </div>
+
+            <!-- per-variant pricing -->
+            <div id="variantPricing" class="hidden mt-6">
+              <div class="flex items-center gap-2.5 mb-3">
+                <h3 class="font-display font-bold text-sm">各規格獨立定價</h3>
+                <span id="variantCount" class="font-mono text-[10px] text-fg-subtle"></span>
+                <button onclick="applyBaseToAll()" class="ml-auto inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9h13l-3-3M20 15H7l3 3"/></svg>
+                  套用基準售價到全部
+                </button>
+              </div>
+              <div class="rounded-lg border border-line overflow-hidden">
+                <div class="grid grid-cols-[1fr_180px_92px] gap-3 px-4 py-2.5 bg-app/60 border-b border-line font-mono text-[10px] text-fg-subtle uppercase tracking-wider">
+                  <span>規格組合</span><span>售價（TWD）</span><span class="text-right">毛利</span>
+                </div>
+                <div id="variantRows"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 商品規格（選填） (full width) ===== -->
+          <div class="col-span-2 pt-2 border-t border-line">
+            <div class="flex items-baseline gap-2.5 mb-4 mt-1">
+              <h2 class="font-display font-bold text-md">商品規格</h2>
+              <span class="text-xs text-fg-subtle">選填 — 有顏色 / 尺寸 / 口味等差異時才需要建立，否則可略過</span>
+              <span id="comboChip" class="hidden ml-auto inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-secondary-bg text-secondary font-display font-semibold text-[11px]"></span>
+            </div>
+
+            <!-- existing dimensions -->
+            <div id="specGroups" class="space-y-4 mb-4"></div>
+
+            <!-- add dimension card -->
+            <div class="rounded-lg border border-line bg-app/40 p-4">
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="lbl">新增規格維度</label>
+                  <input id="dimName" class="fld" placeholder="維度名稱，例：顏色" />
+                </div>
+                <div>
+                  <label class="lbl">選項 <span class="opt">用逗號分隔</span></label>
+                  <div class="flex items-center gap-2.5">
+                    <input id="dimOpts" class="fld" placeholder="例：米白, 卡其, 墨綠" onkeydown="if(event.key==='Enter'){event.preventDefault();commitDimension();}" />
+                    <button onclick="commitDimension()" class="h-[46px] px-5 rounded-md bg-secondary text-white font-display font-semibold text-sm hover:bg-secondary-hv transition whitespace-nowrap">新增</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== 商品圖片 (full width) ===== -->
+          <div class="col-span-2 pt-2 border-t border-line">
+            <div class="flex items-baseline gap-2.5 mb-4 mt-1">
+              <h2 class="font-display font-bold text-md">商品圖片</h2>
+              <span class="text-xs text-fg-subtle">最多 10 張，第一張為主圖</span>
+            </div>
+            <div id="imgGrid" class="grid grid-cols-6 gap-3"></div>
+          </div>
+
+        </div>
+
+        <!-- bottom button group -->
+        <div class="flex items-center justify-end gap-2 mt-9 pt-6 border-t border-line">
+          <a href="admin-products.html" class="h-10 px-5 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition flex items-center">取消</a>
+          <button onclick="save('draft')" class="h-10 px-5 rounded-pill bg-secondary-bg text-secondary font-display font-semibold text-sm hover:bg-secondary hover:text-white transition">儲存草稿</button>
+          <button onclick="save('publish')" class="inline-flex items-center gap-2 h-10 rounded-pill bg-primary text-white px-5 font-display font-semibold shadow-pink hover:bg-primary-hv active:scale-[.97] transition">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12l4 4L19 6"/></svg>
+            儲存並上架
+          </button>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] opacity-0 translate-y-2 transition-all duration-300 pointer-events-none">
+    <div class="toast toast-success"><span class="ico">✓</span><span id="toastMsg">已儲存</span></div>
+  </div>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // ============================================================
+    //  Data
+    // ============================================================
+    const VENDORS = [
+      { id:'v1', name:'MIKI 日系選品', currency:'JPY' },
+      { id:'v2', name:'五分埔批發', currency:'TWD' },
+      { id:'v3', name:'Penny Lane 英倫雜貨', currency:'GBP' },
+      { id:'v4', name:'香港代購阿May', currency:'HKD' },
+      { id:'v5', name:'日本零食直送', currency:'JPY' },
+      { id:'v6', name:'手作飾品小棠', currency:'TWD' },
+    ];
+    const RATES = { JPY:0.217, GBP:40.5, USD:32.4, HKD:4.15, TWD:1 };
+    const SYM   = { JPY:'¥', GBP:'£', USD:'$', HKD:'HK$', TWD:'NT$' };
+
+    const OPTIMIZED =
+`採用透氣棉麻混紡材質，俐落垂墜版型修飾腿部線條，夏日穿著清爽不悶熱。
+
+・顏色：米白 / 卡其 / 墨綠
+・尺寸：S / M / L
+・材質：棉麻混紡
+
+日本當地手工製作，數量有限，售完不補。`;
+
+    // spec dimensions — start empty (optional)
+    let SPECS = [];
+    let VARIANT_PRICES = {};   // combo key -> overridden price
+
+    // ============================================================
+    //  AI optimize (lightweight: raw → description, suggest name + specs)
+    // ============================================================
+    function runAI(){
+      const btn = document.getElementById('aiBtn');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block w-4 h-4 rounded-full border-2 border-white/40 border-t-white animate-spin"></span> AI 撰寫中…';
+      setTimeout(()=>{
+        const desc = document.getElementById('descText');
+        desc.value = OPTIMIZED;
+        desc.classList.add('reveal');
+        if (!document.getElementById('prodName').value) document.getElementById('prodName').value = '日本直送・手工棉麻寬褲';
+        // suggest detected specs only if none yet
+        if (SPECS.length===0){
+          SPECS = [
+            { key:'顏色', opts:['米白','卡其','墨綠'] },
+            { key:'尺寸', opts:['S','M','L'] },
+          ];
+          renderSpecs();
+        }
+        // AI also suggests a base price (cost × 2.2, rounded to 10)
+        const sug = Math.round(costInTWD()*2.2/10)*10;
+        if (sug>0){ document.getElementById('price').value = sug; }
+        VARIANT_PRICES = {};
+        recompute();
+        btn.disabled = false;
+        btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8L12 3z"/></svg> 重新優化';
+        showToast('AI 已產出文案與建議規格，請校對後使用');
+      }, 1000);
+    }
+
+    // ============================================================
+    //  Specs (optional)
+    // ============================================================
+    function renderSpecs(){
+      const root = document.getElementById('specGroups');
+      root.innerHTML = SPECS.map((s,si)=>`
+        <div class="reveal">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="font-display font-semibold text-sm">${s.key}</span>
+            <span class="font-mono text-[10px] text-fg-subtle">${s.opts.length} 項</span>
+            <button onclick="removeDim(${si})" class="ml-1 text-[11px] text-fg-subtle hover:text-danger font-semibold">移除維度</button>
+          </div>
+          <div class="flex items-center gap-2 flex-wrap">
+            ${s.opts.map((o,oi)=>`
+              <span class="spec-chip">${o}
+                <button onclick="removeOpt(${si},${oi})" aria-label="移除">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
+                </button>
+              </span>`).join('')}
+            <button onclick="addOpt(${si})" class="h-7 px-2.5 rounded-pill border border-dashed border-line-strong text-fg-subtle font-display font-semibold text-xs hover:bg-sunken hover:text-fg transition">＋ 選項</button>
+          </div>
+        </div>`).join('');
+      updateCombos();
+      renderVariants();
+    }
+    function removeOpt(si,oi){ SPECS[si].opts.splice(oi,1); if(SPECS[si].opts.length===0) SPECS.splice(si,1); renderSpecs(); }
+    function removeDim(si){ SPECS.splice(si,1); renderSpecs(); }
+    function addOpt(si){ const v=prompt('新增「'+SPECS[si].key+'」選項'); if(v&&v.trim()){ SPECS[si].opts.push(v.trim()); renderSpecs(); } }
+    function commitDimension(){
+      const k = document.getElementById('dimName').value.trim();
+      const raw = document.getElementById('dimOpts').value.trim();
+      if (!k){ document.getElementById('dimName').focus(); return; }
+      const opts = raw.split(/[,，、]/).map(x=>x.trim()).filter(Boolean);
+      if (opts.length===0){ document.getElementById('dimOpts').focus(); return; }
+      SPECS.push({ key:k, opts });
+      document.getElementById('dimName').value = '';
+      document.getElementById('dimOpts').value = '';
+      renderSpecs();
+    }
+    function updateCombos(){
+      const chip = document.getElementById('comboChip');
+      const dims = SPECS.filter(s=>s.opts.length>0);
+      if (dims.length===0){ chip.classList.add('hidden'); return; }
+      const n = dims.reduce((a,s)=>a*s.opts.length,1);
+      chip.classList.remove('hidden');
+      chip.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>'
+        + '將建立 ' + n + ' 種規格組合（' + dims.map(s=>s.key+' '+s.opts.length).join(' × ') + '）';
+    }
+
+    // ============================================================
+    //  Per-variant pricing
+    // ============================================================
+    function comboList(){
+      const dims = SPECS.filter(s=>s.opts.length>0);
+      if (dims.length===0) return [];
+      let combos = [[]];
+      dims.forEach(d=>{
+        const next=[];
+        combos.forEach(c=> d.opts.forEach(o=> next.push([...c,o])));
+        combos = next;
+      });
+      return combos.map(parts=>({ key: parts.join(' · '), parts }));
+    }
+    function basePrice(){ return parseFloat(document.getElementById('price').value)||0; }
+    function renderVariants(){
+      const box = document.getElementById('variantPricing');
+      const combos = comboList();
+      const hint = document.getElementById('priceHint');
+      if (combos.length===0){ box.classList.add('hidden'); hint.classList.add('hidden'); return; }
+      box.classList.remove('hidden'); hint.classList.remove('hidden');
+      document.getElementById('variantCount').textContent = combos.length + ' 種組合';
+      const base = basePrice();
+      document.getElementById('variantRows').innerHTML = combos.map((c,i)=>{
+        const p = (c.key in VARIANT_PRICES) ? VARIANT_PRICES[c.key] : base;
+        const overridden = (c.key in VARIANT_PRICES);
+        return `
+        <div class="grid grid-cols-[1fr_180px_92px] gap-3 px-4 py-2.5 items-center border-b border-line last:border-0">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            ${c.parts.map(o=>`<span class="inline-flex items-center h-6 px-2.5 rounded-pill bg-sunken text-fg-muted text-[11px] font-semibold">${o}</span>`).join('')}
+          </div>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 font-mono text-xs" style="color:var(--c-primary-hv)">NT$</span>
+            <input type="number" min="0" value="${p}" oninput="setVariantPrice('${c.key.replace(/'/g,"\\'")}', this.value)"
+              class="fld pl-10 py-2 font-mono text-sm ${overridden?'':'text-fg-muted'}" style="${overridden?'border-color:var(--forest-300)':''}" />
+          </div>
+          <span class="text-right font-mono font-semibold text-sm" id="vm-${i}"></span>
+        </div>`;
+      }).join('');
+      updateVariantMargins();
+    }
+    function updateVariantMargins(){
+      const cost = costInTWD();
+      const base = basePrice();
+      comboList().forEach((c,i)=>{
+        const p = (c.key in VARIANT_PRICES) ? VARIANT_PRICES[c.key] : base;
+        const el = document.getElementById('vm-'+i);
+        if (!el) return;
+        const m = p>0 ? Math.round((p-cost)/p*100) : 0;
+        el.textContent = m+'%';
+        el.style.color = m>=45?'var(--c-success)': m>=25?'var(--fg-default)':'var(--c-warning)';
+      });
+    }
+    function setVariantPrice(key, val){
+      const v = parseFloat(val);
+      if (val===''||isNaN(v)) delete VARIANT_PRICES[key]; else VARIANT_PRICES[key]=v;
+      updateVariantMargins();
+    }
+    function applyBaseToAll(){ VARIANT_PRICES = {}; renderVariants(); showToast('已套用基準售價到全部規格'); }
+
+    // ============================================================
+    //  Currency / cost / price
+    // ============================================================
+    function onSupplierChange(){
+      const v = VENDORS.find(x=>x.id===document.getElementById('supSel').value);
+      if (v){ document.getElementById('curSel').value = v.currency; onCurrencyChange(); }
+    }
+    function onCurrencyChange(){
+      document.getElementById('curSym').textContent = SYM[document.getElementById('curSel').value];
+      recompute();
+    }
+    function costInTWD(){
+      const cur = document.getElementById('curSel').value;
+      const w = parseFloat(document.getElementById('wholesale').value)||0;
+      return Math.round(w * RATES[cur]);
+    }
+    function recompute(){
+      const cur = document.getElementById('curSel').value;
+      const w = parseFloat(document.getElementById('wholesale').value)||0;
+      const cost = costInTWD();
+      const price = parseFloat(document.getElementById('price').value)||0;
+
+      const convBox = document.getElementById('convBox');
+      if (cur==='TWD'){ convBox.style.display='none'; }
+      else {
+        convBox.style.display='flex';
+        document.getElementById('convLine').textContent = `${SYM[cur]}${w.toLocaleString()} × ${RATES[cur]}`;
+        document.getElementById('costTWD').textContent = cost.toLocaleString();
+      }
+
+      const profit = price - cost;
+      const m = price>0 ? Math.round(profit/price*100) : 0;
+      const mc = m>=45?'var(--c-success)': m>=25?'var(--fg-default)':'var(--c-warning)';
+      document.getElementById('marginVal').textContent = m+'%';
+      document.getElementById('marginVal').style.color = mc;
+      document.getElementById('profitVal').textContent = 'NT$ '+profit.toLocaleString();
+      document.getElementById('profitVal').style.color = mc;
+      renderVariants();
+    }
+    function setSuggested(mult){
+      const p = Math.round(costInTWD()*mult/10)*10;
+      document.getElementById('price').value = p;
+      recompute();
+    }
+
+    // ============================================================
+    //  Images
+    // ============================================================
+    let imgCount = 0;
+    function renderImgs(){
+      const grid = document.getElementById('imgGrid');
+      let h = '';
+      for (let i=0;i<imgCount;i++){
+        h += `
+        <div class="relative aspect-square rounded-md ph-a border border-line group">
+          ${i===0?'<span class="absolute top-1.5 left-1.5 inline-flex items-center h-5 px-2 rounded-pill bg-primary text-white font-display font-semibold text-[9px]">主圖</span>':''}
+          <button onclick="rmImg()" class="absolute top-1.5 right-1.5 w-6 h-6 rounded-pill bg-ink-800/70 text-white items-center justify-center hidden group-hover:flex">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
+          </button>
+        </div>`;
+      }
+      if (imgCount<10){
+        h += `
+        <button onclick="addImg()" class="aspect-square rounded-md border-2 border-dashed border-line-strong flex flex-col items-center justify-center gap-1 text-fg-subtle hover:border-primary hover:text-primary hover:bg-primary-bg/30 transition">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+          <span class="font-display font-semibold text-[11px]">上傳</span>
+        </button>`;
+      }
+      grid.innerHTML = h;
+    }
+    function addImg(){ if(imgCount<10){ imgCount++; renderImgs(); } }
+    function rmImg(){ if(imgCount>0){ imgCount--; renderImgs(); } }
+
+    // ============================================================
+    //  Save / toast
+    // ============================================================
+    function save(mode){
+      if (!document.getElementById('prodName').value){ showToast('請先填寫商品名稱'); return; }
+      showToast(mode==='publish' ? '商品已上架！' : '已儲存為草稿');
+    }
+    let toastTimer=null;
+    function showToast(msg){
+      document.getElementById('toastMsg').textContent = msg;
+      const t = document.getElementById('toast');
+      t.style.opacity='1'; t.style.transform='translate(-50%, 0)';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translate(-50%, 8px)'; }, 2400);
+    }
+
+    // ============================================================
+    //  Init
+    // ============================================================
+    (function init(){
+      const sel = document.getElementById('supSel');
+      sel.innerHTML = '<option value="" disabled selected>請選擇廠商…</option>' +
+        VENDORS.map(v=>`<option value="${v.id}">${v.name}（預設 ${v.currency}）</option>`).join('');
+      imgCount = 0;
+      renderImgs();
+      renderSpecs();
+      recompute();
+    })();
+  </script>
+</body>
+</html>

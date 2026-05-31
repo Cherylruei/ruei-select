@@ -5,6 +5,9 @@ import type { Currency } from '@/types'
 
 const FOREIGN_CURRENCIES: Exclude<Currency, 'TWD'>[] = ['JPY', 'KRW', 'GBP', 'USD', 'HKD']
 
+const FLD =
+  'border border-line rounded-md px-3 py-2 text-sm bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition disabled:opacity-60'
+
 interface Props {
   value: number | null
   currency: Currency
@@ -27,13 +30,10 @@ export default function CurrencyInput({
 
   useEffect(() => {
     if (currency === 'TWD' || !value) {
-      /* eslint-disable react-hooks/set-state-in-effect */
       setRate(null)
       setRateWarning(null)
-      /* eslint-enable react-hooks/set-state-in-effect */
       return
     }
-
     if (debounceRef.current) clearTimeout(debounceRef.current)
     debounceRef.current = setTimeout(async () => {
       setFetching(true)
@@ -54,7 +54,6 @@ export default function CurrencyInput({
         setFetching(false)
       }
     }, 500)
-
     return () => {
       if (debounceRef.current) clearTimeout(debounceRef.current)
     }
@@ -69,7 +68,7 @@ export default function CurrencyInput({
           value={currency}
           onChange={(e) => onCurrencyChange(e.target.value as Currency)}
           disabled={disabled}
-          className='border border-[var(--neutral-200)] rounded-lg px-2 py-2 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+          className={FLD}
           aria-label='幣別'
         >
           <option value='TWD'>TWD</option>
@@ -87,22 +86,18 @@ export default function CurrencyInput({
           onChange={(e) => onValueChange(e.target.value === '' ? null : Number(e.target.value))}
           disabled={disabled}
           placeholder='成本（選填）'
-          className='flex-1 min-w-0 border border-[var(--neutral-200)] rounded-lg px-3 py-2 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+          className={`flex-1 min-w-0 ${FLD}`}
           aria-label='成本金額'
         />
       </div>
       {currency !== 'TWD' && value !== null && value > 0 && (
-        <p className='text-[12px] text-[var(--neutral-400)]'>
+        <p className='text-xs text-fg-subtle'>
           {fetching && '查詢匯率中…'}
-          {!fetching && rateWarning && (
-            <span className='text-[var(--color-warning)]'>{rateWarning}</span>
-          )}
+          {!fetching && rateWarning && <span className='text-warning'>{rateWarning}</span>}
           {!fetching && !rateWarning && rate !== null && twdEquivalent !== null && (
             <>
               今日匯率 {rate.toFixed(4)}，約 NT${' '}
-              <span className='text-[var(--neutral-600)] font-medium'>
-                {twdEquivalent.toLocaleString()}
-              </span>
+              <span className='text-fg font-semibold'>{twdEquivalent.toLocaleString()}</span>
             </>
           )}
         </p>

@@ -78,8 +78,27 @@ export async function POST(request: NextRequest) {
     const context = await resolveUserAndStore(lineId)
     if (!context) return NextResponse.json({ error: 'Store not found' }, { status: 404 })
 
-    const body = (await request.json()) as { name?: string; note?: string; website_url?: string }
+    const body = (await request.json()) as {
+      name?: string
+      tag?: string
+      line_group?: string
+      phone?: string
+      currency?: string
+      avg_arrival_days?: number | null
+      note?: string
+      website_url?: string
+    }
     const name = body.name?.trim() ?? ''
+    const tag = body.tag?.trim() || null
+    const line_group = body.line_group?.trim() || null
+    const phone = body.phone?.trim() || null
+    const currency = (['TWD', 'JPY', 'KRW', 'USD', 'HKD'] as const).includes(body.currency as never)
+      ? (body.currency as 'TWD' | 'JPY' | 'USD' | 'HKD')
+      : 'TWD'
+    const avg_arrival_days =
+      typeof body.avg_arrival_days === 'number' && body.avg_arrival_days >= 0
+        ? body.avg_arrival_days
+        : null
     const note = body.note?.trim() || null
     const website_url = body.website_url?.trim() || null
 
@@ -89,14 +108,24 @@ export async function POST(request: NextRequest) {
     if (name.length > 30) {
       return NextResponse.json({ error: '廠商名稱不能超過 30 個字' }, { status: 400 })
     }
-    if (note && note.length > 100) {
-      return NextResponse.json({ error: '備註不能超過 100 個字' }, { status: 400 })
+    if (tag && tag.length > 8) {
+      return NextResponse.json({ error: '廠商標記不能超過 8 個字' }, { status: 400 })
     }
 
     const serviceClient = createServiceClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: supplier, error } = (await (serviceClient.from('suppliers') as any)
-      .insert({ store_id: context.storeId, name, note, website_url })
+      .insert({
+        store_id: context.storeId,
+        name,
+        tag,
+        line_group,
+        phone,
+        currency,
+        avg_arrival_days,
+        note,
+        website_url,
+      })
       .select()
       .single()) as { data: Supplier | null; error: { message: string } | null }
 

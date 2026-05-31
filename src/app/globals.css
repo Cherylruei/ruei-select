@@ -111,6 +111,11 @@
   --text-md: 16px;
 }
 
+html {
+  /* 14px base → 1rem = 14px；讓 Tailwind rem 工具類與設計稿密度吻合 */
+  font-size: 87.5%;
+}
+
 body {
   font-family: var(--font-body);
   font-size: var(--fs-base);

@@ -139,8 +139,7 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
       const body = await res.json()
       if (!res.ok) throw new Error(body.error || 'AI 優化失敗')
 
-      const { name: aiName, description: aiDesc, detectedVariants } = body.data
-      setName(aiName || name)
+      const { description: aiDesc, detectedVariants } = body.data
       setDescription(aiDesc || description)
 
       if (detectedVariants && detectedVariants.length > 0) {
@@ -320,14 +319,14 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
         {/* 廠商選擇 + 分類選擇 */}
         <div className='flex flex-row gap-4'>
           <div className='flex flex-col gap-1.5 flex-1 min-w-0'>
-            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
-              廠商<span className='text-[var(--color-error)] ml-0.5'>*</span>
+            <label className='text-sm font-semibold'>
+              廠商<span className='text-danger ml-0.5'>*</span>
             </label>
             <select
               value={supplierId}
               onChange={(e) => setSupplierId(e.target.value)}
               disabled={isPending}
-              className='w-full border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+              className='w-full border border-line rounded-md px-3.5 py-2.5 text-sm bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition disabled:opacity-60'
             >
               <option value=''>請選擇廠商</option>
               {suppliers.map((s) => (
@@ -336,19 +335,17 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
                 </option>
               ))}
             </select>
-            {errors.supplierId && (
-              <p className='text-[12px] text-[var(--color-error)]'>{errors.supplierId}</p>
-            )}
+            {errors.supplierId && <p className='text-xs text-danger'>{errors.supplierId}</p>}
           </div>
 
           {categories.length > 0 && (
             <div className='flex flex-col gap-1.5 flex-1 min-w-0'>
-              <label className='text-[13px] font-medium text-[var(--neutral-700)]'>分類</label>
+              <label className='text-sm font-semibold'>分類</label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
                 disabled={isPending}
-                className='w-full border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+                className='w-full border border-line rounded-md px-3.5 py-2.5 text-sm bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition disabled:opacity-60'
               >
                 <option value=''>不指定分類</option>
                 {categories.map((c) => (
@@ -364,11 +361,9 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
         {/* 截單日期 + 設為公開 */}
         <div className='flex flex-wrap items-start gap-4'>
           <div className='flex flex-col gap-1.5 flex-1 min-w-[180px]'>
-            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
+            <label className='text-sm font-semibold'>
               截單日期
-              <span className='text-[11px] text-[var(--neutral-400)] font-normal ml-1.5'>
-                選填，預設 23:59
-              </span>
+              <span className='font-normal text-fg-subtle text-xs ml-1.5'>選填，預設 23:59</span>
             </label>
             <div className='flex items-center gap-2'>
               <input
@@ -376,35 +371,38 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
                 value={endsAt}
                 onChange={(e) => {
                   const val = e.target.value
-                  if (val && val.endsWith('T00:00')) {
+                  if (!val) {
+                    setEndsAt('')
+                    return
+                  }
+                  // 第一次選擇時（無舊值）一律預設 23:59，避免瀏覽器填入當下時間
+                  if (!endsAt) {
                     setEndsAt(val.slice(0, 10) + 'T23:59')
                   } else {
                     setEndsAt(val)
                   }
                 }}
                 disabled={isPending}
-                className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+                className='border border-line rounded-md px-3.5 py-2.5 text-sm bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition disabled:opacity-60'
               />
               {endsAt && (
                 <button
                   type='button'
                   onClick={() => setEndsAt('')}
                   disabled={isPending}
-                  className='text-[12px] text-[var(--neutral-400)] hover:text-[var(--color-error)] transition-colors shrink-0'
+                  className='text-xs text-fg-subtle hover:text-danger transition-colors shrink-0'
                 >
                   清除
                 </button>
               )}
             </div>
             {endsAt && new Date(endsAt) <= new Date() && (
-              <p className='text-[12px] text-[var(--color-error)]'>
-                截單日期已過，商品將不顯示於公開頁
-              </p>
+              <p className='text-xs text-danger'>截單日期已過，商品將不顯示於公開頁</p>
             )}
           </div>
 
           <div className='flex flex-col gap-1.5'>
-            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>設為公開</label>
+            <label className='text-sm font-semibold'>設為公開</label>
             <div className='flex items-center gap-2.5 pt-1'>
               <button
                 type='button'
@@ -412,8 +410,8 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
                 aria-checked={isPublic}
                 onClick={() => setIsPublic(!isPublic)}
                 disabled={isPending}
-                className={`relative w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest-base)] ${
-                  isPublic ? 'bg-[var(--forest-base)]' : 'bg-[var(--neutral-300)]'
+                className={`relative w-10 h-6 rounded-pill transition-colors duration-200 outline-none ${
+                  isPublic ? 'bg-secondary' : 'bg-ink-300'
                 } disabled:opacity-60 cursor-pointer`}
                 aria-label='設為公開'
               >
@@ -423,7 +421,7 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
                   }`}
                 />
               </button>
-              <span className='text-[12.5px] text-[var(--neutral-500)]'>可被搜尋引擎索引</span>
+              <span className='text-xs text-fg-muted'>可被搜尋引擎索引</span>
             </div>
           </div>
         </div>
@@ -449,10 +447,10 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
                 type='button'
                 onClick={handleAiOptimize}
                 disabled={isPending || aiLoading}
-                className='flex items-center gap-2 px-4 py-2 rounded-lg border border-[var(--forest-base)] text-[var(--forest-base)] text-[12.5px] font-medium hover:bg-[var(--forest-50)] transition-colors disabled:opacity-40'
+                className='inline-flex items-center gap-2 h-10 px-5 rounded-pill bg-secondary text-white font-display font-semibold text-sm shadow-green hover:bg-secondary-hv active:scale-[.97] transition disabled:opacity-40 whitespace-nowrap shrink-0'
               >
                 {aiLoading ? (
-                  <span className='w-3 h-3 border-2 border-[var(--forest-base)] border-t-transparent rounded-full animate-spin' />
+                  <span className='w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin' />
                 ) : (
                   <svg
                     viewBox='0 0 24 24'
@@ -468,13 +466,13 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
                 )}
                 {aiLoading ? 'AI 優化中…' : 'AI 優化文案'}
               </button>
-              {aiError && <p className='text-[12px] text-[var(--color-error)]'>{aiError}</p>}
+              {aiError && <p className='text-xs text-danger'>{aiError}</p>}
             </div>
           </div>
           <div className='flex flex-col gap-1.5'>
-            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
+            <label className='text-sm font-semibold'>
               原始商品文
-              <span className='text-[11px] text-[var(--neutral-400)] font-normal ml-1.5'>選填</span>
+              <span className='font-normal text-fg-subtle text-xs ml-1.5'>選填</span>
             </label>
             <textarea
               value={originalText}
@@ -482,7 +480,7 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
               rows={9}
               disabled={isPending || aiLoading}
               placeholder='貼入廠商提供的原始商品說明文字（選填，AI 可在無原文的情況下依模板生成）'
-              className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] resize-y focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+              className='border border-line rounded-md px-3.5 py-2.5 text-sm bg-surface resize-y outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition disabled:opacity-60'
             />
           </div>
         </div>
@@ -490,8 +488,8 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
         {/* 商品名稱 + 描述 */}
         <div className='flex flex-col gap-4'>
           <div className='flex flex-col gap-1.5'>
-            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
-              商品名稱<span className='text-[var(--color-error)] ml-0.5'>*</span>
+            <label className='text-sm font-semibold'>
+              商品名稱<span className='text-danger ml-0.5'>*</span>
             </label>
             <input
               type='text'
@@ -500,19 +498,19 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
               disabled={isPending}
               placeholder='請輸入商品名稱'
               maxLength={100}
-              className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+              className='border border-line rounded-md px-3.5 py-2.5 text-sm bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition disabled:opacity-60'
             />
-            {errors.name && <p className='text-[12px] text-[var(--color-error)]'>{errors.name}</p>}
+            {errors.name && <p className='text-xs text-danger'>{errors.name}</p>}
           </div>
           <div className='flex flex-col gap-1.5'>
-            <label className='text-[13px] font-medium text-[var(--neutral-700)]'>商品描述</label>
+            <label className='text-sm font-semibold'>商品描述</label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={9}
               disabled={isPending}
               placeholder='商品描述（選填）'
-              className='border border-[var(--neutral-200)] rounded-lg px-3 py-2.5 text-[13px] bg-white text-[var(--neutral-700)] resize-y focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+              className='border border-line rounded-md px-3.5 py-2.5 text-sm bg-surface resize-y outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition disabled:opacity-60'
             />
           </div>
         </div>
@@ -522,16 +520,10 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
       <div className='grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-start'>
         {/* 商品規格與定價 */}
         <div className='flex flex-col gap-3'>
-          <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
-            商品規格與定價
-          </label>
-          {errors.variants && (
-            <p className='text-[12px] text-[var(--color-error)]'>{errors.variants}</p>
-          )}
-          <div className='flex items-center gap-3 border border-[var(--neutral-200)] rounded-xl p-3.5 bg-[var(--neutral-50)]'>
-            <label className='text-[12.5px] text-[var(--neutral-600)] shrink-0'>
-              統一售價（TWD）
-            </label>
+          <label className='text-sm font-semibold'>商品規格與定價</label>
+          {errors.variants && <p className='text-xs text-danger'>{errors.variants}</p>}
+          <div className='flex items-center gap-3 border border-line rounded-xl p-3.5 bg-sunken'>
+            <label className='text-xs text-fg-muted shrink-0'>統一售價（TWD）</label>
             <input
               type='number'
               min={0}
@@ -540,7 +532,7 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
               onChange={(e) => setDefaultPrice(e.target.value === '' ? 0 : Number(e.target.value))}
               disabled={isPending}
               placeholder='0'
-              className='border border-[var(--neutral-200)] rounded-lg px-3 py-1.5 text-[13px] bg-white w-28 focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+              className='border border-line rounded-md px-3 py-1.5 text-sm bg-surface w-28 outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition disabled:opacity-60'
               aria-label='統一售價'
             />
             <button
@@ -549,7 +541,7 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
                 setVariants((prev) => prev.map((v) => ({ ...v, price: defaultPrice })))
               }
               disabled={isPending || !defaultPrice}
-              className='px-3 py-1.5 rounded-lg border border-[var(--forest-base)] text-[var(--forest-base)] text-[12px] hover:bg-[var(--forest-50)] transition-colors disabled:opacity-40'
+              className='h-8 px-3.5 rounded-pill border border-secondary text-secondary font-display font-semibold text-xs hover:bg-secondary-bg transition disabled:opacity-40'
             >
               套用到所有規格
             </button>
@@ -563,7 +555,7 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
 
         {/* 規格組合定價 */}
         <div className='flex flex-col gap-3'>
-          <label className='text-[13px] font-medium text-[var(--neutral-700)]'>規格組合定價</label>
+          <label className='text-sm font-semibold'>規格組合定價</label>
           <VariantPricingTable
             variants={variants}
             onVariantsChange={setVariants}
@@ -574,9 +566,7 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
 
       {/* Row 4: 商品圖片 */}
       <div className='flex flex-col gap-1.5'>
-        <label className='text-[13px] font-medium text-[var(--neutral-700)]'>
-          商品圖片（最多 10 張）
-        </label>
+        <label className='text-sm font-semibold'>商品圖片（最多 10 張）</label>
         <ImageUploader
           images={images}
           onImagesChange={setImages}
@@ -588,12 +578,12 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
       </div>
 
       {/* Row 5: 取消 / 建立商品 */}
-      <div className='flex items-center justify-end gap-3 pt-2'>
+      <div className='flex items-center justify-end gap-2 pt-4 border-t border-line'>
         <button
           type='button'
           onClick={() => router.back()}
           disabled={isPending}
-          className='px-5 py-2.5 rounded-lg border border-[var(--neutral-200)] text-[13px] text-[var(--neutral-600)] hover:bg-[var(--neutral-100)] transition-colors disabled:opacity-60'
+          className='h-10 px-5 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition disabled:opacity-60'
         >
           取消
         </button>
@@ -601,7 +591,7 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
           type='button'
           onClick={handleSave}
           disabled={isPending}
-          className='px-5 py-2.5 rounded-lg bg-[var(--forest-base)] text-white text-[13px] font-medium hover:bg-[var(--forest-deep)] transition-colors disabled:opacity-60 flex items-center gap-2'
+          className='inline-flex items-center gap-2 h-10 px-5 rounded-pill bg-primary text-white font-display font-semibold text-sm shadow-pink hover:bg-primary-hv active:scale-[.97] transition disabled:opacity-60'
         >
           {isPending && (
             <span className='w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin' />
@@ -614,12 +604,12 @@ export default function ProductForm({ mode, product, suppliers, categories, stor
         <div
           role='status'
           aria-live='polite'
-          className={`fixed bottom-6 right-6 z-[300] px-5 py-3 rounded-xl shadow-lg text-[13px] font-medium text-white transition-all ${
+          className={`fixed bottom-6 right-6 z-[300] px-5 py-3 rounded-xl shadow-lg text-sm font-display font-semibold text-white transition-all ${
             toast.type === 'success'
-              ? 'bg-[var(--forest-base)]'
+              ? 'bg-success'
               : toast.type === 'error'
-                ? 'bg-[var(--color-error)]'
-                : 'bg-[var(--color-info)]'
+                ? 'bg-danger'
+                : 'bg-info'
           }`}
         >
           {toast.message}

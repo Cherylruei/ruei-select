@@ -48,6 +48,9 @@ export function specsKey(specs: Record<string, string>) {
   return JSON.stringify(specs)
 }
 
+const FLD =
+  'w-full border border-line rounded-md px-3 py-2 text-sm bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition disabled:opacity-60 placeholder:text-fg-subtle'
+
 export function DimensionConfigurator({
   dimensions,
   onDimensionsChange,
@@ -55,6 +58,9 @@ export function DimensionConfigurator({
 }: DimensionConfiguratorProps) {
   const [newDimName, setNewDimName] = useState('')
   const [newDimOptions, setNewDimOptions] = useState('')
+  // addingIdx：正在「新增選項」的維度 index，null = 未展開
+  const [addingIdx, setAddingIdx] = useState<number | null>(null)
+  const [addingVal, setAddingVal] = useState('')
 
   function addDimension() {
     const name = newDimName.trim()
@@ -71,60 +77,181 @@ export function DimensionConfigurator({
 
   function removeDimension(idx: number) {
     onDimensionsChange(dimensions.filter((_, i) => i !== idx))
+    if (addingIdx === idx) setAddingIdx(null)
+  }
+
+  function removeOption(dimIdx: number, optIdx: number) {
+    const updated = dimensions
+      .map((d, i) => {
+        if (i !== dimIdx) return d
+        const opts = d.options.filter((_, oi) => oi !== optIdx)
+        return { ...d, options: opts }
+      })
+      .filter((d) => d.options.length > 0)
+    onDimensionsChange(updated)
+  }
+
+  function commitAddOption(dimIdx: number) {
+    const newOpts = addingVal
+      .split(/[,，、\n]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+    if (newOpts.length === 0) {
+      setAddingIdx(null)
+      setAddingVal('')
+      return
+    }
+    onDimensionsChange(
+      dimensions.map((d, i) => {
+        if (i !== dimIdx) return d
+        const existing = new Set(d.options)
+        return { ...d, options: [...d.options, ...newOpts.filter((o) => !existing.has(o))] }
+      })
+    )
+    setAddingIdx(null)
+    setAddingVal('')
   }
 
   return (
-    <div className='border border-[var(--neutral-200)] rounded-xl p-4 bg-[var(--neutral-50)]'>
-      <p className='text-[12.5px] font-medium text-[var(--neutral-600)] mb-3'>新增規格維度</p>
+    <div className='border border-line rounded-xl p-4 bg-sunken flex flex-col gap-4'>
+      {/* 已加入的維度 */}
+      {dimensions.map((dim, idx) => (
+        <div key={idx} className='bg-surface border border-line rounded-lg p-3 flex flex-col gap-2'>
+          {/* 維度標題列 */}
+          <div className='flex items-center gap-2'>
+            <span className='font-display font-semibold text-sm'>{dim.name}</span>
+            <span className='font-mono text-[10px] text-fg-subtle'>{dim.options.length} 項</span>
+            <button
+              type='button'
+              onClick={() => removeDimension(idx)}
+              disabled={disabled}
+              className='ml-auto text-xs text-fg-subtle hover:text-danger font-semibold transition'
+            >
+              移除維度
+            </button>
+          </div>
+          {/* 選項 chips — 允許換行 */}
+          <div className='flex items-center gap-1.5 flex-wrap'>
+            {dim.options.map((opt, oi) => (
+              <span
+                key={oi}
+                className='inline-flex items-center gap-1 h-7 pl-2.5 pr-1.5 rounded-pill border border-line bg-app text-xs font-semibold text-fg'
+              >
+                {opt}
+                <button
+                  type='button'
+                  onClick={() => removeOption(idx, oi)}
+                  disabled={disabled}
+                  className='w-4 h-4 rounded-full flex items-center justify-center text-fg-subtle hover:bg-danger-bg hover:text-danger transition'
+                  aria-label={`移除選項 ${opt}`}
+                >
+                  <svg
+                    width='10'
+                    height='10'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2.8'
+                    strokeLinecap='round'
+                  >
+                    <path d='M6 6l12 12M6 18L18 6' />
+                  </svg>
+                </button>
+              </span>
+            ))}
+
+            {/* ＋ 選項（展開式 inline input） */}
+            {addingIdx === idx ? (
+              <div className='inline-flex items-center gap-1.5'>
+                <input
+                  autoFocus
+                  type='text'
+                  value={addingVal}
+                  onChange={(e) => setAddingVal(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault()
+                      commitAddOption(idx)
+                    }
+                    if (e.key === 'Escape') {
+                      setAddingIdx(null)
+                      setAddingVal('')
+                    }
+                  }}
+                  placeholder='選項，逗號分隔'
+                  disabled={disabled}
+                  className='h-7 w-36 border border-primary rounded-pill px-2.5 text-xs bg-surface outline-none'
+                />
+                <button
+                  type='button'
+                  onClick={() => commitAddOption(idx)}
+                  className='h-7 px-2.5 rounded-pill bg-primary text-white font-display font-semibold text-xs hover:bg-primary-hv transition'
+                >
+                  確認
+                </button>
+                <button
+                  type='button'
+                  onClick={() => {
+                    setAddingIdx(null)
+                    setAddingVal('')
+                  }}
+                  className='h-7 px-2 rounded-pill border border-line text-fg-subtle text-xs hover:bg-sunken transition'
+                >
+                  取消
+                </button>
+              </div>
+            ) : (
+              <button
+                type='button'
+                onClick={() => {
+                  setAddingIdx(idx)
+                  setAddingVal('')
+                }}
+                disabled={disabled}
+                className='h-7 px-2.5 rounded-pill border border-dashed border-line-strong text-fg-subtle font-display font-semibold text-xs hover:bg-sunken hover:text-fg transition'
+              >
+                ＋ 選項
+              </button>
+            )}
+          </div>
+        </div>
+      ))}
+
+      {/* 新增維度表單 */}
       <div className='flex flex-col gap-2'>
+        {dimensions.length > 0 && <hr className='border-line' />}
+        <p className='text-xs font-semibold text-fg-muted'>新增規格維度</p>
         <input
           type='text'
           value={newDimName}
           onChange={(e) => setNewDimName(e.target.value)}
           placeholder='維度名稱，例：顏色'
           disabled={disabled}
-          className='border border-[var(--neutral-200)] rounded-lg px-3 py-2 text-[13px] bg-white focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+          className={FLD}
         />
         <input
           type='text'
           value={newDimOptions}
           onChange={(e) => setNewDimOptions(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') {
+              e.preventDefault()
+              addDimension()
+            }
+          }}
           placeholder='選項（用逗號分隔），例：紅, 藍, 白'
           disabled={disabled}
-          className='border border-[var(--neutral-200)] rounded-lg px-3 py-2 text-[13px] bg-white focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+          className={FLD}
         />
         <button
           type='button'
           onClick={addDimension}
           disabled={disabled || !newDimName.trim() || !newDimOptions.trim()}
-          className='self-start px-4 py-2 rounded-lg bg-[var(--forest-base)] text-white text-[12.5px] font-medium disabled:opacity-40 hover:bg-[var(--forest-deep)] transition-colors'
+          className='self-start h-8 px-4 rounded-pill bg-secondary text-white font-display font-semibold text-xs hover:bg-secondary-hv transition disabled:opacity-40'
         >
           + 新增維度
         </button>
       </div>
-
-      {dimensions.length > 0 && (
-        <div className='mt-3 flex flex-wrap gap-2'>
-          {dimensions.map((dim, idx) => (
-            <div
-              key={idx}
-              className='flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-[var(--forest-100)] bg-[var(--forest-50)] text-[12px] text-[var(--forest-deep)]'
-            >
-              <span className='font-medium'>{dim.name}</span>
-              <span className='text-[var(--neutral-400)]'>{dim.options.join('、')}</span>
-              <button
-                type='button'
-                onClick={() => removeDimension(idx)}
-                disabled={disabled}
-                className='ml-1 text-[var(--neutral-400)] hover:text-[var(--color-error)] transition-colors'
-                aria-label={`刪除 ${dim.name} 維度`}
-              >
-                ×
-              </button>
-            </div>
-          ))}
-        </div>
-      )}
     </div>
   )
 }
@@ -135,11 +262,10 @@ export function VariantPricingTable({
   disabled,
 }: VariantPricingTableProps) {
   function updateVariant(idx: number, field: 'price' | 'cost' | 'cost_currency', val: unknown) {
-    const updated = variants.map((v, i) => (i === idx ? { ...v, [field]: val } : v))
-    onVariantsChange(updated)
+    onVariantsChange(variants.map((v, i) => (i === idx ? { ...v, [field]: val } : v)))
   }
 
-  const specsLabel = (specs: Record<string, string>) => {
+  function specsLabel(specs: Record<string, string>) {
     const entries = Object.entries(specs)
     if (entries.length === 0) return '預設規格'
     return entries.map(([k, v]) => `${k}: ${v}`).join(' / ')
@@ -148,15 +274,12 @@ export function VariantPricingTable({
   return (
     <div className='flex flex-col gap-3'>
       {variants.map((v, idx) => (
-        <div
-          key={idx}
-          className='border border-[var(--neutral-200)] rounded-xl p-4 bg-white flex flex-col gap-3'
-        >
-          <p className='text-[13px] font-medium text-[var(--neutral-700)]'>{specsLabel(v.specs)}</p>
+        <div key={idx} className='border border-line rounded-xl p-4 bg-surface flex flex-col gap-3'>
+          <p className='text-sm font-semibold'>{specsLabel(v.specs)}</p>
           <div className='grid grid-cols-1 sm:grid-cols-2 gap-3'>
             <div className='flex flex-col gap-1 min-w-0'>
-              <label className='text-[12px] text-[var(--neutral-500)]'>
-                售價（TWD）<span className='text-[var(--color-error)] ml-0.5'>*</span>
+              <label className='text-xs text-fg-muted'>
+                售價（TWD）<span className='text-danger ml-0.5'>*</span>
               </label>
               <input
                 type='number'
@@ -168,12 +291,12 @@ export function VariantPricingTable({
                 }
                 disabled={disabled}
                 placeholder='0'
-                className='border border-[var(--neutral-200)] rounded-lg px-3 py-2 text-[13px] bg-white focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60 w-full'
+                className='w-full border border-line rounded-md px-3 py-2 text-sm bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition disabled:opacity-60'
                 aria-label={`${specsLabel(v.specs)} 售價`}
               />
             </div>
             <div className='flex flex-col gap-1 min-w-0'>
-              <label className='text-[12px] text-[var(--neutral-500)]'>成本（選填）</label>
+              <label className='text-xs text-fg-muted'>成本（選填）</label>
               <CurrencyInput
                 value={v.cost}
                 currency={v.cost_currency}
@@ -205,11 +328,17 @@ export default function VariantBuilder({
       return
     }
     const existingMap = new Map(variants.map((v) => [specsKey(v.specs), v]))
-    const newVariants: VariantRow[] = combos.map((specs) => {
-      const existing = existingMap.get(specsKey(specs))
-      return existing ?? { specs, price: defaultPrice ?? 0, cost: null, cost_currency: 'TWD' }
-    })
-    onVariantsChange(newVariants)
+    onVariantsChange(
+      combos.map(
+        (specs) =>
+          existingMap.get(specsKey(specs)) ?? {
+            specs,
+            price: defaultPrice ?? 0,
+            cost: null,
+            cost_currency: 'TWD',
+          }
+      )
+    )
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dimensions])
 

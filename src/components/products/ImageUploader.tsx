@@ -134,8 +134,8 @@ export default function ImageUploader({
           onClick={() => !disabled && fileInputRef.current?.click()}
           className={`border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
             disabled || uploading
-              ? 'border-[var(--neutral-200)] opacity-60 cursor-not-allowed'
-              : 'border-[var(--neutral-300)] hover:border-[var(--forest-base)] cursor-pointer'
+              ? 'border-line opacity-60 cursor-not-allowed'
+              : 'border-ink-300 hover:border-secondary cursor-pointer'
           }`}
           role='button'
           tabIndex={0}
@@ -149,17 +149,17 @@ export default function ImageUploader({
             fill='none'
             stroke='currentColor'
             strokeWidth='1.5'
-            className='mx-auto mb-2 text-[var(--neutral-300)]'
+            className='mx-auto mb-2 text-fg-subtle'
             aria-hidden='true'
           >
             <rect x='3' y='3' width='18' height='18' rx='2' />
             <circle cx='8.5' cy='8.5' r='1.5' />
             <polyline points='21 15 16 10 5 21' />
           </svg>
-          <p className='text-[13px] text-[var(--neutral-400)]'>
+          <p className='text-sm text-fg-muted'>
             {uploading ? '上傳中…' : '點擊或拖曳圖片（最多 10 張）'}
           </p>
-          <p className='text-[11px] text-[var(--neutral-300)] mt-1'>JPG / PNG / WebP，2MB 以內</p>
+          <p className='text-xs text-fg-subtle mt-1'>JPG / PNG / WebP，2MB 以內</p>
           <input
             ref={fileInputRef}
             type='file'
@@ -172,7 +172,7 @@ export default function ImageUploader({
         </div>
       )}
 
-      {error && <p className='text-[12px] text-[var(--color-error)]'>{error}</p>}
+      {error && <p className='text-xs text-danger'>{error}</p>}
 
       {/* 圖片預覽 + 排序 */}
       {images.length > 0 && (
@@ -187,12 +187,12 @@ export default function ImageUploader({
               onDragEnter={(e) => handleDragSort(e, idx)}
               onDragEnd={handleDropSort}
               onDragOver={(e) => e.preventDefault()}
-              className='relative group aspect-square rounded-lg overflow-hidden border border-[var(--neutral-200)] cursor-grab'
+              className='relative group aspect-square rounded-md overflow-hidden border border-line cursor-grab'
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={img.url} alt={`商品圖 ${idx + 1}`} className='w-full h-full object-cover' />
               {idx === 0 && (
-                <span className='absolute bottom-1 left-1 text-[10px] bg-[var(--forest-base)] text-white px-1.5 py-0.5 rounded'>
+                <span className='absolute bottom-1 left-1 text-[10px] bg-secondary text-white px-1.5 py-0.5 rounded-md'>
                   主圖
                 </span>
               )}

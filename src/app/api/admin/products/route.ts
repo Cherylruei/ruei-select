@@ -7,13 +7,26 @@ function extractLineId(email: string | undefined): string | null {
   return match ? match[1] : null
 }
 
+interface SupplierRow {
+  id: string
+  name: string
+  tag: string | null
+}
+
 interface ProductRow {
   id: string
   name: string
+  supplier_id: string | null
+  supplier: SupplierRow | null
   product_variants: { id: string; specs: Record<string, string>; price: number }[]
 }
 
-export interface ProductWithVariants extends ProductOption {
+export interface ProductWithVariants {
+  id: string
+  name: string
+  supplier_id: string | null
+  supplier_name: string | null
+  supplier_tag: string | null
   variants: VariantOption[]
 }
 
@@ -55,7 +68,9 @@ export async function GET() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: rows, error } = (await (db as any)
       .from('products')
-      .select('id, name, product_variants(id, specs, price)')
+      .select(
+        'id, name, supplier_id, supplier:suppliers(id, name, tag), product_variants(id, specs, price)'
+      )
       .eq('store_id', store.id)
       .eq('status', 'active')
       .order('name')) as {
@@ -68,6 +83,9 @@ export async function GET() {
     const products: ProductWithVariants[] = (rows ?? []).map((row) => ({
       id: row.id,
       name: row.name,
+      supplier_id: row.supplier_id,
+      supplier_name: row.supplier?.name ?? null,
+      supplier_tag: row.supplier?.tag ?? null,
       variants: row.product_variants.map((v) => ({
         id: v.id,
         specs: v.specs,

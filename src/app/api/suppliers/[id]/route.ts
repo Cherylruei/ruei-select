@@ -62,8 +62,29 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
-    const body = (await request.json()) as { name?: string; note?: string; website_url?: string }
+    const body = (await request.json()) as {
+      name?: string
+      tag?: string
+      line_group?: string
+      phone?: string
+      currency?: string
+      avg_arrival_days?: number | null
+      note?: string
+      website_url?: string
+    }
     const name = body.name?.trim() ?? ''
+    const tag = body.tag?.trim() || null
+    const line_group = body.line_group?.trim() || null
+    const phone = body.phone?.trim() || null
+    const currency = (['TWD', 'JPY', 'USD', 'HKD'] as const).includes(body.currency as never)
+      ? (body.currency as 'TWD' | 'JPY' | 'USD' | 'HKD')
+      : undefined
+    const avg_arrival_days =
+      typeof body.avg_arrival_days === 'number' && body.avg_arrival_days >= 0
+        ? body.avg_arrival_days
+        : body.avg_arrival_days === null
+          ? null
+          : undefined
     const note = body.note?.trim() || null
     const website_url = body.website_url?.trim() || null
 
@@ -73,13 +94,18 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
     if (name.length > 30) {
       return NextResponse.json({ error: '廠商名稱不能超過 30 個字' }, { status: 400 })
     }
-    if (note && note.length > 100) {
-      return NextResponse.json({ error: '備註不能超過 100 個字' }, { status: 400 })
+    if (tag && tag.length > 8) {
+      return NextResponse.json({ error: '廠商標記不能超過 8 個字' }, { status: 400 })
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const patch: Record<string, unknown> = { name, note, website_url, tag, line_group, phone }
+    if (currency !== undefined) patch.currency = currency
+    if (avg_arrival_days !== undefined) patch.avg_arrival_days = avg_arrival_days
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: updated, error } = (await (serviceClient.from('suppliers') as any)
-      .update({ name, note, website_url })
+      .update(patch)
       .eq('id', id)
       .select()
       .single()) as { data: Supplier | null; error: { message: string } | null }

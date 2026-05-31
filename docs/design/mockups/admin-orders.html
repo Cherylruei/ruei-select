@@ -1,752 +1,1784 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="zh-Hant" data-variant="forest">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>芮選 · 商家後台 · 訂單管理</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="_tailwind-config.js"></script>
-  <style>
-    body { font-family: var(--font-body); }
-    .placeholder-img {
-      background: repeating-linear-gradient(135deg, var(--ink-100), var(--ink-100) 8px, var(--ink-50) 8px, var(--ink-50) 16px);
-    }
-    .logo-mark { fill: var(--c-primary); }
-    .logo-leaf { fill: var(--c-secondary); opacity: 0.85; }
-    .logo-center { fill: var(--c-primary-bg); }
-    /* custom checkbox */
-    .ck {
-      appearance: none; -webkit-appearance: none;
-      width: 18px; height: 18px; border-radius: 5px;
-      border: 1.5px solid var(--ink-300); background: var(--bg-surface);
-      cursor: pointer; transition: all .15s;
-      position: relative; flex-shrink: 0;
-    }
-    .ck:hover { border-color: var(--c-primary); }
-    .ck:checked {
-      background: var(--c-primary); border-color: var(--c-primary);
-    }
-    .ck:checked::after {
-      content: ""; position: absolute; left: 4px; top: 1px;
-      width: 5px; height: 9px;
-      border: solid white; border-width: 0 2px 2px 0;
-      transform: rotate(45deg);
-    }
-    .ck:indeterminate {
-      background: var(--c-primary); border-color: var(--c-primary);
-    }
-    .ck:indeterminate::after {
-      content: ""; position: absolute; left: 3px; top: 7px;
-      width: 10px; height: 2px; background: white; border-radius: 1px;
-    }
-    .row-checked { background: var(--c-primary-bg) !important; }
-  </style>
-</head>
-<body class="bg-app text-fg">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>芮選 · 商家後台 · 訂單管理</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="_tailwind-config.js"></script>
+    <style>
+      body {
+        font-family: var(--font-body);
+      }
+      .placeholder-img {
+        background: repeating-linear-gradient(
+          135deg,
+          var(--ink-100),
+          var(--ink-100) 8px,
+          var(--ink-50) 8px,
+          var(--ink-50) 16px
+        );
+      }
+      .logo-mark {
+        fill: var(--c-primary);
+      }
+      .logo-leaf {
+        fill: var(--c-secondary);
+        opacity: 0.85;
+      }
+      .logo-center {
+        fill: var(--c-primary-bg);
+      }
+      /* custom checkbox */
+      .ck {
+        appearance: none;
+        -webkit-appearance: none;
+        width: 18px;
+        height: 18px;
+        border-radius: 5px;
+        border: 1.5px solid var(--ink-300);
+        background: var(--bg-surface);
+        cursor: pointer;
+        transition: all 0.15s;
+        position: relative;
+        flex-shrink: 0;
+      }
+      .ck:hover {
+        border-color: var(--c-primary);
+      }
+      .ck:checked {
+        background: var(--c-primary);
+        border-color: var(--c-primary);
+      }
+      .ck:checked::after {
+        content: '';
+        position: absolute;
+        left: 4px;
+        top: 1px;
+        width: 5px;
+        height: 9px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+      .ck:indeterminate {
+        background: var(--c-primary);
+        border-color: var(--c-primary);
+      }
+      .ck:indeterminate::after {
+        content: '';
+        position: absolute;
+        left: 3px;
+        top: 7px;
+        width: 10px;
+        height: 2px;
+        background: white;
+        border-radius: 1px;
+      }
+      .row-checked {
+        background: var(--c-primary-bg) !important;
+      }
 
-  <div class="flex min-h-screen">
-
-    <!-- ===== Sidebar (same as dashboard, 訂單管理 active) ===== -->
-    <aside class="w-60 shrink-0 bg-surface border-r border-line flex flex-col">
-      <div class="px-5 py-5 border-b border-line">
-        <div class="flex items-center gap-2.5">
-          <svg width="36" height="36" viewBox="0 0 40 40">
-            <ellipse class="logo-leaf" cx="32" cy="11" rx="5" ry="3" transform="rotate(35 32 11)" />
-            <circle class="logo-mark" cx="20" cy="11" r="9"/>
-            <circle class="logo-mark" cx="28.56" cy="17.22" r="9"/>
-            <circle class="logo-mark" cx="25.29" cy="27.28" r="9"/>
-            <circle class="logo-mark" cx="14.71" cy="27.28" r="9"/>
-            <circle class="logo-mark" cx="11.44" cy="17.22" r="9"/>
-            <circle class="logo-center" cx="20" cy="20" r="4.5"/>
-          </svg>
-          <div class="leading-none">
-            <div class="font-display font-bold text-lg tracking-wide">芮選</div>
-            <div class="font-mono text-[9px] text-fg-subtle tracking-[0.2em] mt-1">RUEI · SELECT</div>
-          </div>
-        </div>
-        <div class="mt-4 flex items-center gap-2 px-3 py-2 rounded-md bg-sunken">
-          <div class="w-2 h-2 rounded-pill bg-success"></div>
-          <span class="text-xs text-fg-muted">小美的選物店</span>
-        </div>
-      </div>
-
-      <nav class="flex-1 px-3 py-4 space-y-0.5">
-        <div class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase px-3 mb-2">主要</div>
-        <a href="admin-dashboard.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20h16M7 16V10M12 16V6M17 16v-8"/></svg>
-          <span class="flex-1">總覽</span>
-        </a>
-        <a class="flex items-center gap-2.5 px-3 py-2.5 rounded-md bg-primary-bg font-semibold text-sm" style="color:var(--c-primary-hv)">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
-          <span class="flex-1">訂單管理</span>
-          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-primary text-white">6</span>
-        </a>
-        <a class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8l8-4 8 4-8 4-8-4z"/><path d="M4 8v8l8 4 8-4V8"/></svg>
-          <span class="flex-1">商品管理</span>
-          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">42</span>
-        </a>
-        <a class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
-          <span class="flex-1">顧客審核</span>
-          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-warning text-white">3</span>
-        </a>
-        <a class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z"/></svg>
-          <span class="flex-1">許願池</span>
-          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">12</span>
-        </a>
-
-        <div class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase px-3 mt-5 mb-2">設定</div>
-        <a class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9c0-3 3-5 8-5s8 2 8 5-3 5-8 5l-3 3v-3c-3-1-5-3-5-5z"/></svg>
-          <span class="flex-1">供應商</span>
-        </a>
-        <a class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.2-1.7l2-1.5-2-3.5-2.4.8a7 7 0 00-3-1.7L13 2h-2l-.4 2.4a7 7 0 00-3 1.7L5.2 5.3l-2 3.5 2 1.5A7 7 0 005 12c0 .6 0 1.2.2 1.7l-2 1.5 2 3.5 2.4-.8a7 7 0 003 1.7L11 22h2l.4-2.4a7 7 0 003-1.7l2.4.8 2-3.5-2-1.5c.1-.5.2-1.1.2-1.7z"/></svg>
-          <span class="flex-1">賣場設定</span>
-        </a>
-      </nav>
-
-      <div class="p-3 border-t border-line">
-        <div class="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-sunken cursor-pointer">
-          <div class="w-9 h-9 rounded-pill bg-secondary text-white font-display font-bold flex items-center justify-center">C</div>
-          <div class="flex-1 leading-tight">
-            <div class="font-semibold text-sm">Cheryl</div>
-            <div class="font-mono text-[10px] text-fg-subtle">cheryl@ruei.tw</div>
-          </div>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-fg-subtle"><path d="M9 6l6 6-6 6"/></svg>
-        </div>
-      </div>
-    </aside>
-
-    <!-- ===== Main ===== -->
-    <main class="flex-1 overflow-auto">
-
-      <!-- Top bar -->
-      <div class="px-8 py-5 border-b border-line bg-surface/60 backdrop-blur sticky top-0 z-10">
-        <div class="font-mono text-[11px] text-fg-subtle mb-2 flex items-center gap-1.5">
-          <a class="hover:text-fg cursor-pointer">後台</a>
-          <span>›</span>
-          <span class="text-fg">訂單管理</span>
-        </div>
-        <div class="flex items-center justify-between">
-          <div>
-            <h1 class="font-display font-bold text-2xl">訂單管理</h1>
-            <p class="text-sm text-fg-muted mt-0.5">共 <b class="text-fg">42</b> 筆訂單 · <b class="text-warning">6</b> 筆等待處理</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <div class="relative">
-              <input class="w-72 h-10 pl-10 pr-4 rounded-pill border-[1.5px] border-line bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] transition text-sm" placeholder="搜尋訂單號、顧客、商品…" />
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-subtle"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4" stroke-linecap="round"/></svg>
+      /* allocation modal */
+      .scrim {
+        transition: opacity 0.28s var(--ease-out);
+      }
+      .modal-box {
+        transition:
+          transform 0.26s var(--ease-spring),
+          opacity 0.2s var(--ease-out);
+      }
+      .rc {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 11px 13px;
+        border: 1.5px solid var(--border);
+        border-radius: var(--r-md);
+        cursor: pointer;
+        transition: all 0.15s;
+        background: var(--bg-surface);
+      }
+      .rc:hover {
+        border-color: var(--border-strong);
+      }
+      .rc.is-selected {
+        border-color: var(--c-primary);
+        background: var(--c-primary-bg);
+      }
+      .rc-tick {
+        width: 20px;
+        height: 20px;
+        border-radius: 999px;
+        border: 1.5px solid var(--border-strong);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        margin-top: 1px;
+        color: #fff;
+        transition: all 0.15s;
+      }
+      .rc.is-selected .rc-tick {
+        background: var(--c-primary);
+        border-color: var(--c-primary);
+      }
+      .rc .rc-tick svg {
+        opacity: 0;
+      }
+      .rc.is-selected .rc-tick svg {
+        opacity: 1;
+      }
+      .no-scrollbar::-webkit-scrollbar {
+        display: none;
+      }
+      .no-scrollbar {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    </style>
+  </head>
+  <body class="bg-app text-fg">
+    <div class="flex min-h-screen">
+      <!-- ===== Sidebar (same as dashboard, 訂單管理 active) ===== -->
+      <aside class="w-60 shrink-0 bg-surface border-r border-line flex flex-col">
+        <div class="px-5 py-5 border-b border-line">
+          <div class="flex items-center gap-2.5">
+            <svg width="36" height="36" viewBox="0 0 40 40">
+              <ellipse
+                class="logo-leaf"
+                cx="32"
+                cy="11"
+                rx="5"
+                ry="3"
+                transform="rotate(35 32 11)"
+              />
+              <circle class="logo-mark" cx="20" cy="11" r="9" />
+              <circle class="logo-mark" cx="28.56" cy="17.22" r="9" />
+              <circle class="logo-mark" cx="25.29" cy="27.28" r="9" />
+              <circle class="logo-mark" cx="14.71" cy="27.28" r="9" />
+              <circle class="logo-mark" cx="11.44" cy="17.22" r="9" />
+              <circle class="logo-center" cx="20" cy="20" r="4.5" />
+            </svg>
+            <div class="leading-none">
+              <div class="font-display font-bold text-lg tracking-wide">芮選</div>
+              <div class="font-mono text-[9px] text-fg-subtle tracking-[0.2em] mt-1">
+                RUEI · SELECT
+              </div>
             </div>
-            <button class="w-10 h-10 rounded-pill border-[1.5px] border-line hover:bg-sunken flex items-center justify-center" aria-label="export">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></svg>
-            </button>
-            <a href="admin-orders-new.html" class="inline-flex items-center gap-2 h-10 rounded-pill bg-primary text-white px-5 font-display font-semibold shadow-pink hover:bg-primary-hv active:scale-[.97] transition cursor-pointer">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-              代客建單
-            </a>
+          </div>
+          <div class="mt-4 flex items-center gap-2 px-3 py-2 rounded-md bg-sunken">
+            <div class="w-2 h-2 rounded-pill bg-success"></div>
+            <span class="text-xs text-fg-muted">小美的選物店</span>
           </div>
         </div>
-      </div>
 
-      <div class="p-8 space-y-5">
+        <nav class="flex-1 px-3 py-4 space-y-0.5">
+          <div class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase px-3 mb-2">
+            主要
+          </div>
+          <a
+            href="admin-dashboard.html"
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <path d="M4 20h16M7 16V10M12 16V6M17 16v-8" />
+            </svg>
+            <span class="flex-1">總覽</span>
+          </a>
+          <a
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-md bg-primary-bg font-semibold text-sm"
+            style="color: var(--c-primary-hv)"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <path d="M5 8h14l-1 12H6L5 8z" />
+              <path d="M9 8V6a3 3 0 016 0v2" />
+            </svg>
+            <span class="flex-1">訂單管理</span>
+            <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-primary text-white">6</span>
+          </a>
+          <a
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <path d="M4 8l8-4 8 4-8 4-8-4z" />
+              <path d="M4 8v8l8 4 8-4V8" />
+            </svg>
+            <span class="flex-1">商品管理</span>
+            <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted"
+              >42</span
+            >
+          </a>
+          <a
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 20c0-4 4-6 8-6s8 2 8 6" />
+            </svg>
+            <span class="flex-1">顧客審核</span>
+            <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-warning text-white">3</span>
+          </a>
+          <a
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z" />
+            </svg>
+            <span class="flex-1">許願池</span>
+            <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted"
+              >12</span
+            >
+          </a>
 
-        <!-- ===== Pipeline summary (status pipeline) ===== -->
-        <section class="bg-surface border border-line rounded-xl p-5">
-          <div class="flex items-center justify-between mb-4">
+          <div
+            class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase px-3 mt-5 mb-2"
+          >
+            設定
+          </div>
+          <a
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <path d="M4 9c0-3 3-5 8-5s8 2 8 5-3 5-8 5l-3 3v-3c-3-1-5-3-5-5z" />
+            </svg>
+            <span class="flex-1">供應商</span>
+          </a>
+          <a
+            class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+              stroke-linecap="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path
+                d="M19 12a7 7 0 00-.2-1.7l2-1.5-2-3.5-2.4.8a7 7 0 00-3-1.7L13 2h-2l-.4 2.4a7 7 0 00-3 1.7L5.2 5.3l-2 3.5 2 1.5A7 7 0 005 12c0 .6 0 1.2.2 1.7l-2 1.5 2 3.5 2.4-.8a7 7 0 003 1.7L11 22h2l.4-2.4a7 7 0 003-1.7l2.4.8 2-3.5-2-1.5c.1-.5.2-1.1.2-1.7z"
+              />
+            </svg>
+            <span class="flex-1">賣場設定</span>
+          </a>
+        </nav>
+
+        <div class="p-3 border-t border-line">
+          <div
+            class="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-sunken cursor-pointer"
+          >
+            <div
+              class="w-9 h-9 rounded-pill bg-secondary text-white font-display font-bold flex items-center justify-center"
+            >
+              C
+            </div>
+            <div class="flex-1 leading-tight">
+              <div class="font-semibold text-sm">Cheryl</div>
+              <div class="font-mono text-[10px] text-fg-subtle">
+                <a
+                  href="/cdn-cgi/l/email-protection"
+                  class="__cf_email__"
+                  data-cfemail="fc9f94998e8590bc8e899995d2888b"
+                  >[email&#160;protected]</a
+                >
+              </div>
+            </div>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              class="text-fg-subtle"
+            >
+              <path d="M9 6l6 6-6 6" />
+            </svg>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ===== Main ===== -->
+      <main class="flex-1 overflow-auto">
+        <!-- Top bar -->
+        <div class="px-8 py-5 border-b border-line bg-surface/60 backdrop-blur sticky top-0 z-10">
+          <div class="font-mono text-[11px] text-fg-subtle mb-2 flex items-center gap-1.5">
+            <a class="hover:text-fg cursor-pointer">後台</a>
+            <span>›</span>
+            <span class="text-fg">訂單管理</span>
+          </div>
+          <div class="flex items-center justify-between">
             <div>
-              <h2 class="font-display font-bold text-md">處理進度</h2>
-              <p class="text-xs text-fg-muted mt-0.5">本月訂單在各階段的數量</p>
+              <h1 class="font-display font-bold text-2xl">訂單管理</h1>
+              <p class="text-sm text-fg-muted mt-0.5">
+                共 <b class="text-fg">42</b> 筆訂單 · <b class="text-warning">6</b> 筆等待處理
+              </p>
             </div>
-            <span class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase">PIPELINE</span>
-          </div>
-          <div class="grid grid-cols-5 gap-3">
-            <div class="rounded-md border border-line p-3 hover:border-warning cursor-pointer transition">
-              <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-pill bg-warning"></span><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider">待採買</span></div>
-              <div class="font-display font-bold text-2xl mt-1">2</div>
-              <div class="text-[11px] text-fg-subtle mt-1">最久 2 天</div>
-            </div>
-            <div class="rounded-md border border-line p-3 hover:border-info cursor-pointer transition">
-              <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-pill bg-info"></span><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider">已訂購</span></div>
-              <div class="font-display font-bold text-2xl mt-1">1</div>
-              <div class="text-[11px] text-fg-subtle mt-1">廠商備貨中</div>
-            </div>
-            <div class="rounded-md border border-line p-3 hover:border-success cursor-pointer transition">
-              <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-pill bg-success"></span><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider">已配單</span></div>
-              <div class="font-display font-bold text-2xl mt-1">3</div>
-              <div class="text-[11px] text-fg-subtle mt-1">等待顧客結單</div>
-            </div>
-            <div class="rounded-md border border-line p-3 cursor-pointer transition" style="border-color:var(--sakura-300)">
-              <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-pill" style="background:var(--sakura-400)"></span><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider">已結單</span></div>
-              <div class="font-display font-bold text-2xl mt-1">2</div>
-              <div class="text-[11px] text-fg-subtle mt-1">準備出貨</div>
-            </div>
-            <div class="rounded-md border border-line p-3 hover:border-line-strong cursor-pointer transition" style="">
-              <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-pill" style="background:var(--earth-400)"></span><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider">已出貨</span></div>
-              <div class="font-display font-bold text-2xl mt-1">4</div>
-              <div class="text-[11px] text-fg-subtle mt-1">7 天內到貨</div>
-            </div>
-          </div>
-        </section>
-
-        <!-- ===== Orders table ===== -->
-        <section class="bg-surface border border-line rounded-xl overflow-hidden">
-
-          <!-- Status tabs + filters -->
-          <div class="px-5 pt-4 pb-3 border-b border-line">
-            <div class="flex items-center gap-1.5 flex-wrap">
-              <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-primary text-white font-display font-semibold text-xs">
-                全部 <span class="font-mono opacity-80">42</span>
+            <div class="flex items-center gap-2">
+              <div class="relative">
+                <input
+                  class="w-72 h-10 pl-10 pr-4 rounded-pill border-[1.5px] border-line bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] transition text-sm"
+                  placeholder="搜尋訂單號、顧客、商品…"
+                />
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  class="absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-subtle"
+                >
+                  <circle cx="11" cy="11" r="6" />
+                  <path d="M20 20l-4-4" stroke-linecap="round" />
+                </svg>
+              </div>
+              <button
+                class="w-10 h-10 rounded-pill border-[1.5px] border-line hover:bg-sunken flex items-center justify-center"
+                aria-label="export"
+              >
+                <svg
+                  width="18"
+                  height="18"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                >
+                  <path d="M12 4v12M7 11l5 5 5-5M5 20h14" />
+                </svg>
               </button>
-              <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-warning-bg text-warning font-display font-semibold text-xs hover:bg-warning/20 transition">
-                <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>待採買 <span class="font-mono">2</span>
-              </button>
-              <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-info-bg text-info font-display font-semibold text-xs hover:opacity-80 transition">
-                <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已訂購 <span class="font-mono">1</span>
-              </button>
-              <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs hover:opacity-80 transition">
-                <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已配單 <span class="font-mono">3</span>
-              </button>
-              <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-sakura-100 text-sakura-700 font-display font-semibold text-xs hover:opacity-80 transition">
-                <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已結單 <span class="font-mono">2</span>
-              </button>
-              <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-xs hover:opacity-80 transition">
-                <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已出貨 <span class="font-mono">4</span>
-              </button>
-              <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-sunken text-fg-muted font-display font-semibold text-xs hover:bg-ink-200 transition">
-                已完成 <span class="font-mono">30</span>
-              </button>
-              <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">
-                已取消 <span class="font-mono">0</span>
-              </button>
-              <div class="flex-1"></div>
-              <button class="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 9h18M8 3v4M16 3v4"/></svg>
-                本月
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-              </button>
-              <button class="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">
-                供應商
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-              </button>
-            </div>
-          </div>
-
-          <!-- Bulk-action bar (visible when rows are checked) -->
-          <div class="px-5 py-2.5 bg-primary-bg border-b border-line flex items-center gap-3">
-            <span class="font-display font-semibold text-sm" style="color:var(--c-primary-hv)">
-              已選 <span class="font-mono">2</span> 筆
-            </span>
-            <span class="font-mono text-[11px] text-fg-muted">總金額 NT$ 1,760</span>
-            <div class="flex-1"></div>
-            <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-secondary text-white font-display font-semibold text-xs shadow-green hover:bg-secondary-hv">
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-              批次向廠商下單
-            </button>
-            <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill border border-line bg-surface text-fg font-display font-semibold text-xs hover:bg-sunken">
-              標記狀態
-              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-            </button>
-            <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill border border-line bg-surface text-fg-muted font-display font-semibold text-xs hover:bg-sunken">
-              匯出
-            </button>
-            <button class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle" aria-label="clear">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
-            </button>
-          </div>
-
-          <!-- Table -->
-          <table class="w-full">
-            <thead>
-              <tr class="bg-ink-50">
-                <th class="w-10 pl-5 py-2.5"><input type="checkbox" class="ck" /></th>
-                <th class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">訂單</th>
-                <th class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">顧客</th>
-                <th class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">商品</th>
-                <th class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">供應商</th>
-                <th class="text-right px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">金額</th>
-                <th class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">狀態</th>
-                <th class="text-center px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">來源</th>
-                <th class="w-10"></th>
-              </tr>
-            </thead>
-            <tbody class="text-sm">
-
-              <!-- Row 1: 待採買, checked -->
-              <tr class="border-t border-line row-checked cursor-pointer">
-                <td class="pl-5 py-3"><input type="checkbox" class="ck" checked /></td>
-                <td class="px-3 py-3">
-                  <div class="font-mono font-semibold">RS-2412</div>
-                  <div class="font-mono text-[10px] text-fg-subtle">6/17 16:48</div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-pill bg-sakura-300 text-white font-display font-bold text-xs flex items-center justify-center shrink-0">陳</div>
-                    <div class="leading-tight">
-                      <div class="font-semibold">陳小美</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">@cherry</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
-                    <div class="leading-tight min-w-0">
-                      <div class="font-semibold truncate max-w-[200px]">日本直送・手工棉麻寬褲</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">米白 · M · × 1</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]">MIKI</span>
-                </td>
-                <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 1,280</td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-warning-bg text-warning font-display font-semibold text-xs">
-                    <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>待採買
-                  </span>
-                </td>
-                <td class="px-3 py-3 text-center" title="代客建單">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-pill bg-primary-bg text-primary-hv font-display font-bold text-[10px]" title="代客建單">代</span>
-                </td>
-                <td class="px-3">
-                  <button class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 2: 待採買, checked -->
-              <tr class="border-t border-line row-checked cursor-pointer">
-                <td class="pl-5 py-3"><input type="checkbox" class="ck" checked /></td>
-                <td class="px-3 py-3">
-                  <div class="font-mono font-semibold">RS-2411</div>
-                  <div class="font-mono text-[10px] text-fg-subtle">6/17 15:02</div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-pill bg-earth-400 text-white font-display font-bold text-xs flex items-center justify-center shrink-0">A</div>
-                    <div class="leading-tight">
-                      <div class="font-semibold">Anna</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">@anna_w</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
-                    <div class="leading-tight min-w-0">
-                      <div class="font-semibold truncate max-w-[200px]">手工餅乾組・抹茶限定</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">× 1</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]">五分埔</span>
-                </td>
-                <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 480</td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-warning-bg text-warning font-display font-semibold text-xs">
-                    <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>待採買
-                  </span>
-                </td>
-                <td class="px-3 py-3 text-center">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle" title="顧客自下">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z"/></svg>
-                  </span>
-                </td>
-                <td class="px-3">
-                  <button class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 3: 已訂購 -->
-              <tr class="border-t border-line hover:bg-ink-50 cursor-pointer">
-                <td class="pl-5 py-3"><input type="checkbox" class="ck" /></td>
-                <td class="px-3 py-3">
-                  <div class="font-mono font-semibold">RS-2410</div>
-                  <div class="font-mono text-[10px] text-fg-subtle">6/17 14:32</div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-pill bg-forest-400 text-white font-display font-bold text-xs flex items-center justify-center shrink-0">林</div>
-                    <div class="leading-tight">
-                      <div class="font-semibold">林媽媽</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">@linmama</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
-                    <div class="leading-tight min-w-0">
-                      <div class="font-semibold truncate max-w-[200px]">英國有機蜂蜜檸檬茶</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">× 2</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]">Penny Lane</span>
-                </td>
-                <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 680</td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-info-bg text-info font-display font-semibold text-xs">
-                    <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已訂購
-                  </span>
-                </td>
-                <td class="px-3 py-3 text-center">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle" title="顧客自下">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z"/></svg>
-                  </span>
-                </td>
-                <td class="px-3">
-                  <button class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 4: 已配單 (expanded inline) -->
-              <tr class="border-t border-line bg-surface cursor-pointer">
-                <td class="pl-5 py-3 align-top pt-3.5"><input type="checkbox" class="ck" /></td>
-                <td class="px-3 py-3 align-top pt-3.5">
-                  <div class="font-mono font-semibold">RS-2409</div>
-                  <div class="font-mono text-[10px] text-fg-subtle">6/16 21:45</div>
-                </td>
-                <td class="px-3 py-3 align-top pt-3.5">
-                  <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-pill bg-info text-white font-display font-bold text-xs flex items-center justify-center shrink-0">J</div>
-                    <div class="leading-tight">
-                      <div class="font-semibold">Joyce</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">@joyceee</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3 align-top pt-3.5">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
-                    <div class="leading-tight min-w-0">
-                      <div class="font-semibold truncate max-w-[200px]">櫻花粉保溫瓶 500ml</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">櫻花粉 · × 1</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3 align-top pt-3.5">
-                  <span class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]">MIKI</span>
-                </td>
-                <td class="px-3 py-3 text-right font-mono font-semibold align-top pt-3.5">NT$ 1,980</td>
-                <td class="px-3 py-3 align-top pt-3.5">
-                  <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs">
-                    <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已配單
-                  </span>
-                </td>
-                <td class="px-3 py-3 text-center align-top pt-3.5">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle" title="顧客自下">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z"/></svg>
-                  </span>
-                </td>
-                <td class="px-3 align-top pt-3.5">
-                  <button class="w-7 h-7 rounded-pill bg-sunken flex items-center justify-center text-fg" aria-label="collapse">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg>
-                  </button>
-                </td>
-              </tr>
-              <!-- Row 4 expanded body -->
-              <tr class="bg-sunken/40" style="background:var(--bg-sunken)">
-                <td></td>
-                <td colspan="8" class="px-3 pb-4 pt-1">
-                  <div class="grid grid-cols-12 gap-5 px-2">
-                    <!-- Timeline -->
-                    <div class="col-span-5">
-                      <div class="font-display font-bold text-xs mb-2 text-fg-muted">訂單時程</div>
-                      <ol class="relative ml-1">
-                        <li class="pl-5 pb-2.5 relative">
-                          <span class="absolute left-0 top-1 w-2.5 h-2.5 rounded-pill bg-info border-2 border-surface"></span>
-                          <span class="absolute left-[5px] top-3 bottom-0 w-px bg-line"></span>
-                          <div class="text-xs font-semibold">顧客下單</div>
-                          <div class="font-mono text-[10px] text-fg-subtle">6/16 21:45 · 顧客自下</div>
-                        </li>
-                        <li class="pl-5 pb-2.5 relative">
-                          <span class="absolute left-0 top-1 w-2.5 h-2.5 rounded-pill bg-info border-2 border-surface"></span>
-                          <span class="absolute left-[5px] top-3 bottom-0 w-px bg-line"></span>
-                          <div class="text-xs font-semibold">向 MIKI 廠下單</div>
-                          <div class="font-mono text-[10px] text-fg-subtle">6/17 09:12 · Cheryl</div>
-                        </li>
-                        <li class="pl-5 pb-2.5 relative">
-                          <span class="absolute left-0 top-1 w-2.5 h-2.5 rounded-pill bg-success border-2 border-surface"></span>
-                          <span class="absolute left-[5px] top-3 bottom-0 w-px bg-line"></span>
-                          <div class="text-xs font-semibold">商品到貨 · 配單給顧客</div>
-                          <div class="font-mono text-[10px] text-fg-subtle">6/22 11:30</div>
-                        </li>
-                        <li class="pl-5 relative">
-                          <span class="absolute left-0 top-1 w-2.5 h-2.5 rounded-pill bg-ink-200 border-2 border-surface"></span>
-                          <div class="text-xs text-fg-muted">等待顧客結單</div>
-                          <div class="font-mono text-[10px] text-fg-subtle">已通知 · 已等候 2 天</div>
-                        </li>
-                      </ol>
-                    </div>
-                    <!-- Internal cost -->
-                    <div class="col-span-4">
-                      <div class="font-display font-bold text-xs mb-2 text-fg-muted">內部成本</div>
-                      <div class="rounded-md bg-surface border border-line p-3 space-y-1 text-xs">
-                        <div class="flex justify-between"><span class="text-fg-subtle">售價</span><span class="font-mono">NT$ 1,980</span></div>
-                        <div class="flex justify-between"><span class="text-fg-subtle">成本</span><span class="font-mono text-fg-muted">NT$ 1,280</span></div>
-                        <div class="flex justify-between pt-1 mt-1 border-t border-line"><span class="font-semibold">毛利</span><span class="font-mono font-semibold text-success">NT$ 700 (35%)</span></div>
-                      </div>
-                      <div class="mt-2 px-3 py-2 rounded-md bg-warning-bg text-[11px] text-fg-muted">
-                        <span class="font-display font-semibold text-warning">提醒</span> · 顧客已 2 天未結單,建議再次提醒
-                      </div>
-                    </div>
-                    <!-- Quick actions -->
-                    <div class="col-span-3 flex flex-col gap-2">
-                      <div class="font-display font-bold text-xs mb-0 text-fg-muted">快速動作</div>
-                      <button class="h-9 rounded-pill bg-primary text-white font-display font-semibold text-xs shadow-pink hover:bg-primary-hv">提醒顧客結單</button>
-                      <button class="h-9 rounded-pill border border-line bg-surface text-fg font-display font-semibold text-xs hover:bg-sunken">查看完整詳情 →</button>
-                      <button class="h-9 rounded-pill text-fg-muted font-display font-semibold text-xs hover:bg-sunken">取消訂單</button>
-                    </div>
-                  </div>
-                </td>
-              </tr>
-
-              <!-- Row 5: 已結單 -->
-              <tr class="border-t border-line hover:bg-ink-50 cursor-pointer">
-                <td class="pl-5 py-3"><input type="checkbox" class="ck" /></td>
-                <td class="px-3 py-3">
-                  <div class="font-mono font-semibold">RS-2408</div>
-                  <div class="font-mono text-[10px] text-fg-subtle">6/16 19:15</div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-pill bg-sakura-400 text-white font-display font-bold text-xs flex items-center justify-center shrink-0">王</div>
-                    <div class="leading-tight">
-                      <div class="font-semibold">王太太</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">@wangmom</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
-                    <div class="leading-tight min-w-0">
-                      <div class="font-semibold truncate max-w-[200px]">日本直送・手工棉麻寬褲 +1</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">2 件商品 · × 3</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex gap-1">
-                    <span class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]">MIKI</span>
-                    <span class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]">+1</span>
-                  </div>
-                </td>
-                <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 4,520</td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-sakura-100 text-sakura-700 font-display font-semibold text-xs">
-                    <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已結單
-                  </span>
-                </td>
-                <td class="px-3 py-3 text-center">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle" title="顧客自下">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z"/></svg>
-                  </span>
-                </td>
-                <td class="px-3">
-                  <button class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 6: 已配單 -->
-              <tr class="border-t border-line hover:bg-ink-50 cursor-pointer">
-                <td class="pl-5 py-3"><input type="checkbox" class="ck" /></td>
-                <td class="px-3 py-3">
-                  <div class="font-mono font-semibold">RS-2407</div>
-                  <div class="font-mono text-[10px] text-fg-subtle">6/16 16:20</div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-pill bg-sakura-300 text-white font-display font-bold text-xs flex items-center justify-center shrink-0">陳</div>
-                    <div class="leading-tight">
-                      <div class="font-semibold">陳小美</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">@cherry</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
-                    <div class="leading-tight min-w-0">
-                      <div class="font-semibold truncate max-w-[200px]">英國有機蜂蜜檸檬茶</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">× 1</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]">Penny Lane</span>
-                </td>
-                <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 340</td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs">
-                    <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已配單
-                  </span>
-                </td>
-                <td class="px-3 py-3 text-center">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-pill bg-primary-bg text-primary-hv font-display font-bold text-[10px]" title="代客建單">代</span>
-                </td>
-                <td class="px-3">
-                  <button class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 7: 已出貨 -->
-              <tr class="border-t border-line hover:bg-ink-50 cursor-pointer">
-                <td class="pl-5 py-3"><input type="checkbox" class="ck" /></td>
-                <td class="px-3 py-3">
-                  <div class="font-mono font-semibold">RS-2406</div>
-                  <div class="font-mono text-[10px] text-fg-subtle">6/15 19:12</div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-pill bg-secondary text-white font-display font-bold text-xs flex items-center justify-center shrink-0">C</div>
-                    <div class="leading-tight">
-                      <div class="font-semibold">Cheryl</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">@cheryl</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
-                    <div class="leading-tight min-w-0">
-                      <div class="font-semibold truncate max-w-[200px]">英國有機蜂蜜檸檬茶</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">× 1 · 7-11 興安門市</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]">Penny Lane</span>
-                </td>
-                <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 340</td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-xs">
-                    <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已出貨
-                  </span>
-                </td>
-                <td class="px-3 py-3 text-center">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle" title="顧客自下">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z"/></svg>
-                  </span>
-                </td>
-                <td class="px-3">
-                  <button class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
-                  </button>
-                </td>
-              </tr>
-
-              <!-- Row 8: 已完成 (muted) -->
-              <tr class="border-t border-line hover:bg-ink-50 cursor-pointer text-fg-muted">
-                <td class="pl-5 py-3"><input type="checkbox" class="ck" /></td>
-                <td class="px-3 py-3">
-                  <div class="font-mono">RS-2405</div>
-                  <div class="font-mono text-[10px] text-fg-subtle">6/14 10:08</div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-7 h-7 rounded-pill bg-forest-400 text-white font-display font-bold text-xs flex items-center justify-center shrink-0 opacity-70">林</div>
-                    <div class="leading-tight">
-                      <div>林媽媽</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">@linmama</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <div class="flex items-center gap-2">
-                    <div class="w-8 h-8 rounded-md placeholder-img shrink-0 opacity-70"></div>
-                    <div class="leading-tight min-w-0">
-                      <div class="truncate max-w-[200px]">手工餅乾組</div>
-                      <div class="font-mono text-[10px] text-fg-subtle">× 2</div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center h-5 px-2 rounded-pill bg-ink-100 text-fg-subtle font-display font-semibold text-[10px]">五分埔</span>
-                </td>
-                <td class="px-3 py-3 text-right font-mono">NT$ 960</td>
-                <td class="px-3 py-3">
-                  <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-sunken text-fg-muted font-display font-semibold text-xs">
-                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>已完成
-                  </span>
-                </td>
-                <td class="px-3 py-3 text-center">
-                  <span class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle" title="顧客自下">
-                    <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z"/></svg>
-                  </span>
-                </td>
-                <td class="px-3">
-                  <button class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
-                  </button>
-                </td>
-              </tr>
-
-            </tbody>
-          </table>
-
-          <!-- Pagination + legend -->
-          <div class="px-5 py-3 border-t border-line bg-ink-50 flex items-center justify-between">
-            <div class="flex items-center gap-4 text-[11px] text-fg-muted">
-              <span>顯示 1–8 / 42 筆</span>
-              <span class="flex items-center gap-1">
-                <span class="inline-flex items-center justify-center w-4 h-4 rounded-pill bg-primary-bg text-primary-hv font-display font-bold text-[8px]">代</span>
+              <a
+                href="admin-orders-new.html"
+                class="inline-flex items-center gap-2 h-10 rounded-pill bg-primary text-white px-5 font-display font-semibold shadow-pink hover:bg-primary-hv active:scale-[.97] transition cursor-pointer"
+              >
+                <svg
+                  width="16"
+                  height="16"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                >
+                  <path d="M12 5v14M5 12h14" />
+                </svg>
                 代客建單
-              </span>
-              <span class="flex items-center gap-1">
-                <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z"/></svg>
-                顧客自下
-              </span>
-            </div>
-            <div class="flex items-center gap-1">
-              <button class="w-7 h-7 rounded-pill text-fg-subtle hover:bg-sunken flex items-center justify-center disabled:opacity-30" disabled>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
-              </button>
-              <button class="w-7 h-7 rounded-pill bg-primary text-white font-mono text-xs font-semibold flex items-center justify-center">1</button>
-              <button class="w-7 h-7 rounded-pill text-fg hover:bg-sunken font-mono text-xs flex items-center justify-center">2</button>
-              <button class="w-7 h-7 rounded-pill text-fg hover:bg-sunken font-mono text-xs flex items-center justify-center">3</button>
-              <span class="text-fg-subtle text-xs px-1">…</span>
-              <button class="w-7 h-7 rounded-pill text-fg hover:bg-sunken font-mono text-xs flex items-center justify-center">6</button>
-              <button class="w-7 h-7 rounded-pill text-fg hover:bg-sunken flex items-center justify-center">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
-              </button>
+              </a>
             </div>
           </div>
-        </section>
+        </div>
 
-        <!-- bottom hint -->
-        <div class="text-center py-2 font-mono text-[10px] text-fg-subtle tracking-[0.15em]">
-          芮選 · 訂單管理 · DESIGN MOCKUP
+        <div class="p-8 space-y-5">
+          <!-- ===== Pipeline summary (status pipeline) ===== -->
+          <section class="bg-surface border border-line rounded-xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h2 class="font-display font-bold text-md">處理進度</h2>
+                <p class="text-xs text-fg-muted mt-0.5">本月訂單在各階段的數量</p>
+              </div>
+              <span class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase"
+                >PIPELINE</span
+              >
+            </div>
+            <div class="grid grid-cols-5 gap-3">
+              <div
+                class="rounded-md border border-line p-3 hover:border-warning cursor-pointer transition"
+              >
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-pill bg-warning"></span
+                  ><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider"
+                    >待採買</span
+                  >
+                </div>
+                <div class="font-display font-bold text-2xl mt-1">2</div>
+                <div class="text-[11px] text-fg-subtle mt-1">最久 2 天</div>
+              </div>
+              <div
+                class="rounded-md border border-line p-3 hover:border-info cursor-pointer transition"
+              >
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-pill bg-info"></span
+                  ><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider"
+                    >已訂購</span
+                  >
+                </div>
+                <div class="font-display font-bold text-2xl mt-1">1</div>
+                <div class="text-[11px] text-fg-subtle mt-1">廠商備貨中</div>
+              </div>
+              <div
+                class="rounded-md border border-line p-3 hover:border-success cursor-pointer transition"
+              >
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-pill bg-success"></span
+                  ><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider"
+                    >已配單</span
+                  >
+                </div>
+                <div class="font-display font-bold text-2xl mt-1">3</div>
+                <div class="text-[11px] text-fg-subtle mt-1">等待顧客結單</div>
+              </div>
+              <div
+                class="rounded-md border border-line p-3 cursor-pointer transition"
+                style="border-color: var(--sakura-300)"
+              >
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-pill" style="background: var(--sakura-400)"></span
+                  ><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider"
+                    >已結單</span
+                  >
+                </div>
+                <div class="font-display font-bold text-2xl mt-1">2</div>
+                <div class="text-[11px] text-fg-subtle mt-1">準備出貨</div>
+              </div>
+              <div
+                class="rounded-md border border-line p-3 hover:border-line-strong cursor-pointer transition"
+                style=""
+              >
+                <div class="flex items-center gap-1.5">
+                  <span class="w-2 h-2 rounded-pill" style="background: var(--earth-400)"></span
+                  ><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider"
+                    >已出貨</span
+                  >
+                </div>
+                <div class="font-display font-bold text-2xl mt-1">4</div>
+                <div class="text-[11px] text-fg-subtle mt-1">7 天內到貨</div>
+              </div>
+            </div>
+          </section>
+
+          <!-- ===== Orders table ===== -->
+          <section class="bg-surface border border-line rounded-xl overflow-hidden">
+            <!-- Status tabs + filters -->
+            <div class="px-5 pt-4 pb-3 border-b border-line">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <button
+                  class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-primary text-white font-display font-semibold text-xs"
+                >
+                  全部 <span class="font-mono opacity-80">42</span>
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-warning-bg text-warning font-display font-semibold text-xs hover:bg-warning/20 transition"
+                >
+                  <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>待採買
+                  <span class="font-mono">2</span>
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-info-bg text-info font-display font-semibold text-xs hover:opacity-80 transition"
+                >
+                  <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已訂購
+                  <span class="font-mono">1</span>
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs hover:opacity-80 transition"
+                >
+                  <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已配單
+                  <span class="font-mono">3</span>
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-sakura-100 text-sakura-700 font-display font-semibold text-xs hover:opacity-80 transition"
+                >
+                  <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已結單
+                  <span class="font-mono">2</span>
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-xs hover:opacity-80 transition"
+                >
+                  <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已出貨
+                  <span class="font-mono">4</span>
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-sunken text-fg-muted font-display font-semibold text-xs hover:bg-ink-200 transition"
+                >
+                  已完成 <span class="font-mono">30</span>
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition"
+                >
+                  已取消 <span class="font-mono">0</span>
+                </button>
+                <div class="flex-1"></div>
+                <button
+                  class="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition"
+                >
+                  <svg
+                    width="13"
+                    height="13"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  >
+                    <rect x="3" y="5" width="18" height="16" rx="2" />
+                    <path d="M3 9h18M8 3v4M16 3v4" />
+                  </svg>
+                  本月
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+                <button
+                  class="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition"
+                >
+                  供應商
+                  <svg
+                    width="10"
+                    height="10"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.4"
+                    stroke-linecap="round"
+                  >
+                    <path d="M6 9l6 6 6-6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Bulk-action bar (visible when rows are checked · contextual by status) -->
+            <div
+              id="bulkBar"
+              class="px-5 py-2.5 bg-primary-bg border-b border-line flex items-center gap-3 hidden"
+            >
+              <span class="font-display font-semibold text-sm" style="color: var(--c-primary-hv)">
+                已選 <span class="font-mono" id="selCount">0</span> 筆
+              </span>
+              <span class="font-mono text-[11px] text-fg-muted" id="selAmount">總金額 NT$ 0</span>
+              <span class="font-mono text-[10px] text-fg-subtle" id="selHint"></span>
+              <div class="flex-1"></div>
+              <div id="bulkActions" class="flex items-center gap-2"></div>
+              <button
+                onclick="clearSelection()"
+                class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle"
+                aria-label="clear"
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                >
+                  <path d="M6 6l12 12M6 18L18 6" />
+                </svg>
+              </button>
+            </div>
+
+            <!-- Table -->
+            <table class="w-full">
+              <thead>
+                <tr class="bg-ink-50">
+                  <th class="w-10 pl-5 py-2.5"><input type="checkbox" class="ck" /></th>
+                  <th
+                    class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted"
+                  >
+                    訂單
+                  </th>
+                  <th
+                    class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted"
+                  >
+                    顧客
+                  </th>
+                  <th
+                    class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted"
+                  >
+                    商品
+                  </th>
+                  <th
+                    class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted"
+                  >
+                    供應商
+                  </th>
+                  <th
+                    class="text-right px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted"
+                  >
+                    金額
+                  </th>
+                  <th
+                    class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted"
+                  >
+                    狀態
+                  </th>
+                  <th
+                    class="text-center px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted"
+                  >
+                    來源
+                  </th>
+                  <th class="w-10"></th>
+                </tr>
+              </thead>
+              <tbody class="text-sm">
+                <!-- Row 1: 待採買, checked -->
+                <tr class="border-t border-line row-checked cursor-pointer">
+                  <td class="pl-5 py-3"><input type="checkbox" class="ck" checked /></td>
+                  <td class="px-3 py-3">
+                    <div class="font-mono font-semibold">RS-2412</div>
+                    <div class="font-mono text-[10px] text-fg-subtle">6/17 16:48</div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-pill bg-sakura-300 text-white font-display font-bold text-xs flex items-center justify-center shrink-0"
+                      >
+                        陳
+                      </div>
+                      <div class="leading-tight">
+                        <div class="font-semibold">陳小美</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">@cherry</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
+                      <div class="leading-tight min-w-0">
+                        <div class="font-semibold truncate max-w-[200px]">
+                          日本直送・手工棉麻寬褲
+                        </div>
+                        <div class="font-mono text-[10px] text-fg-subtle">米白 · M · × 1</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]"
+                      >MIKI</span
+                    >
+                  </td>
+                  <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 1,280</td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-warning-bg text-warning font-display font-semibold text-xs"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>待採買
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 text-center" title="代客建單">
+                    <span
+                      class="inline-flex items-center justify-center w-6 h-6 rounded-pill bg-primary-bg text-primary-hv font-display font-bold text-[10px]"
+                      title="代客建單"
+                      >代</span
+                    >
+                  </td>
+                  <td class="px-3">
+                    <button
+                      class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="5" cy="12" r="1.6" />
+                        <circle cx="12" cy="12" r="1.6" />
+                        <circle cx="19" cy="12" r="1.6" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 2: 待採買, checked -->
+                <tr class="border-t border-line row-checked cursor-pointer">
+                  <td class="pl-5 py-3"><input type="checkbox" class="ck" checked /></td>
+                  <td class="px-3 py-3">
+                    <div class="font-mono font-semibold">RS-2411</div>
+                    <div class="font-mono text-[10px] text-fg-subtle">6/17 15:02</div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-pill bg-earth-400 text-white font-display font-bold text-xs flex items-center justify-center shrink-0"
+                      >
+                        A
+                      </div>
+                      <div class="leading-tight">
+                        <div class="font-semibold">Anna</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">@anna_w</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
+                      <div class="leading-tight min-w-0">
+                        <div class="font-semibold truncate max-w-[200px]">手工餅乾組・抹茶限定</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">× 1</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]"
+                      >五分埔</span
+                    >
+                  </td>
+                  <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 480</td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-warning-bg text-warning font-display font-semibold text-xs"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>待採買
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 text-center">
+                    <span
+                      class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle"
+                      title="顧客自下"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z" />
+                      </svg>
+                    </span>
+                  </td>
+                  <td class="px-3">
+                    <button
+                      class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="5" cy="12" r="1.6" />
+                        <circle cx="12" cy="12" r="1.6" />
+                        <circle cx="19" cy="12" r="1.6" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 3: 已訂購 -->
+                <tr class="border-t border-line hover:bg-ink-50 cursor-pointer">
+                  <td class="pl-5 py-3"><input type="checkbox" class="ck" /></td>
+                  <td class="px-3 py-3">
+                    <div class="font-mono font-semibold">RS-2410</div>
+                    <div class="font-mono text-[10px] text-fg-subtle">6/17 14:32</div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-pill bg-forest-400 text-white font-display font-bold text-xs flex items-center justify-center shrink-0"
+                      >
+                        林
+                      </div>
+                      <div class="leading-tight">
+                        <div class="font-semibold">林媽媽</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">@linmama</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
+                      <div class="leading-tight min-w-0">
+                        <div class="font-semibold truncate max-w-[200px]">英國有機蜂蜜檸檬茶</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">× 2</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]"
+                      >Penny Lane</span
+                    >
+                  </td>
+                  <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 680</td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-info-bg text-info font-display font-semibold text-xs"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已訂購
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 text-center">
+                    <span
+                      class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle"
+                      title="顧客自下"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z" />
+                      </svg>
+                    </span>
+                  </td>
+                  <td class="px-3">
+                    <button
+                      class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="5" cy="12" r="1.6" />
+                        <circle cx="12" cy="12" r="1.6" />
+                        <circle cx="19" cy="12" r="1.6" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 4: 已配單 (expanded inline) -->
+                <tr class="border-t border-line bg-surface cursor-pointer">
+                  <td class="pl-5 py-3 align-top pt-3.5"><input type="checkbox" class="ck" /></td>
+                  <td class="px-3 py-3 align-top pt-3.5">
+                    <div class="font-mono font-semibold">RS-2409</div>
+                    <div class="font-mono text-[10px] text-fg-subtle">6/16 21:45</div>
+                  </td>
+                  <td class="px-3 py-3 align-top pt-3.5">
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-pill bg-info text-white font-display font-bold text-xs flex items-center justify-center shrink-0"
+                      >
+                        J
+                      </div>
+                      <div class="leading-tight">
+                        <div class="font-semibold">Joyce</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">@joyceee</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3 align-top pt-3.5">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
+                      <div class="leading-tight min-w-0">
+                        <div class="font-semibold truncate max-w-[200px]">櫻花粉保溫瓶 500ml</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">櫻花粉 · × 1</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3 align-top pt-3.5">
+                    <span
+                      class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]"
+                      >MIKI</span
+                    >
+                  </td>
+                  <td class="px-3 py-3 text-right font-mono font-semibold align-top pt-3.5">
+                    NT$ 1,980
+                  </td>
+                  <td class="px-3 py-3 align-top pt-3.5">
+                    <span
+                      class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已配單
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 text-center align-top pt-3.5">
+                    <span
+                      class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle"
+                      title="顧客自下"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z" />
+                      </svg>
+                    </span>
+                  </td>
+                  <td class="px-3 align-top pt-3.5">
+                    <button
+                      class="w-7 h-7 rounded-pill bg-sunken flex items-center justify-center text-fg"
+                      aria-label="collapse"
+                    >
+                      <svg
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.2"
+                        stroke-linecap="round"
+                      >
+                        <path d="M6 15l6-6 6 6" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+                <!-- Row 4 expanded body -->
+                <tr class="bg-sunken/40" style="background: var(--bg-sunken)">
+                  <td></td>
+                  <td colspan="8" class="px-3 pb-4 pt-1">
+                    <div class="grid grid-cols-12 gap-5 px-2">
+                      <!-- Timeline -->
+                      <div class="col-span-5">
+                        <div class="font-display font-bold text-xs mb-2 text-fg-muted">
+                          訂單時程
+                        </div>
+                        <ol class="relative ml-1">
+                          <li class="pl-5 pb-2.5 relative">
+                            <span
+                              class="absolute left-0 top-1 w-2.5 h-2.5 rounded-pill bg-info border-2 border-surface"
+                            ></span>
+                            <span class="absolute left-[5px] top-3 bottom-0 w-px bg-line"></span>
+                            <div class="text-xs font-semibold">顧客下單</div>
+                            <div class="font-mono text-[10px] text-fg-subtle">
+                              6/16 21:45 · 顧客自下
+                            </div>
+                          </li>
+                          <li class="pl-5 pb-2.5 relative">
+                            <span
+                              class="absolute left-0 top-1 w-2.5 h-2.5 rounded-pill bg-info border-2 border-surface"
+                            ></span>
+                            <span class="absolute left-[5px] top-3 bottom-0 w-px bg-line"></span>
+                            <div class="text-xs font-semibold">向 MIKI 廠下單</div>
+                            <div class="font-mono text-[10px] text-fg-subtle">
+                              6/17 09:12 · Cheryl
+                            </div>
+                          </li>
+                          <li class="pl-5 pb-2.5 relative">
+                            <span
+                              class="absolute left-0 top-1 w-2.5 h-2.5 rounded-pill bg-success border-2 border-surface"
+                            ></span>
+                            <span class="absolute left-[5px] top-3 bottom-0 w-px bg-line"></span>
+                            <div class="text-xs font-semibold">商品到貨 · 配單給顧客</div>
+                            <div class="font-mono text-[10px] text-fg-subtle">6/22 11:30</div>
+                          </li>
+                          <li class="pl-5 relative">
+                            <span
+                              class="absolute left-0 top-1 w-2.5 h-2.5 rounded-pill bg-ink-200 border-2 border-surface"
+                            ></span>
+                            <div class="text-xs text-fg-muted">等待顧客結單</div>
+                            <div class="font-mono text-[10px] text-fg-subtle">
+                              已通知 · 已等候 2 天
+                            </div>
+                          </li>
+                        </ol>
+                      </div>
+                      <!-- Internal cost -->
+                      <div class="col-span-4">
+                        <div class="font-display font-bold text-xs mb-2 text-fg-muted">
+                          內部成本
+                        </div>
+                        <div class="rounded-md bg-surface border border-line p-3 space-y-1 text-xs">
+                          <div class="flex justify-between">
+                            <span class="text-fg-subtle">售價</span
+                            ><span class="font-mono">NT$ 1,980</span>
+                          </div>
+                          <div class="flex justify-between">
+                            <span class="text-fg-subtle">成本</span
+                            ><span class="font-mono text-fg-muted">NT$ 1,280</span>
+                          </div>
+                          <div class="flex justify-between pt-1 mt-1 border-t border-line">
+                            <span class="font-semibold">毛利</span
+                            ><span class="font-mono font-semibold text-success">NT$ 700 (35%)</span>
+                          </div>
+                        </div>
+                        <div
+                          class="mt-2 px-3 py-2 rounded-md bg-warning-bg text-[11px] text-fg-muted"
+                        >
+                          <span class="font-display font-semibold text-warning">提醒</span> · 顧客已
+                          2 天未結單,建議再次提醒
+                        </div>
+                      </div>
+                      <!-- Quick actions -->
+                      <div class="col-span-3 flex flex-col gap-2">
+                        <div class="font-display font-bold text-xs mb-0 text-fg-muted">
+                          快速動作
+                        </div>
+                        <button
+                          class="h-9 rounded-pill bg-primary text-white font-display font-semibold text-xs shadow-pink hover:bg-primary-hv"
+                        >
+                          提醒顧客結單
+                        </button>
+                        <button
+                          class="h-9 rounded-pill border border-line bg-surface text-fg font-display font-semibold text-xs hover:bg-sunken"
+                        >
+                          查看完整詳情 →
+                        </button>
+                        <button
+                          class="h-9 rounded-pill text-fg-muted font-display font-semibold text-xs hover:bg-sunken"
+                        >
+                          取消訂單
+                        </button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+
+                <!-- Row 5: 已結單 -->
+                <tr class="border-t border-line hover:bg-ink-50 cursor-pointer">
+                  <td class="pl-5 py-3"><input type="checkbox" class="ck" /></td>
+                  <td class="px-3 py-3">
+                    <div class="font-mono font-semibold">RS-2408</div>
+                    <div class="font-mono text-[10px] text-fg-subtle">6/16 19:15</div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-pill bg-sakura-400 text-white font-display font-bold text-xs flex items-center justify-center shrink-0"
+                      >
+                        王
+                      </div>
+                      <div class="leading-tight">
+                        <div class="font-semibold">王太太</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">@wangmom</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
+                      <div class="leading-tight min-w-0">
+                        <div class="font-semibold truncate max-w-[200px]">
+                          日本直送・手工棉麻寬褲 +1
+                        </div>
+                        <div class="font-mono text-[10px] text-fg-subtle">2 件商品 · × 3</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex gap-1">
+                      <span
+                        class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]"
+                        >MIKI</span
+                      >
+                      <span
+                        class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]"
+                        >+1</span
+                      >
+                    </div>
+                  </td>
+                  <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 4,520</td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-sakura-100 text-sakura-700 font-display font-semibold text-xs"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已結單
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 text-center">
+                    <span
+                      class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle"
+                      title="顧客自下"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z" />
+                      </svg>
+                    </span>
+                  </td>
+                  <td class="px-3">
+                    <button
+                      class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="5" cy="12" r="1.6" />
+                        <circle cx="12" cy="12" r="1.6" />
+                        <circle cx="19" cy="12" r="1.6" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 6: 已配單 -->
+                <tr class="border-t border-line hover:bg-ink-50 cursor-pointer">
+                  <td class="pl-5 py-3"><input type="checkbox" class="ck" /></td>
+                  <td class="px-3 py-3">
+                    <div class="font-mono font-semibold">RS-2407</div>
+                    <div class="font-mono text-[10px] text-fg-subtle">6/16 16:20</div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-pill bg-sakura-300 text-white font-display font-bold text-xs flex items-center justify-center shrink-0"
+                      >
+                        陳
+                      </div>
+                      <div class="leading-tight">
+                        <div class="font-semibold">陳小美</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">@cherry</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
+                      <div class="leading-tight min-w-0">
+                        <div class="font-semibold truncate max-w-[200px]">英國有機蜂蜜檸檬茶</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">× 1</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]"
+                      >Penny Lane</span
+                    >
+                  </td>
+                  <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 340</td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已配單
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 text-center">
+                    <span
+                      class="inline-flex items-center justify-center w-6 h-6 rounded-pill bg-primary-bg text-primary-hv font-display font-bold text-[10px]"
+                      title="代客建單"
+                      >代</span
+                    >
+                  </td>
+                  <td class="px-3">
+                    <button
+                      class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="5" cy="12" r="1.6" />
+                        <circle cx="12" cy="12" r="1.6" />
+                        <circle cx="19" cy="12" r="1.6" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 7: 已出貨 -->
+                <tr class="border-t border-line hover:bg-ink-50 cursor-pointer">
+                  <td class="pl-5 py-3"><input type="checkbox" class="ck" /></td>
+                  <td class="px-3 py-3">
+                    <div class="font-mono font-semibold">RS-2406</div>
+                    <div class="font-mono text-[10px] text-fg-subtle">6/15 19:12</div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-pill bg-secondary text-white font-display font-bold text-xs flex items-center justify-center shrink-0"
+                      >
+                        C
+                      </div>
+                      <div class="leading-tight">
+                        <div class="font-semibold">Cheryl</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">@cheryl</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-md placeholder-img shrink-0"></div>
+                      <div class="leading-tight min-w-0">
+                        <div class="font-semibold truncate max-w-[200px]">英國有機蜂蜜檸檬茶</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">× 1 · 7-11 興安門市</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]"
+                      >Penny Lane</span
+                    >
+                  </td>
+                  <td class="px-3 py-3 text-right font-mono font-semibold">NT$ 340</td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-xs"
+                    >
+                      <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已出貨
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 text-center">
+                    <span
+                      class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle"
+                      title="顧客自下"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z" />
+                      </svg>
+                    </span>
+                  </td>
+                  <td class="px-3">
+                    <button
+                      class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="5" cy="12" r="1.6" />
+                        <circle cx="12" cy="12" r="1.6" />
+                        <circle cx="19" cy="12" r="1.6" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+
+                <!-- Row 8: 已完成 (muted) -->
+                <tr class="border-t border-line hover:bg-ink-50 cursor-pointer text-fg-muted">
+                  <td class="pl-5 py-3"><input type="checkbox" class="ck" /></td>
+                  <td class="px-3 py-3">
+                    <div class="font-mono">RS-2405</div>
+                    <div class="font-mono text-[10px] text-fg-subtle">6/14 10:08</div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div
+                        class="w-7 h-7 rounded-pill bg-forest-400 text-white font-display font-bold text-xs flex items-center justify-center shrink-0 opacity-70"
+                      >
+                        林
+                      </div>
+                      <div class="leading-tight">
+                        <div>林媽媽</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">@linmama</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <div class="flex items-center gap-2">
+                      <div class="w-8 h-8 rounded-md placeholder-img shrink-0 opacity-70"></div>
+                      <div class="leading-tight min-w-0">
+                        <div class="truncate max-w-[200px]">手工餅乾組</div>
+                        <div class="font-mono text-[10px] text-fg-subtle">× 2</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center h-5 px-2 rounded-pill bg-ink-100 text-fg-subtle font-display font-semibold text-[10px]"
+                      >五分埔</span
+                    >
+                  </td>
+                  <td class="px-3 py-3 text-right font-mono">NT$ 960</td>
+                  <td class="px-3 py-3">
+                    <span
+                      class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-sunken text-fg-muted font-display font-semibold text-xs"
+                    >
+                      <svg
+                        width="10"
+                        height="10"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2.6"
+                        stroke-linecap="round"
+                      >
+                        <path d="M5 12l4 4 10-10" /></svg
+                      >已完成
+                    </span>
+                  </td>
+                  <td class="px-3 py-3 text-center">
+                    <span
+                      class="inline-flex items-center justify-center w-6 h-6 rounded-pill text-fg-subtle"
+                      title="顧客自下"
+                    >
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z" />
+                      </svg>
+                    </span>
+                  </td>
+                  <td class="px-3">
+                    <button
+                      class="w-7 h-7 rounded-pill hover:bg-surface flex items-center justify-center text-fg-subtle"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="5" cy="12" r="1.6" />
+                        <circle cx="12" cy="12" r="1.6" />
+                        <circle cx="19" cy="12" r="1.6" />
+                      </svg>
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+
+            <!-- Pagination + legend -->
+            <div class="px-5 py-3 border-t border-line bg-ink-50 flex items-center justify-between">
+              <div class="flex items-center gap-4 text-[11px] text-fg-muted">
+                <span>顯示 1–8 / 42 筆</span>
+                <span class="flex items-center gap-1">
+                  <span
+                    class="inline-flex items-center justify-center w-4 h-4 rounded-pill bg-primary-bg text-primary-hv font-display font-bold text-[8px]"
+                    >代</span
+                  >
+                  代客建單
+                </span>
+                <span class="flex items-center gap-1">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M20 4H4l8 6 8-6zM4 6v12h16V6l-8 6-8-6z" />
+                  </svg>
+                  顧客自下
+                </span>
+              </div>
+              <div class="flex items-center gap-1">
+                <button
+                  class="w-7 h-7 rounded-pill text-fg-subtle hover:bg-sunken flex items-center justify-center disabled:opacity-30"
+                  disabled
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                  >
+                    <path d="M15 6l-6 6 6 6" />
+                  </svg>
+                </button>
+                <button
+                  class="w-7 h-7 rounded-pill bg-primary text-white font-mono text-xs font-semibold flex items-center justify-center"
+                >
+                  1
+                </button>
+                <button
+                  class="w-7 h-7 rounded-pill text-fg hover:bg-sunken font-mono text-xs flex items-center justify-center"
+                >
+                  2
+                </button>
+                <button
+                  class="w-7 h-7 rounded-pill text-fg hover:bg-sunken font-mono text-xs flex items-center justify-center"
+                >
+                  3
+                </button>
+                <span class="text-fg-subtle text-xs px-1">…</span>
+                <button
+                  class="w-7 h-7 rounded-pill text-fg hover:bg-sunken font-mono text-xs flex items-center justify-center"
+                >
+                  6
+                </button>
+                <button
+                  class="w-7 h-7 rounded-pill text-fg hover:bg-sunken flex items-center justify-center"
+                >
+                  <svg
+                    width="14"
+                    height="14"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2.2"
+                    stroke-linecap="round"
+                  >
+                    <path d="M9 6l6 6-6 6" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- bottom hint -->
+          <div class="text-center py-2 font-mono text-[10px] text-fg-subtle tracking-[0.15em]">
+            芮選 · 訂單管理 · DESIGN MOCKUP
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- 批次配單 modal (依商品分組 · 自動 FIFO / 手動)                -->
+    <!-- ============================================================ -->
+    <div id="allocWrap" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+      <div
+        id="allocScrim"
+        class="scrim absolute inset-0 opacity-0"
+        style="background: var(--bg-overlay)"
+        onclick="closeAllocModal()"
+      ></div>
+      <div
+        id="allocBox"
+        class="modal-box relative bg-surface rounded-2xl shadow-lg w-full max-w-[600px] max-h-[88vh] flex flex-col opacity-0 scale-95"
+      >
+        <div class="px-6 py-4 border-b border-line flex items-start gap-3">
+          <div
+            class="w-10 h-10 rounded-pill bg-secondary-bg flex items-center justify-center shrink-0"
+          >
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="var(--c-secondary)"
+              stroke-width="1.9"
+              stroke-linecap="round"
+            >
+              <path d="M3 9l9-5 9 5-9 5-9-5z" />
+              <path d="M3 9v7l9 5 9-5V9" />
+            </svg>
+          </div>
+          <div class="flex-1">
+            <h3 class="font-display font-bold text-lg">批次配單</h3>
+            <p class="text-xs text-fg-muted mt-0.5" id="allocSub">
+              商品到貨後，依下單時間分配給顧客
+            </p>
+          </div>
+          <button
+            onclick="closeAllocModal()"
+            class="w-9 h-9 rounded-pill hover:bg-sunken flex items-center justify-center text-fg-subtle shrink-0"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            >
+              <path d="M6 6l12 12M6 18L18 6" />
+            </svg>
+          </button>
+        </div>
+        <div id="allocBody" class="flex-1 overflow-y-auto no-scrollbar px-6 py-5 space-y-5"></div>
+        <div class="px-6 py-4 border-t border-line flex items-center gap-2">
+          <span class="font-mono text-[11px] text-fg-subtle" id="allocFootNote"></span>
+          <div class="flex-1"></div>
+          <button
+            onclick="closeAllocModal()"
+            class="h-10 px-5 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition"
+          >
+            取消
+          </button>
+          <button
+            onclick="confirmAlloc()"
+            class="h-10 px-6 rounded-pill bg-secondary text-white font-display font-semibold text-sm shadow-green hover:bg-secondary-hv active:scale-[.97] transition"
+          >
+            確認配單
+          </button>
         </div>
       </div>
-    </main>
-  </div>
+    </div>
 
-  <script>
-    // Make the header checkbox indeterminate (visual only)
-    document.addEventListener('DOMContentLoaded', () => {
-      const head = document.querySelector('thead .ck');
-      if (head) head.indeterminate = true;
-    });
-  </script>
-</body>
+    <!-- toast -->
+    <div
+      id="toast"
+      class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] opacity-0 translate-y-2 transition-all duration-300 pointer-events-none"
+    >
+      <div class="toast toast-success">
+        <span class="ico">✓</span><span id="toastMsg">已更新</span>
+      </div>
+    </div>
+
+    <script
+      data-cfasync="false"
+      src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"
+    ></script>
+    <script>
+      // ============================================================
+      //  訂單列表互動：狀態感知批次列 + 批次配單 modal
+      // ============================================================
+      const STATUS_STYLE = {
+        待採買: {
+          verb: '批次向廠商下單',
+          cls: 'bg-secondary text-white shadow-green hover:bg-secondary-hv',
+          icon: '<path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
+          fn: 'confirmBatchOrder()',
+        },
+        已訂購: {
+          verb: '批次配單',
+          cls: 'bg-secondary text-white shadow-green hover:bg-secondary-hv',
+          icon: '<path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M3 9v7l9 5 9-5V9"/>',
+          fn: 'openAllocModal()',
+        },
+        已配單: {
+          verb: '代客結單',
+          cls: 'bg-primary text-white shadow-pink hover:bg-primary-hv',
+          icon: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+          fn: 'goCheckout()',
+        },
+      }
+
+      let allocMode = 'auto'
+
+      // -- tag every order row with parsed metadata --
+      function initRows() {
+        document.querySelectorAll('tbody > tr').forEach((tr) => {
+          const cells = tr.children
+          if (cells.length < 9) return // skip the expanded-detail body row
+          const oid = cells[1].querySelector('.font-mono')?.textContent.trim() || ''
+          const status = cells[6].textContent.trim()
+          const amount = parseInt(
+            (cells[5].textContent.match(/[\d,]+/) || ['0'])[0].replace(/,/g, ''),
+            10
+          )
+          const cust =
+            cells[2].querySelector('.leading-tight')?.children[0]?.textContent.trim() || ''
+          const time = cells[1].querySelectorAll('.font-mono')[1]?.textContent.trim() || ''
+          const prod =
+            cells[3].querySelector('.leading-tight')?.children[0]?.textContent.trim() || ''
+          const sup = cells[4].textContent.trim()
+          const qty = (cells[3].textContent.match(/×\s*(\d+)/) || [0, 1])[1]
+          tr.dataset.oid = oid
+          tr.dataset.status = status
+          tr.dataset.amount = amount
+          tr.dataset.cust = cust
+          tr.dataset.time = time
+          tr.dataset.prod = prod
+          tr.dataset.sup = sup
+          tr.dataset.qty = qty
+          const ck = tr.querySelector('.ck')
+          if (ck) {
+            ck.addEventListener('change', () => {
+              syncRowChecked(tr, ck.checked)
+              updateBulkBar()
+            })
+          }
+          // row click → 詳情（忽略 checkbox / 按鈕 / 連結）
+          tr.addEventListener('click', (e) => {
+            if (e.target.closest('input, button, a, label')) return
+            window.location.href = 'admin-order-detail.html'
+          })
+        })
+      }
+
+      function syncRowChecked(tr, on) {
+        tr.classList.toggle('row-checked', on)
+      }
+
+      function selectedRows() {
+        return [...document.querySelectorAll('tbody > tr[data-oid]')].filter(
+          (tr) => tr.querySelector('.ck')?.checked
+        )
+      }
+
+      function updateBulkBar() {
+        const rows = selectedRows()
+        const bar = document.getElementById('bulkBar')
+        if (rows.length === 0) {
+          bar.classList.add('hidden')
+          syncHeader()
+          return
+        }
+        bar.classList.remove('hidden')
+        document.getElementById('selCount').textContent = rows.length
+        const total = rows.reduce((s, r) => s + (+r.dataset.amount || 0), 0)
+        document.getElementById('selAmount').textContent = '總金額 NT$ ' + total.toLocaleString()
+
+        const statuses = [...new Set(rows.map((r) => r.dataset.status))]
+        const hint = document.getElementById('selHint')
+        const actions = document.getElementById('bulkActions')
+        const secondary = `
+        <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill border border-line bg-surface text-fg font-display font-semibold text-xs hover:bg-sunken">標記狀態<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></button>
+        <button class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill border border-line bg-surface text-fg-muted font-display font-semibold text-xs hover:bg-sunken">匯出</button>`
+
+        if (statuses.length === 1 && STATUS_STYLE[statuses[0]]) {
+          const s = STATUS_STYLE[statuses[0]]
+          hint.textContent = '全部為「' + statuses[0] + '」'
+          actions.innerHTML = `
+          <button onclick="${s.fn}" class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill ${s.cls} font-display font-semibold text-xs transition">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">${s.icon}</svg>${s.verb}
+          </button>${secondary}`
+        } else {
+          hint.textContent = '混合狀態 · 僅可標記 / 匯出'
+          actions.innerHTML = secondary
+        }
+        syncHeader()
+      }
+
+      function clearSelection() {
+        document.querySelectorAll('tbody > tr[data-oid] .ck').forEach((ck) => {
+          ck.checked = false
+          syncRowChecked(ck.closest('tr'), false)
+        })
+        updateBulkBar()
+      }
+
+      // -- header select-all --
+      function syncHeader() {
+        const head = document.querySelector('thead .ck')
+        if (!head) return
+        const all = [...document.querySelectorAll('tbody > tr[data-oid] .ck')]
+        const checked = all.filter((c) => c.checked).length
+        head.checked = checked > 0 && checked === all.length
+        head.indeterminate = checked > 0 && checked < all.length
+      }
+      function toggleAll(on) {
+        document.querySelectorAll('tbody > tr[data-oid] .ck').forEach((ck) => {
+          ck.checked = on
+          syncRowChecked(ck.closest('tr'), on)
+        })
+        updateBulkBar()
+      }
+
+      // ============================================================
+      //  批次配單 modal
+      // ============================================================
+      function openAllocModal() {
+        const rows = selectedRows().filter((r) => r.dataset.status === '已訂購')
+        if (rows.length === 0) return
+        allocMode = 'auto'
+        renderAllocBody(rows)
+        const wrap = document.getElementById('allocWrap')
+        wrap.classList.remove('hidden')
+        wrap.classList.add('flex')
+        requestAnimationFrame(() => {
+          document.getElementById('allocScrim').style.opacity = '1'
+          document.getElementById('allocBox').classList.remove('opacity-0', 'scale-95')
+        })
+      }
+      function closeAllocModal() {
+        document.getElementById('allocScrim').style.opacity = '0'
+        document.getElementById('allocBox').classList.add('opacity-0', 'scale-95')
+        setTimeout(() => {
+          const w = document.getElementById('allocWrap')
+          w.classList.add('hidden')
+          w.classList.remove('flex')
+        }, 240)
+      }
+
+      function renderAllocBody(rows) {
+        // 依商品分組
+        const groups = {}
+        rows.forEach((r) => {
+          ;(groups[r.dataset.prod] ||= []).push(r)
+        })
+        const prodCount = Object.keys(groups).length
+        document.getElementById('allocSub').textContent =
+          `選取 ${rows.length} 筆「已訂購」訂單 · ${prodCount} 項商品 · 依下單時間分配到貨`
+        document.getElementById('allocFootNote').textContent =
+          allocMode === 'auto' ? '自動配單：依下單時間 FIFO 分配' : '手動配單：自行勾選配給哪些顧客'
+
+        document.getElementById('allocBody').innerHTML = Object.entries(groups)
+          .map(([prod, list]) => {
+            const sup = list[0].dataset.sup
+            const need = list.reduce((s, r) => s + (+r.dataset.qty || 1), 0)
+            const queue = list
+              .slice()
+              .sort((a, b) => a.dataset.time.localeCompare(b.dataset.time))
+              .map(
+                (r, i) => `
+            <div class="flex items-center gap-3 px-4 py-2.5 ${i < list.length - 1 ? 'border-b border-line' : ''}" style="background:var(--c-secondary-bg)">
+              <input type="checkbox" class="ck" checked ${allocMode === 'auto' ? 'disabled' : ''} />
+              <div class="flex-1 min-w-0"><div class="font-semibold text-sm">${r.dataset.cust} <span class="font-mono text-[10px] text-fg-subtle font-normal">${r.dataset.oid}</span></div><div class="font-mono text-[10px] text-fg-subtle">下單 ${r.dataset.time}${i === 0 ? ' · 最早' : ''}</div></div>
+              <span class="font-mono text-sm">× ${r.dataset.qty}</span>
+            </div>`
+              )
+              .join('')
+            return `
+        <div class="border border-line rounded-xl overflow-hidden">
+          <div class="px-4 py-3 bg-ink-50 border-b border-line flex items-center gap-2">
+            <div class="w-9 h-9 rounded-md placeholder-img border border-line shrink-0"></div>
+            <div class="min-w-0"><div class="font-display font-bold text-sm truncate">${prod}</div>
+              <div class="font-mono text-[10px] text-fg-subtle">${sup} · 需求 ${need} 件</div></div>
+          </div>
+          <div class="p-4 space-y-4">
+            <div class="flex items-center gap-3 flex-wrap">
+              <span class="text-sm text-fg-muted">已到貨</span>
+              <input type="number" value="${need}" min="0" class="h-9 w-20 rounded-md border-[1.5px] border-line bg-surface text-center font-mono outline-none focus:border-primary" />
+              <span class="text-sm text-fg-muted">/ ${need} 件</span>
+              <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>足量到貨</span>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold mb-2 text-fg-muted">配單方式</label>
+              <div class="grid grid-cols-2 gap-2.5">
+                <div class="rc ${allocMode === 'auto' ? 'is-selected' : ''}" onclick="setAllocMode('auto')">
+                  <span class="rc-tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg></span>
+                  <div><div class="font-display font-bold text-sm">自動配單</div><div class="text-[11px] text-fg-muted leading-snug mt-0.5">按下單時間先後分配</div></div>
+                </div>
+                <div class="rc ${allocMode === 'manual' ? 'is-selected' : ''}" onclick="setAllocMode('manual')">
+                  <span class="rc-tick"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg></span>
+                  <div><div class="font-display font-bold text-sm">手動配單</div><div class="text-[11px] text-fg-muted leading-snug mt-0.5">部分到貨時指定顧客</div></div>
+                </div>
+              </div>
+            </div>
+            <div class="rounded-md border border-line overflow-hidden">${queue}</div>
+          </div>
+        </div>`
+          })
+          .join('')
+      }
+
+      function setAllocMode(m) {
+        allocMode = m
+        renderAllocBody(selectedRows().filter((r) => r.dataset.status === '已訂購'))
+      }
+      function confirmAlloc() {
+        const n = selectedRows().filter((r) => r.dataset.status === '已訂購').length
+        closeAllocModal()
+        showToast(`已完成配單 · ${n} 筆訂單更新為「已配單」`)
+      }
+
+      // ============================================================
+      //  批次下單 / 代客結單 / toast
+      // ============================================================
+      function confirmBatchOrder() {
+        const n = selectedRows().length
+        showToast(`已向廠商批次下單 · ${n} 筆更新為「已訂購」`)
+      }
+      function goCheckout() {
+        window.location.href = 'admin-orders-checkout.html'
+      }
+
+      let toastTimer = null
+      function showToast(msg) {
+        if (!msg) return
+        document.getElementById('toastMsg').textContent = msg
+        const t = document.getElementById('toast')
+        t.style.opacity = '1'
+        t.style.transform = 'translate(-50%, 0)'
+        clearTimeout(toastTimer)
+        toastTimer = setTimeout(() => {
+          t.style.opacity = '0'
+          t.style.transform = 'translate(-50%, 8px)'
+        }, 2600)
+      }
+
+      document.addEventListener('keydown', (e) => {
+        if (
+          e.key === 'Escape' &&
+          !document.getElementById('allocWrap').classList.contains('hidden')
+        )
+          closeAllocModal()
+      })
+
+      // ============================================================
+      //  Init
+      // ============================================================
+      document.addEventListener('DOMContentLoaded', () => {
+        initRows()
+        const head = document.querySelector('thead .ck')
+        if (head) head.addEventListener('change', () => toggleAll(head.checked))
+        updateBulkBar() // 列表初始已勾選 2 筆待採買 → 顯示「批次向廠商下單」
+      })
+    </script>
+  </body>
 </html>

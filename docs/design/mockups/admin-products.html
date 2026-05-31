@@ -1,0 +1,597 @@
+<!doctype html>
+<html lang="zh-Hant" data-variant="forest">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>芮選 · 商家後台 · 商品管理</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="_tailwind-config.js"></script>
+  <style>
+    body { font-family: var(--font-body); }
+
+    /* product thumbnail placeholders — low-chroma warm tints */
+    .ph { background: repeating-linear-gradient(135deg, var(--ink-100), var(--ink-100) 7px, var(--ink-50) 7px, var(--ink-50) 14px); }
+    .ph-a { background: repeating-linear-gradient(135deg, var(--sakura-100), var(--sakura-100) 7px, var(--sakura-50) 7px, var(--sakura-50) 14px); }
+    .ph-b { background: repeating-linear-gradient(135deg, var(--forest-100), var(--forest-100) 7px, var(--forest-50) 7px, var(--forest-50) 14px); }
+    .ph-c { background: repeating-linear-gradient(135deg, var(--earth-100), var(--earth-100) 7px, var(--earth-50) 7px, var(--earth-50) 14px); }
+
+    /* switch (上/下架) */
+    .sw { position: relative; display: inline-block; width: 40px; height: 24px; cursor: pointer; flex-shrink: 0; }
+    .sw input { display: none; }
+    .sw .track { position: absolute; inset: 0; background: var(--ink-300); border-radius: 999px; transition: background .2s var(--ease-out); }
+    .sw .thumb { position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 999px; background: #fff; box-shadow: var(--shadow-sm); transition: transform .2s var(--ease-spring); }
+    .sw input:checked ~ .track { background: var(--c-success); }
+    .sw input:checked ~ .thumb { transform: translateX(16px); }
+    .sw.is-disabled { opacity: .5; pointer-events: none; }
+
+    .scrim { transition: opacity .28s var(--ease-out); }
+    .modal-box { transition: transform .28s var(--ease-spring), opacity .2s var(--ease-out); }
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+
+    .row-off { opacity: .58; }
+    .menu { box-shadow: var(--shadow-lg); }
+  </style>
+</head>
+<body class="bg-app text-fg">
+
+  <div class="flex min-h-screen">
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="w-60 shrink-0 bg-surface border-r border-line flex flex-col sticky top-0 h-screen">
+      <div class="px-5 py-5 border-b border-line">
+        <div class="flex items-center gap-2.5">
+          <svg width="36" height="36" viewBox="0 0 40 40">
+            <ellipse cx="32" cy="11" rx="5" ry="3" transform="rotate(35 32 11)" style="fill:var(--c-secondary);opacity:.85" />
+            <circle cx="20" cy="11" r="9" style="fill:var(--c-primary)"/>
+            <circle cx="28.56" cy="17.22" r="9" style="fill:var(--c-primary)"/>
+            <circle cx="25.29" cy="27.28" r="9" style="fill:var(--c-primary)"/>
+            <circle cx="14.71" cy="27.28" r="9" style="fill:var(--c-primary)"/>
+            <circle cx="11.44" cy="17.22" r="9" style="fill:var(--c-primary)"/>
+            <circle cx="20" cy="20" r="4.5" style="fill:var(--c-primary-bg)"/>
+          </svg>
+          <div class="leading-none">
+            <div class="font-display font-bold text-lg tracking-wide">芮選</div>
+            <div class="font-mono text-[9px] text-fg-subtle tracking-[0.2em] mt-1">RUEI · SELECT</div>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center gap-2 px-3 py-2 rounded-md bg-sunken">
+          <div class="w-2 h-2 rounded-pill bg-success"></div>
+          <span class="text-xs text-fg-muted">小美的選物店</span>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto no-scrollbar">
+        <div class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase px-3 mb-2">主要</div>
+        <a href="admin-dashboard.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20h16M7 16V10M12 16V6M17 16v-8"/></svg>
+          <span class="flex-1">總覽</span>
+        </a>
+        <a href="admin-orders.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
+          <span class="flex-1">訂單管理</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">6</span>
+        </a>
+        <a class="flex items-center gap-2.5 px-3 py-2.5 rounded-md bg-primary-bg font-semibold text-sm" style="color:var(--c-primary-hv)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8l8-4 8 4-8 4-8-4z"/><path d="M4 8v8l8 4 8-4V8"/></svg>
+          <span class="flex-1">商品管理</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-primary text-white">42</span>
+        </a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <span class="flex-1">顧客審核</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-warning text-white">3</span>
+        </a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z"/></svg>
+          <span class="flex-1">許願池</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">12</span>
+        </a>
+
+        <div class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase px-3 mt-5 mb-2">設定</div>
+        <a href="admin-suppliers.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M3 9v7l9 5 9-5V9"/></svg>
+          <span class="flex-1">供應商</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">6</span>
+        </a>
+        <a href="#" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.2-1.7l2-1.5-2-3.5-2.4.8a7 7 0 00-3-1.7L13 2h-2l-.4 2.4a7 7 0 00-3 1.7L5.2 5.3l-2 3.5 2 1.5A7 7 0 005 12c0 .6 0 1.2.2 1.7l-2 1.5 2 3.5 2.4-.8a7 7 0 003 1.7L11 22h2l.4-2.4a7 7 0 003-1.7l2.4.8 2-3.5-2-1.5c.1-.5.2-1.1.2-1.7z"/></svg>
+          <span class="flex-1">賣場設定</span>
+        </a>
+      </nav>
+
+      <div class="p-3 border-t border-line">
+        <div class="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-sunken cursor-pointer">
+          <div class="w-9 h-9 rounded-pill bg-secondary text-white font-display font-bold flex items-center justify-center">C</div>
+          <div class="flex-1 leading-tight">
+            <div class="font-semibold text-sm">Cheryl</div>
+            <div class="font-mono text-[10px] text-fg-subtle"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="34575c51464d58744641515d1a4043">[email&#160;protected]</a></div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-fg-subtle"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main class="flex-1 min-w-0">
+
+      <!-- Top bar -->
+      <div class="px-8 py-5 border-b border-line bg-surface/70 backdrop-blur sticky top-0 z-20">
+        <div class="font-mono text-[11px] text-fg-subtle mb-2 flex items-center gap-1.5">
+          <a class="hover:text-fg cursor-pointer">後台</a>
+          <span>›</span>
+          <span class="text-fg">商品管理</span>
+        </div>
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <h1 class="font-display font-bold text-2xl">商品管理</h1>
+            <p class="text-sm text-fg-muted mt-0.5">共 <b class="text-fg">42</b> 件商品 · <b class="text-success">38</b> 上架中 · <b class="text-fg-muted">3</b> 已下架 · <b class="text-danger">1</b> 缺貨</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="relative">
+              <input id="search" oninput="setSearch(this.value)" class="w-64 h-10 pl-10 pr-4 rounded-pill border-[1.5px] border-line bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] transition text-sm" placeholder="搜尋商品名稱、類別…" />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-subtle"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4" stroke-linecap="round"/></svg>
+            </div>
+            <a href="admin-products-new.html" class="inline-flex items-center gap-2 h-10 rounded-pill bg-primary text-white px-5 font-display font-semibold shadow-pink hover:bg-primary-hv active:scale-[.97] transition cursor-pointer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+              新增商品
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8 space-y-5 max-w-[1240px]">
+
+        <!-- ===== Filter toolbar ===== -->
+        <section class="bg-surface border border-line rounded-xl p-4 space-y-3">
+          <!-- status tabs -->
+          <div class="flex items-center gap-1.5 flex-wrap" id="statusTabs">
+            <button data-st="all" onclick="setStatus('all')" class="st-tab inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-primary text-white font-display font-semibold text-xs">全部 <span class="font-mono opacity-80">42</span></button>
+            <button data-st="live" onclick="setStatus('live')" class="st-tab inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs hover:opacity-80 transition"><span class="w-1.5 h-1.5 rounded-pill bg-current"></span>上架中 <span class="font-mono">38</span></button>
+            <button data-st="off" onclick="setStatus('off')" class="st-tab inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-sunken text-fg-muted font-display font-semibold text-xs hover:bg-ink-200 transition">已下架 <span class="font-mono">3</span></button>
+            <button data-st="oos" onclick="setStatus('oos')" class="st-tab inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-danger-bg text-danger font-display font-semibold text-xs hover:opacity-80 transition"><span class="w-1.5 h-1.5 rounded-pill bg-current"></span>缺貨 <span class="font-mono">1</span></button>
+          </div>
+          <hr class="border-line" />
+          <!-- category pills + supplier filter -->
+          <div class="flex items-center gap-3 flex-wrap">
+            <div class="flex items-center gap-1.5 flex-wrap" id="catPills">
+              <span class="font-mono text-[10px] text-fg-subtle uppercase tracking-wider mr-1">類別</span>
+              <button data-cat="all" onclick="setCat('all')" class="cat-pill h-7 px-3 rounded-pill bg-secondary text-white font-display font-semibold text-xs">全部</button>
+              <button data-cat="女裝" onclick="setCat('女裝')" class="cat-pill h-7 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">女裝</button>
+              <button data-cat="配件" onclick="setCat('配件')" class="cat-pill h-7 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">配件</button>
+              <button data-cat="童裝" onclick="setCat('童裝')" class="cat-pill h-7 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">童裝</button>
+              <button data-cat="食品" onclick="setCat('食品')" class="cat-pill h-7 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">食品</button>
+              <button data-cat="生活" onclick="setCat('生活')" class="cat-pill h-7 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">生活</button>
+              <button data-cat="美妝" onclick="setCat('美妝')" class="cat-pill h-7 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">美妝</button>
+            </div>
+            <div class="flex-1"></div>
+            <div class="flex items-center gap-2">
+              <span class="font-mono text-[10px] text-fg-subtle uppercase tracking-wider">廠商</span>
+              <select id="supFilter" onchange="setSupplier(this.value)" class="h-8 pl-3 pr-8 rounded-pill border border-line bg-surface text-fg font-display font-semibold text-xs outline-none focus:border-primary cursor-pointer">
+                <option value="all">全部廠商</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- supplier-filter active note (shown when arriving from 供應商「查看商品」) -->
+        <div id="supFilterNote" class="hidden flex items-center gap-2.5 px-4 py-2.5 rounded-xl bg-secondary-bg border border-line">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--c-secondary)" stroke-width="1.9" stroke-linecap="round"><path d="M3 9l9-5 9 5-9 5-9-5z"/><path d="M3 9v7l9 5 9-5V9"/></svg>
+          <span class="text-sm text-fg">正在檢視供應商 <b class="font-display font-bold" id="supFilterName">—</b> 的商品</span>
+          <div class="flex-1"></div>
+          <button onclick="clearSupplierFilter()" class="inline-flex items-center gap-1 h-7 px-3 rounded-pill bg-surface border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
+            顯示全部廠商
+          </button>
+        </div>
+
+        <!-- ===== Grouped product list ===== -->
+        <section id="groups" class="space-y-5"></section>
+
+        <!-- empty state -->
+        <div id="emptyState" class="hidden text-center py-16">
+          <div class="w-16 h-16 mx-auto rounded-2xl bg-sunken flex items-center justify-center mb-4">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--fg-subtle)" stroke-width="1.6" stroke-linecap="round"><path d="M4 8l8-4 8 4-8 4-8-4z"/><path d="M4 8v8l8 4 8-4V8"/></svg>
+          </div>
+          <div class="font-display font-bold text-md">找不到符合的商品</div>
+          <p class="text-sm text-fg-muted mt-1">試試調整篩選條件或搜尋關鍵字</p>
+        </div>
+
+        <div class="text-center py-2 font-mono text-[10px] text-fg-subtle tracking-[0.15em]">
+          芮選 · 商品管理 · DESIGN MOCKUP
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- kebab menu (shared, floating) -->
+  <div id="kebab" class="menu hidden fixed z-40 w-44 bg-surface border border-line rounded-lg py-1.5">
+    <a href="admin-products-new.html" class="flex items-center gap-2.5 px-3.5 py-2 text-sm hover:bg-sunken cursor-pointer">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="text-fg-subtle"><path d="M4 20h4l10-10-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/></svg>編輯商品
+    </a>
+    <button onclick="copyLink()" class="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm hover:bg-sunken cursor-pointer text-left">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="text-fg-subtle"><path d="M9 15l6-6M10 6l1-1a4 4 0 015 5l-1 1M14 18l-1 1a4 4 0 01-5-5l1-1"/></svg>複製商品連結
+    </button>
+    <button onclick="dupProduct()" class="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm hover:bg-sunken cursor-pointer text-left">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="text-fg-subtle"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M4 16V5a1 1 0 011-1h11"/></svg>複製為新商品
+    </button>
+    <div class="h-px bg-line my-1.5"></div>
+    <button onclick="askDeleteFromMenu()" class="w-full flex items-center gap-2.5 px-3.5 py-2 text-sm hover:bg-danger-bg text-danger cursor-pointer text-left">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13"/></svg>刪除商品
+    </button>
+  </div>
+
+  <!-- delete confirm modal -->
+  <div id="modalWrap" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div id="modalScrim" class="scrim absolute inset-0 opacity-0" style="background:var(--bg-overlay)" onclick="closeModal()"></div>
+    <div id="modalBox" class="modal-box relative bg-surface rounded-2xl shadow-lg w-full max-w-[420px] p-6 opacity-0 scale-95">
+      <div class="w-12 h-12 rounded-pill bg-danger-bg flex items-center justify-center mb-4">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--c-danger)" stroke-width="1.9" stroke-linecap="round"><path d="M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>
+      </div>
+      <h3 class="font-display font-bold text-lg">刪除商品「<span id="delName">商品</span>」？</h3>
+      <p class="text-sm text-fg-muted mt-2 leading-relaxed">
+        刪除後此商品連結將失效，顧客前台不再顯示。歷史訂單中的此商品紀錄不受影響。此動作無法復原。
+      </p>
+      <div class="flex items-center gap-2 mt-6">
+        <button onclick="closeModal()" class="flex-1 h-11 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition">取消</button>
+        <button onclick="doDelete()" class="flex-1 h-11 rounded-pill bg-danger text-white font-display font-semibold text-sm hover:brightness-95 active:scale-[.97] transition">確定刪除</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] opacity-0 translate-y-2 transition-all duration-300 pointer-events-none">
+    <div class="toast toast-success"><span class="ico">✓</span><span id="toastMsg">已儲存</span></div>
+  </div>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // ============================================================
+    //  Suppliers (consistent with admin-suppliers.html)
+    // ============================================================
+    const VENDORS = [
+      { id:'v1', name:'MIKI 日系選品', tag:'MIKI', avatar:'M', shade:'var(--earth-400)', currency:'JPY' },
+      { id:'v2', name:'五分埔批發',    tag:'五分埔', avatar:'五', shade:'var(--earth-300)', currency:'TWD' },
+      { id:'v3', name:'Penny Lane 英倫雜貨', tag:'Penny Lane', avatar:'P', shade:'var(--earth-200)', currency:'USD' },
+      { id:'v4', name:'香港代購阿May', tag:'阿May', avatar:'M', shade:'var(--earth-500)', currency:'HKD' },
+      { id:'v5', name:'日本零食直送',  tag:'日零', avatar:'日', shade:'var(--earth-400)', currency:'JPY' },
+      { id:'v6', name:'手作飾品小棠',  tag:'小棠', avatar:'棠', shade:'var(--earth-300)', currency:'TWD' },
+    ];
+    const CUR_SYM = { TWD:'NT$', JPY:'¥', USD:'$', HKD:'HK$' };
+
+    // ============================================================
+    //  Products (mock)
+    //  status: live 上架中 / off 已下架 / oos 缺貨
+    // ============================================================
+    const PRODUCTS = [
+      { id:'p1', sup:'v1', name:'日本直送・手工棉麻寬褲', cat:'女裝', spec:'米白 / 卡其・S–L', ph:'ph-a',
+        price:1280, cost:825, costForeign:'¥3,800', views:248, status:'live' },
+      { id:'p2', sup:'v1', name:'櫻花粉保溫瓶 500ml', cat:'生活', spec:'櫻花粉 / 霧灰', ph:'ph-c',
+        price:1980, cost:1280, costForeign:'¥5,900', views:312, status:'live' },
+      { id:'p3', sup:'v1', name:'日系亞麻襯衫外套', cat:'女裝', spec:'燕麥 / 墨綠・M–XL', ph:'ph-b',
+        price:1680, cost:1050, costForeign:'¥4,850', views:96, status:'off' },
+
+      { id:'p4', sup:'v2', name:'純棉寬版 T 恤', cat:'女裝', spec:'白 / 黑 / 杏・F', ph:'ph',
+        price:390, cost:180, costForeign:null, views:520, status:'live' },
+      { id:'p5', sup:'v2', name:'兒童棉質防曬外套', cat:'童裝', spec:'粉 / 藍・100–140', ph:'ph-a',
+        price:580, cost:300, costForeign:null, views:188, status:'live' },
+      { id:'p6', sup:'v2', name:'韓系帆布托特包', cat:'配件', spec:'米 / 黑', ph:'ph-b',
+        price:450, cost:220, costForeign:null, views:264, status:'live' },
+      { id:'p7', sup:'v2', name:'毛呢貝雷帽', cat:'配件', spec:'駝 / 酒紅 / 黑', ph:'ph-c',
+        price:340, cost:150, costForeign:null, views:74, status:'oos' },
+
+      { id:'p8', sup:'v3', name:'英國有機蜂蜜檸檬茶', cat:'食品', spec:'盒裝 20 入', ph:'ph-c',
+        price:680, cost:430, costForeign:'$13.5', views:402, status:'live' },
+      { id:'p9', sup:'v3', name:'英倫風骨瓷馬克杯', cat:'生活', spec:'玫瑰 / 薄荷', ph:'ph-b',
+        price:890, cost:560, costForeign:'$17.8', views:156, status:'live' },
+      { id:'p10', sup:'v3', name:'手工薰衣草香氛蠟燭', cat:'生活', spec:'200g', ph:'ph-a',
+        price:760, cost:480, costForeign:'$15.2', views:88, status:'off' },
+
+      { id:'p11', sup:'v4', name:'港版保濕精華 30ml', cat:'美妝', spec:'單瓶 / 雙瓶組', ph:'ph-a',
+        price:1280, cost:760, costForeign:'HK$148', views:230, status:'live' },
+      { id:'p12', sup:'v4', name:'香港鉅記杏仁餅', cat:'食品', spec:'袋裝 12 入', ph:'ph-c',
+        price:420, cost:240, costForeign:'HK$48', views:174, status:'live' },
+
+      { id:'p13', sup:'v5', name:'日本季節限定軟糖組', cat:'食品', spec:'綜合 8 包', ph:'ph-a',
+        price:560, cost:330, costForeign:'¥1,520', views:198, status:'live' },
+      { id:'p14', sup:'v5', name:'抹茶夾心餅乾禮盒', cat:'食品', spec:'禮盒 16 入', ph:'ph-b',
+        price:780, cost:480, costForeign:'¥2,200', views:142, status:'live' },
+    ];
+
+    // ============================================================
+    //  State + helpers
+    // ============================================================
+    const STATE = { status:'all', sup:'all', cat:'all', q:'' };
+    const collapsed = new Set();
+
+    function margin(p){ return p.price>0 ? Math.round((p.price-p.cost)/p.price*100) : 0; }
+    function marginColor(m){ return m>=45 ? 'text-success' : m>=30 ? 'text-fg' : 'text-warning'; }
+
+    function statusBadge(s){
+      if (s==='live') return '<span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs"><span class="w-1.5 h-1.5 rounded-pill bg-current"></span>上架中</span>';
+      if (s==='oos')  return '<span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-danger-bg text-danger font-display font-semibold text-xs"><span class="w-1.5 h-1.5 rounded-pill bg-current"></span>缺貨</span>';
+      return '<span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-sunken text-fg-muted font-display font-semibold text-xs">已下架</span>';
+    }
+
+    function matches(p){
+      if (STATE.status!=='all' && p.status!==STATE.status) return false;
+      if (STATE.sup!=='all' && p.sup!==STATE.sup) return false;
+      if (STATE.cat!=='all' && p.cat!==STATE.cat) return false;
+      if (STATE.q){
+        const q = STATE.q.toLowerCase();
+        if (!(p.name.toLowerCase().includes(q) || p.cat.includes(q) || p.spec.toLowerCase().includes(q))) return false;
+      }
+      return true;
+    }
+
+    // ============================================================
+    //  Render
+    // ============================================================
+    function rowHTML(p){
+      const v = VENDORS.find(x=>x.id===p.sup);
+      const m = margin(p);
+      const off = p.status!=='live';
+      const checked = p.status==='live' ? 'checked' : '';
+      const swDisabled = p.status==='oos' ? 'is-disabled' : '';
+      return `
+      <tr class="border-t border-line hover:bg-ink-50 ${off?'row-off':''}" data-pid="${p.id}">
+        <td class="pl-5 pr-3 py-3">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-md ${p.ph} border border-line shrink-0"></div>
+            <div class="min-w-0">
+              <div class="font-semibold truncate max-w-[260px]">${p.name}</div>
+              <div class="font-mono text-[10px] text-fg-subtle mt-0.5">${p.spec}</div>
+            </div>
+          </div>
+        </td>
+        <td class="px-3 py-3">
+          <span class="inline-flex items-center h-5 px-2 rounded-pill bg-sunken text-fg-muted font-display font-semibold text-[10px]">${p.cat}</span>
+        </td>
+        <td class="px-3 py-3 text-right">
+          <div class="font-mono font-semibold" style="color:var(--c-primary-hv)">NT$ ${p.price.toLocaleString()}</div>
+        </td>
+        <td class="px-3 py-3 text-right">
+          <div class="font-mono text-xs text-fg-muted">NT$ ${p.cost.toLocaleString()}</div>
+          ${p.costForeign?`<div class="font-mono text-[10px] text-fg-subtle">${p.costForeign}</div>`:''}
+        </td>
+        <td class="px-3 py-3 text-right">
+          <span class="font-mono font-semibold text-sm ${marginColor(m)}">${m}%</span>
+        </td>
+        <td class="px-3 py-3 text-right">
+          <span class="font-mono text-xs text-fg-muted">${p.views}</span>
+        </td>
+        <td class="px-3 py-3">${statusBadge(p.status)}</td>
+        <td class="px-3 py-3">
+          <label class="sw ${swDisabled}" title="${p.status==='oos'?'缺貨中，補貨後可上架':'上架 / 下架'}">
+            <input type="checkbox" ${checked} onchange="toggleStatus('${p.id}', this.checked)" />
+            <span class="track"></span><span class="thumb"></span>
+          </label>
+        </td>
+        <td class="pr-4 pl-1 py-3 text-right">
+          <button onclick="openKebab(event,'${p.id}')" class="w-8 h-8 rounded-pill hover:bg-sunken flex items-center justify-center text-fg-subtle">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>
+          </button>
+        </td>
+      </tr>`;
+    }
+
+    function groupHTML(v, prods){
+      const isCol = collapsed.has(v.id);
+      const liveN = prods.filter(p=>p.status==='live').length;
+      return `
+      <div class="bg-surface border border-line rounded-xl overflow-hidden">
+        <div class="flex items-center gap-3 px-5 py-3.5 ${isCol?'':'border-b border-line'} bg-ink-50 cursor-pointer hover:bg-ink-100 transition" onclick="toggleGroup('${v.id}')">
+          <div class="w-9 h-9 rounded-md flex items-center justify-center text-white font-display font-bold shrink-0" style="background:${v.shade}">${v.avatar}</div>
+          <div class="min-w-0">
+            <div class="flex items-center gap-2">
+              <span class="font-display font-bold text-md">${v.name}</span>
+              <span class="inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]">${v.tag}</span>
+            </div>
+            <div class="font-mono text-[10px] text-fg-subtle mt-0.5">${prods.length} 件商品 · ${liveN} 上架中 · 預設 ${CUR_SYM[v.currency]} ${v.currency}</div>
+          </div>
+          <div class="flex-1"></div>
+          <a href="admin-products-new.html" onclick="event.stopPropagation()" class="hidden sm:inline-flex items-center gap-1.5 h-8 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-surface transition">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新增到此廠商
+          </a>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="text-fg-subtle transition-transform ${isCol?'':'rotate-180'}"><path d="M6 9l6 6 6-6"/></svg>
+        </div>
+        ${isCol ? '' : `
+        <table class="w-full">
+          <thead>
+            <tr class="bg-surface">
+              <th class="text-left pl-5 pr-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">商品</th>
+              <th class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">類別</th>
+              <th class="text-right px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">售價</th>
+              <th class="text-right px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">成本</th>
+              <th class="text-right px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">毛利</th>
+              <th class="text-right px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">瀏覽</th>
+              <th class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">狀態</th>
+              <th class="text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted">上架</th>
+              <th class="w-10"></th>
+            </tr>
+          </thead>
+          <tbody class="text-sm">${prods.map(rowHTML).join('')}</tbody>
+        </table>`}
+      </div>`;
+    }
+
+    function render(){
+      const root = document.getElementById('groups');
+      let html = '';
+      let any = false;
+      for (const v of VENDORS){
+        if (STATE.sup!=='all' && STATE.sup!==v.id) continue;
+        const prods = PRODUCTS.filter(p=>p.sup===v.id && matches(p));
+        if (prods.length===0) continue;
+        any = true;
+        html += groupHTML(v, prods);
+      }
+      root.innerHTML = html;
+      document.getElementById('emptyState').classList.toggle('hidden', any);
+    }
+
+    // ============================================================
+    //  Filters
+    // ============================================================
+    function setStatus(s){
+      STATE.status = s;
+      document.querySelectorAll('.st-tab').forEach(b=>{
+        const active = b.dataset.st===s;
+        if (active){
+          b.classList.add('bg-primary','text-white');
+          b.classList.remove('bg-success-bg','text-success','bg-sunken','text-fg-muted','bg-danger-bg','text-danger');
+        } else {
+          b.classList.remove('bg-primary','text-white');
+          const map = { all:['bg-primary','text-white'], live:['bg-success-bg','text-success'], off:['bg-sunken','text-fg-muted'], oos:['bg-danger-bg','text-danger'] };
+          b.classList.add(...map[b.dataset.st]);
+        }
+      });
+      render();
+    }
+    function setCat(c){
+      STATE.cat = c;
+      document.querySelectorAll('.cat-pill').forEach(b=>{
+        const active = b.dataset.cat===c;
+        b.classList.toggle('bg-secondary', active);
+        b.classList.toggle('text-white', active);
+        b.classList.toggle('border', !active);
+        b.classList.toggle('border-line', !active);
+        b.classList.toggle('text-fg-muted', !active);
+      });
+      render();
+    }
+    function setSupplier(id){
+      STATE.sup = id;
+      const note = document.getElementById('supFilterNote');
+      if (id==='all'){ note.classList.add('hidden'); }
+      else {
+        const v = VENDORS.find(x=>x.id===id);
+        if (v){ note.querySelector('#supFilterName').textContent = v.name; note.classList.remove('hidden'); }
+      }
+      render();
+    }
+    function setSearch(v){ STATE.q = v.trim(); render(); }
+
+    function toggleGroup(id){
+      if (collapsed.has(id)) collapsed.delete(id); else collapsed.add(id);
+      render();
+    }
+
+    function toggleStatus(pid, on){
+      const p = PRODUCTS.find(x=>x.id===pid);
+      if (!p) return;
+      p.status = on ? 'live' : 'off';
+      render();
+      showToast(on ? `「${p.name}」已上架` : `「${p.name}」已下架`);
+    }
+
+    // ============================================================
+    //  Kebab menu
+    // ============================================================
+    let menuPid = null;
+    function openKebab(e, pid){
+      e.stopPropagation();
+      menuPid = pid;
+      const menu = document.getElementById('kebab');
+      menu.classList.remove('hidden');
+      const r = e.currentTarget.getBoundingClientRect();
+      let left = r.right - menu.offsetWidth;
+      let top = r.bottom + 6;
+      if (top + menu.offsetHeight > window.innerHeight - 10) top = r.top - menu.offsetHeight - 6;
+      menu.style.left = Math.max(10,left) + 'px';
+      menu.style.top = top + 'px';
+    }
+    function closeKebab(){ document.getElementById('kebab').classList.add('hidden'); }
+    document.addEventListener('click', e=>{
+      const menu = document.getElementById('kebab');
+      if (!menu.classList.contains('hidden') && !menu.contains(e.target)) closeKebab();
+    });
+    function copyLink(){ closeKebab(); showToast('已複製商品連結到剪貼簿'); }
+    function dupProduct(){ closeKebab(); showToast('已複製為新商品草稿'); }
+
+    // ============================================================
+    //  Delete modal
+    // ============================================================
+    let deletingId = null;
+    function askDeleteFromMenu(){ const id = menuPid; closeKebab(); askDelete(id); }
+    function askDelete(id){
+      deletingId = id;
+      const p = PRODUCTS.find(x=>x.id===id);
+      document.getElementById('delName').textContent = p ? p.name : '';
+      const wrap = document.getElementById('modalWrap');
+      wrap.classList.remove('hidden'); wrap.classList.add('flex');
+      requestAnimationFrame(()=>{
+        document.getElementById('modalScrim').style.opacity='1';
+        document.getElementById('modalBox').classList.remove('opacity-0','scale-95');
+      });
+    }
+    function closeModal(){
+      document.getElementById('modalScrim').style.opacity='0';
+      document.getElementById('modalBox').classList.add('opacity-0','scale-95');
+      setTimeout(()=>{ const w=document.getElementById('modalWrap'); w.classList.add('hidden'); w.classList.remove('flex'); }, 220);
+    }
+    function doDelete(){
+      const i = PRODUCTS.findIndex(x=>x.id===deletingId);
+      const name = i>=0 ? PRODUCTS[i].name : '';
+      if (i>=0) PRODUCTS.splice(i,1);
+      closeModal();
+      render();
+      showToast('已刪除「' + name + '」');
+    }
+
+    // ============================================================
+    //  Toast
+    // ============================================================
+    let toastTimer = null;
+    function showToast(msg){
+      document.getElementById('toastMsg').textContent = msg;
+      const t = document.getElementById('toast');
+      t.style.opacity='1'; t.style.transform='translate(-50%, 0)';
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translate(-50%, 8px)'; }, 2400);
+    }
+
+    document.addEventListener('keydown', e=>{
+      if (e.key==='Escape'){
+        if (!document.getElementById('modalWrap').classList.contains('hidden')) closeModal();
+        else closeKebab();
+      }
+    });
+
+    // ============================================================
+    //  Init
+    // ============================================================
+    (function init(){
+      const sel = document.getElementById('supFilter');
+      VENDORS.forEach(v=>{
+        const o = document.createElement('option');
+        o.value = v.id; o.textContent = v.name;
+        sel.appendChild(o);
+      });
+      // 從供應商頁「查看商品」帶入的 ?supplier=<id> 預先套用廠商篩選
+      const sup = new URLSearchParams(location.search).get('supplier');
+      if (sup && VENDORS.some(v=>v.id===sup)){
+        STATE.sup = sup;
+        sel.value = sup;
+        const v = VENDORS.find(x=>x.id===sup);
+        const note = document.getElementById('supFilterNote');
+        if (note){
+          note.querySelector('#supFilterName').textContent = v.name;
+          note.classList.remove('hidden');
+        }
+      }
+      render();
+    })();
+
+    function clearSupplierFilter(){
+      STATE.sup = 'all';
+      document.getElementById('supFilter').value = 'all';
+      document.getElementById('supFilterNote').classList.add('hidden');
+      render();
+    }
+  </script>
+</body>
+</html>

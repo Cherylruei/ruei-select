@@ -3,36 +3,33 @@ import { createServiceClient } from '@/lib/supabase/server'
 import type { Supplier } from '@/types'
 import SuppliersClient from './SuppliersClient'
 
+interface SupplierWithCount extends Supplier {
+  productCount: number
+}
+
 export default async function SuppliersPage() {
   const store = await getServerStore()
 
-  let suppliers: Supplier[] = []
+  let suppliers: SupplierWithCount[] = []
 
   if (store) {
     const serviceClient = createServiceClient()
-    const { data } = (await serviceClient
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = (await (serviceClient as any)
       .from('suppliers')
-      .select('*')
+      .select('*, products(id)')
       .eq('store_id', store.id)
       .order('created_at', { ascending: false })) as {
-      data: Supplier[] | null
+      data: (Supplier & { products: { id: string }[] })[] | null
       error: unknown
     }
-    suppliers = data ?? []
+    suppliers = (data ?? []).map((s) => ({
+      ...s,
+      productCount: (s.products ?? []).length,
+    }))
   }
 
-  return (
-    <div>
-      <div className='mb-6'>
-        <h1 className='text-[26px] font-bold text-[var(--neutral-800)] tracking-wide mb-1.5 [font-family:var(--font-zen-maru-gothic)]'>
-          供應商管理
-        </h1>
-        <p className='text-[13.5px] text-[var(--neutral-500)]'>
-          新增、編輯、刪除供應商，商品上架時可快速選擇對應廠商。
-        </p>
-      </div>
+  const totalProducts = suppliers.reduce((sum, s) => sum + s.productCount, 0)
 
-      <SuppliersClient initialSuppliers={suppliers} />
-    </div>
-  )
+  return <SuppliersClient initialSuppliers={suppliers} totalProducts={totalProducts} />
 }
