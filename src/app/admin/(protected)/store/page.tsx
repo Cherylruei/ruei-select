@@ -1,6 +1,9 @@
+import Link from 'next/link'
 import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
 import type { Store } from '@/types'
 import StoreSettingsClient from './StoreSettingsClient'
+
+export const metadata = { title: '賣場設定 — 芮選後台' }
 
 export default async function StoreSettingsPage() {
   const rhc = await createRouteHandlerClient()
@@ -34,17 +37,28 @@ export default async function StoreSettingsPage() {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'https://ruei-select.vercel.app'
 
   return (
-    <div>
-      <div className='mb-6'>
-        <h1 className='text-[26px] font-bold text-[var(--neutral-800)] tracking-wide mb-1.5 [font-family:var(--font-zen-maru-gothic)]'>
-          賣場設定
-        </h1>
-        <p className='text-[13.5px] text-[var(--neutral-500)]'>
-          管理賣場形象、邀請連結，掌握顧客看到的第一印象。
-        </p>
+    <>
+      {/* ── Sticky topbar ─────────────────────────────────────────────────── */}
+      <div className='sticky top-0 z-20 border-b border-line bg-surface/80 backdrop-blur-md px-8 py-5'>
+        <div className='font-mono text-[11px] text-fg-subtle mb-2 flex items-center gap-1.5'>
+          <Link href='/admin' className='hover:text-fg'>
+            後台
+          </Link>
+          <span>›</span>
+          <span className='text-fg'>賣場設定</span>
+        </div>
+        <div>
+          <h1 className='font-display font-bold text-2xl'>賣場設定</h1>
+          <p className='text-sm text-fg-muted mt-0.5'>
+            管理賣場形象、邀請連結，掌握顧客看到的第一印象。
+          </p>
+        </div>
       </div>
 
-      <StoreSettingsClient initialStore={store} appUrl={appUrl} />
-    </div>
+      {/* ── Content ───────────────────────────────────────────────────────── */}
+      <div className='px-8 pt-6 pb-14 space-y-5'>
+        <StoreSettingsClient initialStore={store} appUrl={appUrl} />
+      </div>
+    </>
   )
 }

@@ -2,16 +2,17 @@
 
 import { useState, useRef, useTransition } from 'react'
 import type { Store } from '@/types'
-import styles from './store-settings.module.css'
+import { ConfirmModal } from '@/components/ui/Modal'
+import { ToastContainer, useToast } from '@/components/ui/Toast'
+
+// ── 共用 class ─────────────────────────────────────────────────────────────────
+
+const FLD =
+  'w-full bg-surface border border-line rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition placeholder:text-fg-subtle disabled:opacity-60 disabled:cursor-not-allowed'
 
 interface Props {
   initialStore: Store | null
   appUrl: string
-}
-
-interface ToastState {
-  message: string
-  type: 'success' | 'error'
 }
 
 export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
@@ -22,13 +23,13 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
   const [avatarPreview, setAvatarPreview] = useState<string | null>(
     initialStore?.avatar_url ?? null
   )
-  const [toast, setToast] = useState<ToastState | null>(null)
   const [copyLabel, setCopyLabel] = useState('複製連結')
   const [showRegenModal, setShowRegenModal] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [isUploading, setIsUploading] = useState(false)
   const [isTogglingPublic, setIsTogglingPublic] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { toasts, toast, dismiss } = useToast()
 
   const isLoading = isPending || isUploading
 
@@ -44,21 +45,16 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
       })
       const body = await res.json()
       if (!res.ok) {
-        showToast(body.error || '更新失敗', 'error')
+        toast(body.error || '更新失敗', 'error')
         return
       }
       setStore(body.data as Store)
-      showToast(next ? '公開商品功能已開啟' : '公開商品功能已關閉', 'success')
+      toast(next ? '公開商品功能已開啟' : '公開商品功能已關閉', 'success')
     } catch {
-      showToast('更新失敗，請稍後再試', 'error')
+      toast('更新失敗，請稍後再試', 'error')
     } finally {
       setIsTogglingPublic(false)
     }
-  }
-
-  function showToast(message: string, type: ToastState['type']) {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
   }
 
   function handleAvatarClick() {
@@ -69,21 +65,16 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
     const file = e.target.files?.[0]
     if (!file) return
     if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
-      showToast('僅支援 JPG / PNG / WebP 格式', 'error')
+      toast('僅支援 JPG / PNG / WebP 格式', 'error')
       return
     }
     setAvatarFile(file)
-    const url = URL.createObjectURL(file)
-    setAvatarPreview(url)
+    setAvatarPreview(URL.createObjectURL(file))
   }
 
   async function compressImage(file: File): Promise<File> {
     const { default: imageCompression } = await import('browser-image-compression')
-    return imageCompression(file, {
-      maxSizeMB: 2,
-      maxWidthOrHeight: 800,
-      useWebWorker: true,
-    })
+    return imageCompression(file, { maxSizeMB: 2, maxWidthOrHeight: 800, useWebWorker: true })
   }
 
   async function uploadAvatar(storeId: string, file: File): Promise<string> {
@@ -110,15 +101,15 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
 
   async function handleSave() {
     if (name.trim().length < 2) {
-      showToast('賣場名稱至少需要 2 個字', 'error')
+      toast('賣場名稱至少需要 2 個字', 'error')
       return
     }
     if (name.trim().length > 30) {
-      showToast('賣場名稱不能超過 30 個字', 'error')
+      toast('賣場名稱不能超過 30 個字', 'error')
       return
     }
     if (description.length > 200) {
-      showToast('賣場介紹不能超過 200 個字', 'error')
+      toast('賣場介紹不能超過 200 個字', 'error')
       return
     }
 
@@ -134,7 +125,7 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
           })
           const body = await res.json()
           if (!res.ok) {
-            showToast(body.error || '儲存失敗', 'error')
+            toast(body.error || '儲存失敗', 'error')
             return
           }
           savedStore = body.data as Store
@@ -146,7 +137,7 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
           })
           const body = await res.json()
           if (!res.ok) {
-            showToast(body.error || '儲存失敗', 'error')
+            toast(body.error || '儲存失敗', 'error')
             return
           }
           savedStore = body.data as Store
@@ -158,7 +149,7 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
             savedStore = { ...savedStore, avatar_url: avatarUrl }
             setAvatarFile(null)
           } catch (err) {
-            showToast(err instanceof Error ? err.message : '頭像上傳失敗', 'error')
+            toast(err instanceof Error ? err.message : '頭像上傳失敗', 'error')
           }
         }
 
@@ -166,9 +157,9 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
         setName(savedStore.name)
         setDescription(savedStore.description ?? '')
         setAvatarPreview(savedStore.avatar_url)
-        showToast('賣場資訊已更新', 'success')
+        toast('賣場資訊已更新', 'success')
       } catch {
-        showToast('儲存失敗，請稍後再試', 'error')
+        toast('儲存失敗，請稍後再試', 'error')
       }
     })
   }
@@ -198,13 +189,13 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
         const res = await fetch(`/api/store/${store.id}/invite-token`, { method: 'POST' })
         const body = await res.json()
         if (!res.ok) {
-          showToast(body.error || '重新產生失敗', 'error')
+          toast(body.error || '重新產生失敗', 'error')
           return
         }
         setStore((prev) => (prev ? { ...prev, invite_token: body.data.invite_token } : prev))
-        showToast('邀請連結已更新', 'success')
+        toast('邀請連結已更新', 'success')
       } catch {
-        showToast('重新產生失敗，請稍後再試', 'error')
+        toast('重新產生失敗，請稍後再試', 'error')
       }
     })
   }
@@ -214,249 +205,310 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
 
   return (
     <>
-      {/* ── Section 1: Store basic info ─────────────────────────────────────── */}
-      <section className={styles.storeCard}>
-        <div className={styles.storeCardHead}>
-          <h2 className={styles.storeCardTitle}>賣場基本資訊</h2>
-          <span className={styles.storeCardHint}>儲存後將同步至顧客端</span>
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
+
+      {showRegenModal && (
+        <ConfirmModal
+          title='重新產生邀請連結'
+          message='舊連結將立即失效，使用舊連結的顧客將需要重新點擊新連結。確定重新產生？'
+          confirmLabel='確定重新產生'
+          onConfirm={handleRegenToken}
+          onCancel={() => setShowRegenModal(false)}
+          isLoading={isPending}
+          danger
+        />
+      )}
+
+      {/* ── Section 1: 賣場基本資訊 ───────────────────────────────────────── */}
+      <section className='bg-surface border border-line rounded-xl overflow-hidden'>
+        <div className='px-6 pt-5 pb-4 border-b border-line flex items-center justify-between'>
+          <SectionTitle>賣場基本資訊</SectionTitle>
+          <span className='text-xs text-fg-muted'>儲存後將同步至顧客端</span>
         </div>
 
-        <div className={styles.storeInfoGrid}>
-          {/* Avatar */}
-          <div className={styles.storeAvatarWrap}>
-            <button
-              type='button'
-              aria-label='更換頭像'
-              className={styles.storeAvatar}
-              onClick={handleAvatarClick}
-              disabled={isLoading}
-            >
-              {avatarPreview ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={avatarPreview}
-                  alt='賣場頭像'
-                  className='w-full h-full object-cover rounded-full'
-                />
-              ) : (
-                <span className={styles.storeAvatarInitial}>{avatarInitial}</span>
-              )}
-              <div className={styles.storeAvatarOverlay} aria-hidden='true'>
-                <svg
-                  viewBox='0 0 24 24'
-                  width='14'
-                  height='14'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='1.8'
-                >
-                  <path d='M12 20h9' />
-                  <path d='M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z' />
-                </svg>
-                更換頭像
-              </div>
-              {isUploading && <div className={styles.storeAvatarLoading} aria-label='上傳中' />}
-            </button>
-            <span className={styles.storeAvatarCap}>
-              建議 400×400px
-              <br />
-              JPG / PNG
-            </span>
-            <input
-              ref={fileInputRef}
-              type='file'
-              accept='image/jpeg,image/png,image/webp'
-              className='hidden'
-              onChange={handleFileChange}
-              aria-label='上傳頭像'
-            />
-          </div>
-
-          {/* Form */}
-          <div className={styles.storeForm}>
-            <div className={styles.storeFormRow}>
-              <label htmlFor='storeName' className={styles.storeFormLabel}>
-                賣場名稱<span className={styles.storeFormReq}>*</span>
-              </label>
-              <input
-                id='storeName'
-                type='text'
-                className={styles.storeInput}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                maxLength={30}
-                disabled={isLoading}
-                placeholder='請輸入賣場名稱'
-              />
-              <div className={styles.storeFormMeta}>
-                <span>顧客將看到的店家名稱</span>
-                <span
-                  className={
-                    name.length < 2 && name.length > 0 ? styles.storeCountError : styles.storeCount
-                  }
-                >
-                  {name.length} / 30
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.storeFormRow}>
-              <label htmlFor='storeDesc' className={styles.storeFormLabel}>
-                賣場介紹
-              </label>
-              <textarea
-                id='storeDesc'
-                className={styles.storeTextarea}
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                maxLength={200}
-                rows={4}
-                disabled={isLoading}
-                placeholder='例：日韓代購精選，主打女裝、配件與生活雜貨。每月固定收單兩次，週三截止。'
-              />
-              <div className={styles.storeFormMeta}>
-                <span>最多 200 字，可包含營業時間、聯絡方式</span>
-                <span
-                  className={description.length > 200 ? styles.storeCountError : styles.storeCount}
-                >
-                  {description.length} / 200
-                </span>
-              </div>
-            </div>
-
-            <div className={styles.storeFormActions}>
+        <div className='p-6'>
+          <div className='flex gap-6 items-start'>
+            {/* 頭像 */}
+            <div className='flex flex-col items-center gap-2 shrink-0'>
               <button
                 type='button'
-                className={`${styles.storeBtn} ${styles.storeBtnGhost}`}
-                onClick={handleReset}
+                aria-label='更換頭像'
+                onClick={handleAvatarClick}
                 disabled={isLoading}
+                className='relative w-20 h-20 rounded-pill bg-secondary text-white overflow-hidden transition hover:scale-[1.03] disabled:opacity-60 disabled:cursor-not-allowed disabled:scale-100 focus-visible:ring-2 focus-visible:ring-secondary'
               >
-                取消變更
-              </button>
-              <button
-                type='button'
-                className={`${styles.storeBtn} ${styles.storeBtnPrimary}`}
-                onClick={handleSave}
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <span className={styles.storeBtnSpinner} aria-hidden='true' />
+                {avatarPreview ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={avatarPreview} alt='賣場頭像' className='w-full h-full object-cover' />
                 ) : (
+                  <span className='font-display font-bold text-4xl select-none'>
+                    {avatarInitial}
+                  </span>
+                )}
+                <div
+                  className='absolute inset-0 bg-[rgba(0,0,0,0.55)] flex flex-col items-center justify-center gap-0.5 opacity-0 hover:opacity-100 transition'
+                  aria-hidden='true'
+                >
                   <svg
+                    width='13'
+                    height='13'
                     viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                  >
+                    <path d='M12 20h9' />
+                    <path d='M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z' />
+                  </svg>
+                  <span className='text-[10px] font-display font-semibold'>更換</span>
+                </div>
+                {isUploading && (
+                  <div
+                    className='absolute inset-0 bg-[rgba(0,0,0,0.5)] flex items-center justify-center'
+                    aria-label='上傳中'
+                  >
+                    <svg
+                      className='animate-spin'
+                      width='20'
+                      height='20'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='white'
+                      strokeWidth='2'
+                    >
+                      <path d='M21 12a9 9 0 1 1-6.219-8.56' />
+                    </svg>
+                  </div>
+                )}
+              </button>
+              <span className='text-[11px] text-fg-subtle text-center leading-snug'>
+                建議 400×400px
+                <br />
+                JPG / PNG
+              </span>
+              <input
+                ref={fileInputRef}
+                type='file'
+                accept='image/jpeg,image/png,image/webp'
+                className='hidden'
+                onChange={handleFileChange}
+                aria-label='上傳頭像'
+              />
+            </div>
+
+            {/* 表單 */}
+            <div className='flex-1 min-w-0 space-y-4'>
+              <div>
+                <label
+                  htmlFor='storeName'
+                  className='block font-display font-semibold text-sm mb-1.5'
+                >
+                  賣場名稱 <span className='text-danger'>*</span>
+                </label>
+                <input
+                  id='storeName'
+                  type='text'
+                  className={FLD}
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  maxLength={30}
+                  disabled={isLoading}
+                  placeholder='請輸入賣場名稱'
+                />
+                <div className='flex items-center justify-between mt-1.5'>
+                  <span className='text-xs text-fg-subtle'>顧客將看到的店家名稱</span>
+                  <span
+                    className={`font-mono text-[11px] ${name.length < 2 && name.length > 0 ? 'text-danger' : 'text-fg-subtle'}`}
+                  >
+                    {name.length} / 30
+                  </span>
+                </div>
+              </div>
+
+              <div>
+                <label
+                  htmlFor='storeDesc'
+                  className='block font-display font-semibold text-sm mb-1.5'
+                >
+                  賣場介紹
+                </label>
+                <textarea
+                  id='storeDesc'
+                  className={`${FLD} resize-y min-h-[88px] leading-relaxed`}
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  maxLength={200}
+                  rows={4}
+                  disabled={isLoading}
+                  placeholder='例：日韓代購精選，主打女裝、配件與生活雜貨。每月固定收單兩次，週三截止。'
+                />
+                <div className='flex items-center justify-between mt-1.5'>
+                  <span className='text-xs text-fg-subtle'>
+                    最多 200 字，可包含營業時間、聯絡方式
+                  </span>
+                  <span
+                    className={`font-mono text-[11px] ${description.length > 200 ? 'text-danger' : 'text-fg-subtle'}`}
+                  >
+                    {description.length} / 200
+                  </span>
+                </div>
+              </div>
+
+              <div className='flex justify-end gap-2 pt-4 border-t border-line'>
+                <button
+                  type='button'
+                  onClick={handleReset}
+                  disabled={isLoading}
+                  className='inline-flex items-center gap-1.5 h-9 px-4 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                  取消變更
+                </button>
+                <button
+                  type='button'
+                  onClick={handleSave}
+                  disabled={isLoading}
+                  className='inline-flex items-center gap-1.5 h-9 px-5 rounded-pill bg-secondary text-white font-display font-semibold text-sm shadow-green hover:bg-secondary-hv active:scale-[.97] transition disabled:opacity-50 disabled:cursor-not-allowed'
+                >
+                  {isLoading ? (
+                    <>
+                      <svg
+                        className='animate-spin'
+                        width='13'
+                        height='13'
+                        viewBox='0 0 24 24'
+                        fill='none'
+                        stroke='currentColor'
+                        strokeWidth='2'
+                        aria-hidden='true'
+                      >
+                        <path d='M21 12a9 9 0 1 1-6.219-8.56' />
+                      </svg>
+                      儲存中…
+                    </>
+                  ) : (
+                    <>
+                      <svg
+                        width='13'
+                        height='13'
+                        viewBox='0 0 24 24'
+                        fill='none'
+                        stroke='currentColor'
+                        strokeWidth='2.2'
+                        strokeLinecap='round'
+                        aria-hidden='true'
+                      >
+                        <polyline points='20 6 9 17 4 12' />
+                      </svg>
+                      儲存變更
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Section 2: 顧客邀請連結 ─────────────────────────────────────── */}
+      <section className='bg-surface border border-line rounded-xl overflow-hidden'>
+        <div className='px-6 pt-5 pb-4 border-b border-line flex items-center justify-between'>
+          <SectionTitle>顧客邀請連結</SectionTitle>
+          <span className='text-xs text-fg-muted'>透過此連結邀請顧客加入</span>
+        </div>
+
+        <div className='p-6'>
+          {!store ? (
+            <p className='text-sm text-fg-subtle italic'>
+              請先儲存賣場基本資訊，系統將自動產生邀請連結。
+            </p>
+          ) : (
+            <div className='space-y-4'>
+              <p className='text-sm text-fg-muted leading-relaxed'>
+                將以下連結分享給顧客，顧客點擊後可申請加入賣場。商家審核通過後，顧客即可瀏覽商品與下單。
+              </p>
+              <div className='flex items-stretch gap-2'>
+                <div className='flex-1 flex items-center gap-2 px-4 py-2.5 bg-sunken border border-line rounded-lg font-mono text-sm text-fg overflow-x-auto whitespace-nowrap'>
+                  <svg
                     width='14'
                     height='14'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    className='shrink-0 text-fg-muted'
+                    aria-hidden='true'
+                  >
+                    <path d='M10 13a5 5 0 007.07 0l3-3a5 5 0 10-7.07-7.07l-1 1' />
+                    <path d='M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 107.07 7.07l1-1' />
+                  </svg>
+                  {inviteLink}
+                </div>
+                <button
+                  type='button'
+                  onClick={handleCopyLink}
+                  disabled={isLoading}
+                  className='inline-flex items-center gap-1.5 h-10 px-4 rounded-pill bg-secondary text-white font-display font-semibold text-sm shadow-green hover:bg-secondary-hv transition disabled:opacity-50 shrink-0'
+                >
+                  <svg
+                    width='13'
+                    height='13'
+                    viewBox='0 0 24 24'
                     fill='none'
                     stroke='currentColor'
                     strokeWidth='2'
                     aria-hidden='true'
                   >
-                    <polyline points='20 6 9 17 4 12' />
+                    <rect x='9' y='9' width='13' height='13' rx='2' />
+                    <path d='M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1' />
                   </svg>
-                )}
-                {isLoading ? '儲存中…' : '儲存變更'}
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Section 2: Invite link ──────────────────────────────────────────── */}
-      <section className={styles.storeCard}>
-        <div className={styles.storeCardHead}>
-          <h2 className={styles.storeCardTitle}>顧客邀請連結</h2>
-          <span className={styles.storeCardHint}>透過此連結邀請顧客加入</span>
-        </div>
-
-        {!store ? (
-          <p className={styles.storeInviteEmpty}>請先儲存賣場基本資訊，系統將自動產生邀請連結。</p>
-        ) : (
-          <>
-            <p className={`${styles.storeInviteNote} mb-3.5`}>
-              將以下連結分享給顧客，顧客點擊後可申請加入賣場。商家審核通過後，顧客即可瀏覽商品與下單。
-            </p>
-            <div className={styles.storeInviteRow}>
-              <div className={styles.storeInviteLink}>
-                <svg
-                  viewBox='0 0 24 24'
-                  width='14'
-                  height='14'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='2'
-                  aria-hidden='true'
-                >
-                  <path d='M10 13a5 5 0 007.07 0l3-3a5 5 0 10-7.07-7.07l-1 1' />
-                  <path d='M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 107.07 7.07l1-1' />
-                </svg>
-                {inviteLink}
+                  {copyLabel}
+                </button>
               </div>
-              <button
-                type='button'
-                className={`${styles.storeBtn} ${styles.storeBtnPrimary}`}
-                onClick={handleCopyLink}
-                disabled={isLoading}
-              >
-                <svg
-                  viewBox='0 0 24 24'
-                  width='14'
-                  height='14'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='2'
-                  aria-hidden='true'
+              <div className='flex items-center justify-between pt-3 border-t border-line'>
+                <span className='text-xs text-fg-subtle'>舊連結點擊後將顯示「此連結已失效」。</span>
+                <button
+                  type='button'
+                  onClick={() => setShowRegenModal(true)}
+                  disabled={isLoading}
+                  className='inline-flex items-center gap-1 text-sm text-warning font-display font-semibold hover:underline disabled:opacity-50 disabled:cursor-not-allowed'
                 >
-                  <rect x='9' y='9' width='13' height='13' rx='2' />
-                  <path d='M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1' />
-                </svg>
-                {copyLabel}
-              </button>
+                  <svg
+                    width='13'
+                    height='13'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    aria-hidden='true'
+                  >
+                    <polyline points='23 4 23 10 17 10' />
+                    <polyline points='1 20 1 14 7 14' />
+                    <path d='M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15' />
+                  </svg>
+                  重新產生連結
+                </button>
+              </div>
             </div>
-            <div className={styles.storeInviteFooter}>
-              <span className={styles.storeInviteNote}>舊連結點擊後將顯示「此連結已失效」。</span>
-              <button
-                type='button'
-                className={styles.storeBtnWarning}
-                onClick={() => setShowRegenModal(true)}
-                disabled={isLoading}
-              >
-                <svg
-                  viewBox='0 0 24 24'
-                  width='13'
-                  height='13'
-                  fill='none'
-                  stroke='currentColor'
-                  strokeWidth='2'
-                  className='inline-block align-middle mr-1'
-                  aria-hidden='true'
-                >
-                  <polyline points='23 4 23 10 17 10' />
-                  <polyline points='1 20 1 14 7 14' />
-                  <path d='M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15' />
-                </svg>
-                重新產生連結
-              </button>
-            </div>
-          </>
-        )}
+          )}
+        </div>
       </section>
 
-      {/* ── Section 3: Preview ───────────────────────────────────────────────── */}
+      {/* ── Section 3: 顧客看到的賣場登入頁預覽 ────────────────────────── */}
       {store && (
-        <section className={styles.storeCard}>
-          <div className={styles.storeCardHead}>
-            <h2 className={styles.storeCardTitle}>顧客看到的賣場登入頁</h2>
+        <section className='bg-surface border border-line rounded-xl overflow-hidden'>
+          <div className='px-6 pt-5 pb-4 border-b border-line flex items-center justify-between'>
+            <SectionTitle>顧客看到的賣場登入頁</SectionTitle>
             <a
               href={`/store/${store.slug}/login`}
-              className={styles.storePreviewLink}
               target='_blank'
               rel='noopener noreferrer'
+              className='inline-flex items-center gap-1 text-xs text-primary hover:underline font-display font-semibold'
             >
               查看完整頁面
               <svg
+                width='11'
+                height='11'
                 viewBox='0 0 24 24'
-                width='13'
-                height='13'
                 fill='none'
                 stroke='currentColor'
                 strokeWidth='2'
@@ -467,26 +519,38 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
               </svg>
             </a>
           </div>
-          <div className={styles.storePreviewWrap}>
-            <div className={styles.storePreviewCard}>
-              <div className={styles.storePreviewMiniLogo}>
+          <div className='p-6 flex flex-col items-center gap-3'>
+            {/* 預覽卡 */}
+            <div
+              className='w-full max-w-[300px] rounded-xl p-7 text-center text-white'
+              style={{
+                background:
+                  'radial-gradient(ellipse 80% 50% at 90% 10%, rgba(109,171,61,0.3) 0%, transparent 60%), radial-gradient(ellipse 60% 70% at 5% 95%, rgba(28,54,16,0.6) 0%, transparent 60%), var(--c-secondary-hv, #2c5218)',
+                boxShadow: '0 4px 24px rgba(28,54,16,0.18)',
+              }}
+            >
+              <div className='w-14 h-14 mx-auto rounded-pill bg-white/10 border border-white/30 flex items-center justify-center font-display font-bold text-2xl overflow-hidden mb-3'>
                 {store.avatar_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={store.avatar_url}
                     alt={store.name}
-                    className='w-full h-full object-cover rounded-full'
+                    className='w-full h-full object-cover'
                   />
                 ) : (
                   store.name.slice(0, 1)
                 )}
               </div>
-              <div className={styles.storePreviewName}>{store.name}</div>
+              <div className='font-display font-bold text-lg tracking-wide mb-1.5'>
+                {store.name}
+              </div>
               {store.description && (
-                <div className={styles.storePreviewDesc}>{store.description}</div>
+                <div className='text-[11px] text-white/60 leading-relaxed mb-4'>
+                  {store.description}
+                </div>
               )}
-              <div className={styles.storePreviewLineBtn}>
-                <svg viewBox='0 0 48 48' width='14' height='14' fill='none' aria-hidden='true'>
+              <div className='inline-flex items-center gap-2 bg-[#00b900] text-white px-4 py-2 rounded-pill font-display font-bold text-xs shadow-[0_3px_10px_rgba(0,185,0,0.3)]'>
+                <svg viewBox='0 0 48 48' width='13' height='13' fill='none' aria-hidden='true'>
                   <rect width='48' height='48' rx='10' fill='rgba(255,255,255,.25)' />
                   <path
                     d='M24 10C15.16 10 8 15.82 8 22.9C8 29.24 13.46 34.58 21.06 35.74C21.58 35.84 22.3 36.06 22.48 36.5C22.64 36.9 22.58 37.52 22.52 37.92L22.24 39.58C22.16 39.98 21.88 41.12 24 40.24C26.12 39.36 35.28 33.72 39.06 29.36C41.62 26.56 43 24 43 22.9C43 15.82 35.84 10 27 10H24Z'
@@ -496,107 +560,73 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
                 使用 LINE 登入
               </div>
             </div>
-            <span className={styles.storePreviewCaption}>↑ 縮小預覽 · 實際畫面更精緻</span>
+            <span className='text-[11px] text-fg-subtle'>↑ 縮小預覽 · 實際畫面更精緻</span>
           </div>
         </section>
       )}
 
-      {/* ── Section 4: Public products feature ──────────────────────────────── */}
+      {/* ── Section 4: 公開商品功能 ─────────────────────────────────────── */}
       {store && (
-        <section className={styles.storeCard}>
-          <div className={styles.storeCardHead}>
-            <h2 className={styles.storeCardTitle}>公開商品功能</h2>
+        <section className='bg-surface border border-line rounded-xl overflow-hidden'>
+          <div className='px-6 pt-5 pb-4 border-b border-line'>
+            <SectionTitle>公開商品功能</SectionTitle>
           </div>
-          <div className='px-5 pb-5'>
+          <div className='px-6 py-5'>
             <div className='flex items-start justify-between gap-4'>
-              <p className='text-[13px] text-[var(--neutral-500)] leading-relaxed max-w-[480px]'>
-                開啟後，設為公開的商品可被 Google 等搜尋引擎索引，陌生客可透過搜尋���到賣場。
-              </p>
+              <div className='flex-1'>
+                <p className='text-sm text-fg-muted leading-relaxed max-w-120'>
+                  開啟後，設為公開的商品可被 Google 等搜尋引擎索引，陌生客可透過搜尋找到賣場。
+                </p>
+                {store.allow_public_products && (
+                  <div className='mt-2 flex items-center gap-1.5'>
+                    <span className='text-xs text-fg-muted'>公開商品頁：</span>
+                    <a
+                      href={`/p/${store.slug}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                      className='font-mono text-xs text-primary hover:underline'
+                    >
+                      /p/{store.slug}
+                    </a>
+                  </div>
+                )}
+              </div>
+              {/* Toggle switch */}
               <button
                 type='button'
                 role='switch'
                 aria-checked={store.allow_public_products}
+                aria-label='開關公開商品功能'
                 disabled={isTogglingPublic}
                 onClick={handleTogglePublicProducts}
-                className={`relative flex-shrink-0 w-11 h-6 rounded-full transition-colors duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--forest-base)] ${
-                  store.allow_public_products
-                    ? 'bg-[var(--forest-base)]'
-                    : 'bg-[var(--neutral-300)]'
-                } ${isTogglingPublic ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}
-                aria-label='開關公開商品功能'
+                className={[
+                  'relative shrink-0 w-11 h-6 rounded-pill transition-colors duration-200 focus-visible:ring-2 focus-visible:ring-secondary',
+                  store.allow_public_products ? 'bg-secondary' : 'bg-ink-300',
+                  isTogglingPublic ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer',
+                ].join(' ')}
               >
                 <span
-                  className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${
-                    store.allow_public_products ? 'translate-x-5' : 'translate-x-0'
-                  }`}
+                  className={[
+                    'absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-pill shadow transition-transform duration-200',
+                    store.allow_public_products ? 'translate-x-5' : 'translate-x-0',
+                  ].join(' ')}
                 />
               </button>
             </div>
-            {store.allow_public_products && (
-              <div className='mt-3 flex items-center gap-2'>
-                <span className='text-[12px] text-[var(--forest-base)]'>公開商品頁：</span>
-                <a
-                  href={`/p/${store.slug}`}
-                  target='_blank'
-                  rel='noopener noreferrer'
-                  className='text-[12px] text-[var(--forest-base)] underline underline-offset-2'
-                >
-                  /p/{store.slug}
-                </a>
-              </div>
-            )}
           </div>
         </section>
       )}
-
-      {/* ── Regenerate confirmation modal ────────────────────────────────────── */}
-      {showRegenModal && (
-        <div
-          role='dialog'
-          aria-modal='true'
-          aria-labelledby='regen-modal-title'
-          className='fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(28,54,16,0.4)] backdrop-blur-[3px]'
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setShowRegenModal(false)
-          }}
-        >
-          <div className={styles.storeModal}>
-            <h3 id='regen-modal-title' className={styles.storeModalTitle}>
-              重新產生邀請連結
-            </h3>
-            <p className={styles.storeModalBody}>
-              舊連結將立即失效，使用舊連結的顧客將需要重新點擊新連結。確定重新產生？
-            </p>
-            <div className={styles.storeModalActions}>
-              <button
-                type='button'
-                className={`${styles.storeBtn} ${styles.storeBtnGhost}`}
-                onClick={() => setShowRegenModal(false)}
-              >
-                取消
-              </button>
-              <button
-                type='button'
-                className={`${styles.storeBtn} ${styles.storeBtnDanger}`}
-                onClick={handleRegenToken}
-              >
-                確定重新產生
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ── Toast ────────────────────────────────────────────────────────────── */}
-      {toast && (
-        <div
-          role='status'
-          aria-live='polite'
-          className={`${styles.storeToast} ${toast.type === 'success' ? styles.storeToastSuccess : styles.storeToastError}`}
-        >
-          {toast.message}
-        </div>
-      )}
     </>
+  )
+}
+
+// ── 小元件 ────────────────────────────────────────────────────────────────────
+
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <h2 className='font-display font-bold text-base flex items-center gap-2.5'>
+      <span className='w-1 h-5 rounded-pill bg-secondary shrink-0' aria-hidden='true' />
+      {children}
+    </h2>
   )
 }

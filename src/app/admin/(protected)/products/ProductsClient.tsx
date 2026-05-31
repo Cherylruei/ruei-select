@@ -625,22 +625,16 @@ export default function ProductsClient({
                       <table className='w-full text-sm table-fixed'>
                         {/* 固定欄寬：防止「無類別」群組的類別欄縮為 0，造成欄位偏移 */}
                         <colgroup>
-                          <col /> {/* 商品 — flexible */}
-                          <col className='hidden sm:table-column' style={{ width: '9%' }} />{' '}
-                          {/* 類別 */}
-                          <col className='hidden md:table-column' style={{ width: '13%' }} />{' '}
-                          {/* 售價 */}
-                          <col className='hidden lg:table-column' style={{ width: '10%' }} />{' '}
-                          {/* 成本 */}
-                          <col className='hidden lg:table-column' style={{ width: '8%' }} />{' '}
-                          {/* 毛利 */}
-                          <col className='hidden xl:table-column' style={{ width: '7%' }} />{' '}
-                          {/* 瀏覽 */}
-                          <col style={{ width: '11%' }} /> {/* 狀態 */}
-                          <col style={{ width: '8%' }} /> {/* 上架 */}
-                          <col className='hidden sm:table-column' style={{ width: '8%' }} />{' '}
-                          {/* 公開 */}
-                          <col style={{ width: '40px' }} /> {/* kebab */}
+                          <col />
+                          <col className='hidden sm:table-column' style={{ width: '9%' }} />
+                          <col className='hidden md:table-column' style={{ width: '13%' }} />
+                          <col className='hidden lg:table-column' style={{ width: '10%' }} />
+                          <col className='hidden lg:table-column' style={{ width: '8%' }} />
+                          <col className='hidden xl:table-column' style={{ width: '7%' }} />
+                          <col style={{ width: '11%' }} />
+                          <col style={{ width: '8%' }} />
+                          <col className='hidden sm:table-column' style={{ width: '8%' }} />
+                          <col style={{ width: '40px' }} />
                         </colgroup>
                         <thead>
                           <tr className='bg-surface'>
