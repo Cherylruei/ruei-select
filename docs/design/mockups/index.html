@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="design-tokens.css" />
+  <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
   <style>
     * { box-sizing: border-box; }
     body { font-family: var(--font-body); background: var(--bg-app); color: var(--fg-default); margin: 0; }
@@ -178,24 +178,24 @@
         desc:'商家 LINE LIFF 登入，取得賣場身份。' },
       { group:'admin', sprint:1, route:'/admin/setup', comp:'<StoreSetup/>', title:'賣場建立精靈', status:'planned', kind:'setup', vp:'desktop',
         desc:'名稱 / 介紹 / 頭像上傳 + 新增供應商 + 生成並複製邀請連結。' },
-      { group:'admin', sprint:1, route:'/admin/suppliers', comp:'<AdminSuppliers/>', title:'供應商管理', status:'planned', kind:'suppliers', vp:'desktop',
-        desc:'供應商 CRUD 列表 + 新增 / 編輯 / 刪除。' },
+      { group:'admin', sprint:1, route:'/admin/suppliers', comp:'<AdminSuppliers/>', title:'供應商管理', status:'done', file:'admin-suppliers.html', kind:'suppliers', vp:'desktop',
+        desc:'供應商 CRUD 卡片網格 + slide-over 新增 / 編輯表單 + 刪除確認。' },
       { group:'admin', sprint:1, route:'/admin/customers', comp:'<AdminCustomers/>', title:'顧客審核名單', status:'planned', kind:'customers', vp:'desktop',
         desc:'待審核名單 → 通過 / 拒絕，含空狀態頁。' },
       { group:'admin', sprint:3, route:'/admin', comp:'<AdminDashboard/>', title:'總覽 Dashboard', status:'done', file:'admin-dashboard.html', kind:'dashboard', vp:'desktop',
         desc:'Sidebar + 4 stat 卡 + 最近訂單表 + 今日待辦 + 熱銷排行 + 廠商表現。' },
-      { group:'admin', sprint:2, route:'/admin/products', comp:'<AdminProducts/>', title:'商品管理', status:'planned', kind:'products', vp:'desktop',
-        desc:'商品列表依廠商分類 + 上 / 下架切換。' },
-      { group:'admin', sprint:2, route:'/admin/products/new', comp:'<AdminProductNew/>', title:'新增商品', status:'planned', kind:'product-new', vp:'desktop',
-        desc:'貼原文 → AI 文案優化（原文 vs 優化對比）→ 規格自動偵測 → 匯率換算 → 圖片上傳。' },
+      { group:'admin', sprint:2, route:'/admin/products', comp:'<AdminProducts/>', title:'商品管理', status:'done', file:'admin-products.html', kind:'products', vp:'desktop',
+        desc:'商品列表依廠商分組 + 上 / 下架 switch + 狀態 / 類別 / 廠商篩選。' },
+      { group:'admin', sprint:2, route:'/admin/products/new', comp:'<AdminProductNew/>', title:'新增商品', status:'done', file:'admin-products-new.html', kind:'product-new', vp:'desktop',
+        desc:'貼原文 → AI 文案優化（原文 vs 優化對比）→ 規格自動偵測 → 匯率換算 → 圖片上傳 + sticky 前台預覽。' },
       { group:'admin', sprint:2, route:'/admin/products/[id]/edit', comp:'<AdminProductEdit/>', title:'編輯商品', status:'planned', kind:'product-edit', vp:'desktop',
         desc:'同新增結構，帶入既有商品資料。' },
       { group:'admin', sprint:4, route:'/admin/orders', comp:'<AdminOrders/>', title:'訂單管理', status:'done', file:'admin-orders.html', kind:'orders', vp:'desktop',
         desc:'5 階段 pipeline + 狀態 tabs + 批次選取 / 向廠商下單 + 行內展開時程。' },
       { group:'admin', sprint:4, route:'/admin/orders/new', comp:'<AdminOrdersNew/>', title:'協助建立訂單', status:'done', file:'admin-orders-new.html', kind:'order-new', vp:'desktop',
         desc:'分步表單 + sticky 訂單摘要。Step 2 商品 3 種輸入方式。' },
-      { group:'admin', sprint:4, route:'/admin/orders/[id]', comp:'<AdminOrderDetail/>', title:'訂單詳情 / 配貨', status:'planned', kind:'order-detail', vp:'desktop',
-        desc:'顧客資訊 + 商品 + 採購時間軸 + 自動 / 手動配貨 + 狀態相依操作。' },
+      { group:'admin', sprint:4, route:'/admin/orders/[id]', comp:'<AdminOrderDetail/>', title:'訂單詳情 / 配貨', status:'done', file:'admin-order-detail.html', kind:'order-detail', vp:'desktop',
+        desc:'顧客資訊 + 商品 + 採購時間軸 + 自動 / 手動配貨 + 狀態相依操作（示範狀態可切換）。' },
       { group:'admin', sprint:4, route:'/admin/orders/[id]/checkout', comp:'<AdminOrderCheckout/>', title:'代客結單', status:'done', file:'admin-orders-checkout.html', kind:'checkout', vp:'desktop',
         desc:'結單對象提示卡 + 物流四選一 RadioCard + 收件 / 付款聯動 + sticky 結單摘要。' },
       { group:'admin', sprint:4, route:'/admin/orders/[id]/shipping', comp:'<AdminOrderShipping/>', title:'出貨管理', status:'planned', kind:'shipping', vp:'desktop',

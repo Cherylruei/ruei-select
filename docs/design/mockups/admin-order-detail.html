@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-Hant" data-variant="forest">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>芮選 · 商家後台 · 訂單詳情</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="_tailwind-config.js"></script>
+  <style>
+    body { font-family: var(--font-body); }
+    .ph-c { background: repeating-linear-gradient(135deg, var(--earth-100), var(--earth-100) 7px, var(--earth-50) 7px, var(--earth-50) 14px); }
+    .fld { width:100%; font-family:inherit; font-size:var(--fs-base); color:var(--fg-default); background:var(--bg-surface); border:1.5px solid var(--border); border-radius:var(--r-md); padding:9px 12px; outline:none; transition:border-color .2s, box-shadow .2s; }
+    .fld:focus { border-color:var(--c-primary); box-shadow:0 0 0 4px var(--c-primary-bg); }
+    .rc { display:flex; gap:11px; align-items:flex-start; padding:13px 14px; border:1.5px solid var(--border); border-radius:var(--r-md); cursor:pointer; transition:all .15s; background:var(--bg-surface); }
+    .rc:hover { border-color:var(--border-strong); }
+    .rc.is-selected { border-color:var(--c-primary); background:var(--c-primary-bg); }
+    .rc-tick { width:20px;height:20px;border-radius:999px;border:1.5px solid var(--border-strong);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;color:#fff;transition:all .15s; }
+    .rc.is-selected .rc-tick { background:var(--c-primary); border-color:var(--c-primary); }
+    .rc .rc-tick svg { opacity:0; } .rc.is-selected .rc-tick svg { opacity:1; }
+    .chk { appearance:none;-webkit-appearance:none; width:18px;height:18px;border-radius:5px;border:1.5px solid var(--ink-300);background:var(--bg-surface);cursor:pointer;position:relative;flex-shrink:0;transition:all .15s; }
+    .chk:checked { background:var(--c-secondary);border-color:var(--c-secondary); }
+    .chk:checked::after { content:"";position:absolute;left:5px;top:1.5px;width:5px;height:9px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg); }
+    .demo-seg { display:inline-flex; gap:3px; background:var(--bg-sunken); padding:3px; border-radius:999px; }
+    .demo-seg button { font-family:var(--font-display);font-weight:600;font-size:11px;height:26px;padding:0 10px;border-radius:999px;border:0;background:transparent;color:var(--fg-muted);cursor:pointer;transition:all .15s; }
+    .demo-seg button[aria-pressed="true"] { background:var(--bg-surface);color:var(--c-primary-hv);box-shadow:var(--shadow-xs); }
+    .no-scrollbar::-webkit-scrollbar{display:none} .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
+    .reveal { animation: fadeUp .35s var(--ease-out) both; } @keyframes fadeUp { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+  </style>
+</head>
+<body class="bg-app text-fg">
+  <div class="flex min-h-screen">
+    <aside id="sidebar" class="w-60 shrink-0 bg-surface border-r border-line flex flex-col sticky top-0 h-screen"></aside>
+    <main class="flex-1 min-w-0">
+      <div id="topbar"></div>
+      <div id="stepperWrap" class="px-8 pt-5 max-w-[1280px]"></div>
+      <div class="grid grid-cols-[1fr_340px] gap-6 p-8 pt-5 max-w-[1280px] items-start">
+        <div id="leftCol" class="space-y-5 min-w-0"></div>
+        <aside id="rightCol" class="sticky top-[150px] space-y-4"></aside>
+      </div>
+    </main>
+  </div>
+
+  <!-- cancel modal -->
+  <div id="modalWrap" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div id="modalScrim" class="absolute inset-0 opacity-0 transition-opacity duration-300" style="background:var(--bg-overlay)" onclick="closeModal()"></div>
+    <div id="modalBox" class="relative bg-surface rounded-2xl shadow-lg w-full max-w-[440px] p-6 opacity-0 scale-95 transition-all duration-200">
+      <div class="w-12 h-12 rounded-pill bg-danger-bg flex items-center justify-center mb-4">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--c-danger)" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+      </div>
+      <h3 class="font-display font-bold text-lg">取消訂單 RS-2410？</h3>
+      <p class="text-sm text-fg-muted mt-2 leading-relaxed">取消後將通知顧客，並記錄原因以供日後查詢。此動作無法復原。</p>
+      <label class="block text-sm font-semibold mt-4 mb-2">取消原因 <span class="text-danger">*</span></label>
+      <select class="fld cursor-pointer"><option>顧客要求取消</option><option>廠商缺貨無法供應</option><option>顧客逾期未結單</option><option>其他</option></select>
+      <div class="flex items-center gap-2 mt-6">
+        <button onclick="closeModal()" class="flex-1 h-11 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition">返回</button>
+        <button onclick="doCancel()" class="flex-1 h-11 rounded-pill bg-danger text-white font-display font-semibold text-sm hover:brightness-95 active:scale-[.97] transition">確認取消</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 z-[60] opacity-0 translate-y-2 transition-all duration-300 pointer-events-none">
+    <div class="toast toast-success"><span class="ico">✓</span><span id="toastMsg">已更新</span></div>
+  </div>
+
+  <script src="admin-order-detail.js"></script>
+</body>
+</html>

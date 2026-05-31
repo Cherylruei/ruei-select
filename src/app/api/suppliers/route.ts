@@ -92,7 +92,7 @@ export async function POST(request: NextRequest) {
     const tag = body.tag?.trim() || null
     const line_group = body.line_group?.trim() || null
     const phone = body.phone?.trim() || null
-    const currency = (['TWD', 'JPY', 'USD', 'HKD'] as const).includes(body.currency as never)
+    const currency = (['TWD', 'JPY', 'KRW', 'USD', 'HKD'] as const).includes(body.currency as never)
       ? (body.currency as 'TWD' | 'JPY' | 'USD' | 'HKD')
       : 'TWD'
     const avg_arrival_days =

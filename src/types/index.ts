@@ -51,7 +51,7 @@ export interface Supplier {
   tag: string | null
   line_group: string | null
   phone: string | null
-  currency: 'TWD' | 'JPY' | 'USD' | 'HKD'
+  currency: 'TWD' | 'JPY' | 'KRW' | 'USD' | 'HKD'
   avg_arrival_days: number | null
   note: string | null
   website_url: string | null

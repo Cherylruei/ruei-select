@@ -17,7 +17,8 @@ type OrderStatus =
   | 'cancelled'
 
 export interface MockOrder {
-  id: string
+  id: string // 完整 UUID，用於 React key
+  displayId: string // 縮短顯示 ID，例：RS-A1B2C3
   date: string
   name: string
   initial: string
@@ -100,7 +101,7 @@ export function DashboardOrdersTable({ orders }: { orders: MockOrder[] }) {
                   className='border-t border-line hover:bg-ink-50 cursor-pointer transition-colors'
                 >
                   <td className='px-5 py-3'>
-                    <div className='font-mono text-fg-muted'>{o.id}</div>
+                    <div className='font-mono text-fg-muted'>{o.displayId}</div>
                     <div className='font-mono text-[10px] text-fg-subtle'>{o.date}</div>
                   </td>
                   <td className='px-5 py-3'>

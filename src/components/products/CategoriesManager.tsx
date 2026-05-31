@@ -4,6 +4,9 @@ import { useState, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import type { ProductCategory } from '@/types'
 
+const FLD =
+  'w-full bg-surface border border-line rounded-md px-3.5 py-2.5 text-sm outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition placeholder:text-fg-subtle disabled:opacity-60'
+
 interface Props {
   initialCategories: ProductCategory[]
 }
@@ -21,15 +24,6 @@ export default function CategoriesManager({ initialCategories }: Props) {
   function showError(msg: string) {
     setError(msg)
     setTimeout(() => setError(null), 3500)
-  }
-
-  function handleAddKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') void handleAdd()
-  }
-
-  function handleEditKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === 'Enter') void handleSaveEdit()
-    if (e.key === 'Escape') cancelEdit()
   }
 
   function startEdit(cat: ProductCategory) {
@@ -113,49 +107,52 @@ export default function CategoriesManager({ initialCategories }: Props) {
     : null
 
   return (
-    <div className='flex flex-col gap-4'>
+    <div className='flex flex-col gap-4 max-w-[720px]'>
       {/* 新增分類 */}
-      <div className='bg-white border border-[var(--neutral-200)] rounded-xl p-4 flex flex-col gap-3'>
-        <p className='text-[13px] font-medium text-[var(--neutral-700)]'>新增分類</p>
+      <div className='bg-surface border border-line rounded-xl p-5'>
+        <p className='text-sm font-semibold mb-3'>新增分類</p>
         <div className='flex gap-2'>
           <input
             type='text'
             value={newName}
             onChange={(e) => setNewName(e.target.value)}
-            onKeyDown={handleAddKeyDown}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') void handleAdd()
+            }}
             placeholder='輸入分類名稱，例：夏季新品、日本直送'
             maxLength={30}
             disabled={isPending}
-            className='flex-1 border border-[var(--neutral-200)] rounded-lg px-3 py-2 text-[13px] bg-white text-[var(--neutral-700)] focus:outline-none focus:border-[var(--forest-base)] disabled:opacity-60'
+            className={FLD}
           />
           <button
             type='button'
             onClick={() => void handleAdd()}
             disabled={isPending || !newName.trim()}
-            className='px-4 py-2 rounded-lg bg-[var(--forest-base)] text-white text-[12.5px] font-medium hover:bg-[var(--forest-deep)] transition-colors disabled:opacity-40'
+            className='h-10 px-5 rounded-pill bg-secondary text-white font-display font-semibold text-sm hover:bg-secondary-hv transition disabled:opacity-40 shrink-0'
           >
             新增
           </button>
         </div>
-        {error && <p className='text-[12px] text-[var(--color-error)]'>{error}</p>}
+        {error && <p className='text-xs text-danger mt-2'>{error}</p>}
       </div>
 
       {/* 分類列表 */}
       {categories.length === 0 ? (
-        <div className='bg-white border border-[var(--neutral-200)] rounded-xl px-6 py-12 text-center'>
-          <p className='text-[14px] font-medium text-[var(--neutral-600)] mb-1'>尚未建立分類</p>
-          <p className='text-[12.5px] text-[var(--neutral-400)]'>
-            建立分類後，商家可在商品表單中指定分類，顧客可在公開頁面快速篩選
+        <div className='bg-surface border border-line rounded-xl px-6 py-12 text-center'>
+          <p className='font-display font-semibold text-fg-muted mb-1'>尚未建立分類</p>
+          <p className='text-sm text-fg-subtle'>
+            建立分類後可在商品表單中指定，顧客可在公開頁面快速篩選
           </p>
         </div>
       ) : (
-        <div className='bg-white border border-[var(--neutral-200)] rounded-xl overflow-hidden'>
+        <div className='bg-surface border border-line rounded-xl overflow-hidden'>
           {categories.map((cat, idx) => (
             <div
               key={cat.id}
-              className={`flex items-center gap-3 px-4 py-3.5 ${
-                idx < categories.length - 1 ? 'border-b border-[var(--neutral-100)]' : ''
-              }`}
+              className={[
+                'flex items-center gap-3 px-5 py-3.5',
+                idx < categories.length - 1 ? 'border-b border-line' : '',
+              ].join(' ')}
             >
               {editingId === cat.id ? (
                 <>
@@ -163,17 +160,20 @@ export default function CategoriesManager({ initialCategories }: Props) {
                     type='text'
                     value={editingName}
                     onChange={(e) => setEditingName(e.target.value)}
-                    onKeyDown={handleEditKeyDown}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') void handleSaveEdit()
+                      if (e.key === 'Escape') cancelEdit()
+                    }}
                     maxLength={30}
                     autoFocus
                     disabled={isPending}
-                    className='flex-1 border border-[var(--forest-base)] rounded-lg px-3 py-1.5 text-[13px] bg-white focus:outline-none disabled:opacity-60'
+                    className={`${FLD} flex-1`}
                   />
                   <button
                     type='button'
                     onClick={() => void handleSaveEdit()}
                     disabled={isPending || !editingName.trim()}
-                    className='px-3 py-1.5 rounded-lg bg-[var(--forest-base)] text-white text-[12px] font-medium hover:bg-[var(--forest-deep)] transition-colors disabled:opacity-40'
+                    className='h-9 px-4 rounded-pill bg-primary text-white font-display font-semibold text-xs hover:bg-primary-hv transition disabled:opacity-40 shrink-0'
                   >
                     儲存
                   </button>
@@ -181,21 +181,19 @@ export default function CategoriesManager({ initialCategories }: Props) {
                     type='button'
                     onClick={cancelEdit}
                     disabled={isPending}
-                    className='px-3 py-1.5 rounded-lg border border-[var(--neutral-200)] text-[12px] text-[var(--neutral-500)] hover:bg-[var(--neutral-100)] transition-colors'
+                    className='h-9 px-4 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition shrink-0'
                   >
                     取消
                   </button>
                 </>
               ) : (
                 <>
-                  <span className='flex-1 text-[13px] font-medium text-[var(--neutral-800)]'>
-                    {cat.name}
-                  </span>
+                  <span className='flex-1 font-semibold text-sm'>{cat.name}</span>
                   <button
                     type='button'
                     onClick={() => startEdit(cat)}
                     disabled={isPending}
-                    className='px-2.5 py-1.5 rounded-lg text-[11.5px] border border-[var(--neutral-200)] text-[var(--neutral-600)] hover:bg-[var(--neutral-100)] transition-colors disabled:opacity-60'
+                    className='h-8 px-3.5 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition disabled:opacity-60'
                   >
                     改名
                   </button>
@@ -203,7 +201,7 @@ export default function CategoriesManager({ initialCategories }: Props) {
                     type='button'
                     onClick={() => setConfirmDeleteId(cat.id)}
                     disabled={isPending}
-                    className='px-2.5 py-1.5 rounded-lg text-[11.5px] border border-[var(--neutral-200)] text-[var(--color-error)] hover:bg-red-50 transition-colors disabled:opacity-60'
+                    className='h-8 px-3.5 rounded-pill border border-line text-danger font-display font-semibold text-xs hover:bg-danger-bg transition disabled:opacity-60'
                   >
                     刪除
                   </button>
@@ -214,39 +212,46 @@ export default function CategoriesManager({ initialCategories }: Props) {
         </div>
       )}
 
-      {/* 刪除確認 */}
+      {/* 刪除確認 Modal */}
       {confirmDeleteTarget && (
         <div
           role='dialog'
           aria-modal='true'
-          aria-labelledby='cat-delete-title'
           className='fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(28,54,16,0.4)] backdrop-blur-[3px]'
           onClick={(e) => {
             if (e.target === e.currentTarget) setConfirmDeleteId(null)
           }}
         >
-          <div className='bg-white rounded-2xl p-6 w-[340px] shadow-xl'>
-            <h3
-              id='cat-delete-title'
-              className='text-[15px] font-semibold text-[var(--neutral-800)] mb-2'
-            >
-              確定刪除分類？
-            </h3>
-            <p className='text-[13px] text-[var(--neutral-500)] mb-5'>
+          <div className='bg-surface rounded-2xl p-6 w-[360px] shadow-xl'>
+            <div className='w-12 h-12 rounded-pill bg-danger-bg flex items-center justify-center mb-4'>
+              <svg
+                width='22'
+                height='22'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='var(--c-danger)'
+                strokeWidth='1.9'
+                strokeLinecap='round'
+              >
+                <path d='M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13M10 11v6M14 11v6' />
+              </svg>
+            </div>
+            <h3 className='font-display font-bold text-lg'>確定刪除分類？</h3>
+            <p className='text-sm text-fg-muted mt-2 leading-relaxed'>
               刪除「{confirmDeleteTarget.name}」後，已指定此分類的商品將變為未分類，不影響商品本身。
             </p>
-            <div className='flex gap-2 justify-end'>
+            <div className='flex items-center gap-2 mt-6'>
               <button
                 type='button'
                 onClick={() => setConfirmDeleteId(null)}
-                className='px-4 py-2 rounded-lg border border-[var(--neutral-200)] text-[13px] text-[var(--neutral-600)] hover:bg-[var(--neutral-100)] transition-colors'
+                className='flex-1 h-11 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition'
               >
                 取消
               </button>
               <button
                 type='button'
                 onClick={() => void handleDelete(confirmDeleteTarget.id)}
-                className='px-4 py-2 rounded-lg bg-[var(--color-error)] text-white text-[13px] font-medium hover:opacity-90 transition-colors'
+                className='flex-1 h-11 rounded-pill bg-danger text-white font-display font-semibold text-sm hover:brightness-95 active:scale-[.97] transition'
               >
                 確定刪除
               </button>

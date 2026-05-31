@@ -159,7 +159,8 @@ export default async function AdminDashboard() {
       const firstItem = row.order_items[0]
       const subtotal = row.order_items.reduce((s, i) => s + i.unit_price * i.quantity, 0)
       return {
-        id: shortDisplayId(row.id),
+        id: row.id, // 完整 UUID → React key 唯一不碰撞
+        displayId: shortDisplayId(row.id), // 縮短顯示用
         date: fmtDate(row.ordered_at),
         name,
         initial: name.charAt(0),

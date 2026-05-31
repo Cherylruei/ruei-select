@@ -3,7 +3,7 @@ import { getAuthContext, isNextResponse } from '@/lib/api-helpers'
 import { getExchangeRate } from '@/lib/exchange-rates'
 import type { Currency } from '@/types'
 
-const SUPPORTED_CURRENCIES: Exclude<Currency, 'TWD'>[] = ['JPY', 'GBP', 'USD', 'HKD']
+const SUPPORTED_CURRENCIES: Exclude<Currency, 'TWD'>[] = ['JPY', 'KRW', 'GBP', 'USD', 'HKD']
 
 export async function GET(request: NextRequest) {
   try {

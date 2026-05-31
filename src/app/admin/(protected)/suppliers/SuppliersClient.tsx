@@ -17,7 +17,7 @@ interface Props {
   totalProducts: number
 }
 
-type Currency = 'TWD' | 'JPY' | 'USD' | 'HKD'
+type Currency = 'TWD' | 'JPY' | 'KRW' | 'USD' | 'HKD'
 
 interface DrawerForm {
   name: string
@@ -29,8 +29,8 @@ interface DrawerForm {
   note: string
 }
 
-const CURRENCIES: Currency[] = ['TWD', 'JPY', 'USD', 'HKD']
-const CUR_SYM: Record<Currency, string> = { TWD: 'NT$', JPY: '¥', USD: '$', HKD: 'HK$' }
+const CURRENCIES: Currency[] = ['TWD', 'JPY', 'KRW', 'USD', 'HKD']
+const CUR_SYM: Record<Currency, string> = { TWD: 'NT$', JPY: '¥', KRW: '₩', USD: '$', HKD: 'HK$' }
 const EARTH_SHADES = [
   'var(--earth-300)',
   'var(--earth-400)',

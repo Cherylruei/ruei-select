@@ -14,7 +14,12 @@ const PAGE_TITLES: Record<string, string> = {
 }
 
 // 這些頁面有自己的完整頁首，隱藏 desktop topbar 避免重複
-const CUSTOM_HEADER_PATHS = new Set(['/admin/suppliers', '/admin/products', '/admin/products/new'])
+const CUSTOM_HEADER_PATHS = new Set([
+  '/admin/suppliers',
+  '/admin/products',
+  '/admin/products/new',
+  '/admin/orders/new',
+])
 
 function getPageTitle(pathname: string): string {
   // 長路徑優先，避免 /admin 搶先匹配 /admin/orders 等子路徑
@@ -37,7 +42,10 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const pathname = usePathname()
   const pageTitle = getPageTitle(pathname)
-  const hasCustomHeader = CUSTOM_HEADER_PATHS.has(pathname)
+  const hasCustomHeader =
+    CUSTOM_HEADER_PATHS.has(pathname) ||
+    pathname.startsWith('/admin/products/') ||
+    pathname.startsWith('/admin/orders/')
 
   return (
     <div data-variant='forest' className='flex min-h-screen bg-app text-fg'>
@@ -102,7 +110,7 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
 
         {/* Page content */}
         <main
-          className={`flex-1 max-w-[1400px] w-full ${hasCustomHeader ? '' : 'px-8 pt-7 pb-14'}`}
+          className={`flex-1 w-full ${hasCustomHeader ? '' : 'max-w-[1400px] px-8 pt-7 pb-14'}`}
         >
           {children}
         </main>

@@ -10,7 +10,7 @@
       href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
+    <link rel="stylesheet" href="../src/styles/design-tokens.css" />
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="_tailwind-config.js"></script>
     <style>
@@ -428,7 +428,7 @@
                 >
               </div>
               <p class="text-xs text-fg-subtle ml-8 mb-3">
-                由顧客在「我的訂單」勾選之品項自動帶入 · 此處唯讀
+                勾選要為顧客結單的已到貨商品 · 預設全選
               </p>
 
               <div class="ml-8 border border-line rounded-md overflow-hidden">
@@ -438,10 +438,16 @@
                   <span class="font-mono text-[10px] text-fg-muted tracking-wider"
                     >RS-2410 · 2410 · 2412</span
                   >
-                  <span class="font-mono text-[10px] text-fg-subtle">勾選來源:顧客自選</span>
+                  <span class="font-mono text-[10px] text-fg-subtle">勾選來源:商家代選</span>
                 </div>
                 <div class="divide-y divide-line">
                   <div class="flex items-center gap-3 px-3 py-3">
+                    <input
+                      type="checkbox"
+                      class="w-4 h-4 rounded accent-primary shrink-0"
+                      checked
+                      aria-label="選取結單"
+                    />
                     <div class="w-11 h-11 rounded-md placeholder-img shrink-0"></div>
                     <div class="flex-1 leading-tight min-w-0">
                       <div class="font-display font-semibold text-sm truncate">
@@ -461,6 +467,12 @@
                     </div>
                   </div>
                   <div class="flex items-center gap-3 px-3 py-3">
+                    <input
+                      type="checkbox"
+                      class="w-4 h-4 rounded accent-primary shrink-0"
+                      checked
+                      aria-label="選取結單"
+                    />
                     <div class="w-11 h-11 rounded-md placeholder-img shrink-0"></div>
                     <div class="flex-1 leading-tight min-w-0">
                       <div class="font-display font-semibold text-sm truncate">英國蜂蜜檸檬茶</div>
@@ -478,6 +490,12 @@
                     </div>
                   </div>
                   <div class="flex items-center gap-3 px-3 py-3">
+                    <input
+                      type="checkbox"
+                      class="w-4 h-4 rounded accent-primary shrink-0"
+                      checked
+                      aria-label="選取結單"
+                    />
                     <div class="w-11 h-11 rounded-md placeholder-img shrink-0"></div>
                     <div class="flex-1 leading-tight min-w-0">
                       <div class="font-display font-semibold text-sm truncate">抹茶手工餅乾組</div>
@@ -595,7 +613,9 @@
                   </div>
                   <div>
                     <div class="font-display font-bold text-sm">超商店到店</div>
-                    <div class="text-[11px] text-fg-muted leading-snug mt-0.5">7-11 · 匯款</div>
+                    <div class="text-[11px] text-fg-muted leading-snug mt-0.5">
+                      僅 7-11 · 可貨到付款
+                    </div>
                   </div>
                 </label>
 
@@ -629,12 +649,12 @@
                         <circle cx="12" cy="14" r="1.4" fill="currentColor" />
                       </svg>
                     </div>
-                    <span class="font-mono text-xs font-semibold text-fg-muted">+ NT$ 38 </span>
+                    <span class="font-mono text-xs font-semibold text-fg-muted">+ NT$ 38</span>
                   </div>
                   <div>
                     <div class="font-display font-bold text-sm">賣貨便</div>
                     <div class="text-[11px] text-fg-muted leading-snug mt-0.5">
-                      7-11 · 可貨到付款
+                      7-11 店到店 · 可貨到付款
                     </div>
                   </div>
                 </label>
@@ -671,13 +691,13 @@
                       </svg>
                     </div>
                     <span class="font-mono text-xs font-bold" style="color: var(--c-primary-hv)"
-                      >+ NT$ 210</span
+                      >粗估 NT$ 210</span
                     >
                   </div>
                   <div>
                     <div class="font-display font-bold text-sm">宅配</div>
                     <div class="text-[11px] text-fg-muted leading-snug mt-0.5">
-                      黑貓 1-3 天送達 · 匯款
+                      黑貓 1-3 天送達 · 運費粗估，需與賣家確認
                     </div>
                   </div>
                 </label>
@@ -952,27 +972,66 @@
                   ></textarea>
                 </div>
                 <div>
-                  <div class="fld-lbl">通知顧客</div>
-                  <div class="space-y-1.5">
-                    <label class="flex items-start gap-2.5 cursor-pointer">
-                      <input type="checkbox" checked class="mt-1 w-4 h-4 rounded accent-primary" />
-                      <span class="text-sm leading-snug">
-                        <b class="font-display font-semibold">送出 LINE 通知</b>
-                        <span class="text-fg-muted block text-xs mt-0.5"
-                          >含金額、付款方式、匯款帳號或 Line Pay 連結</span
-                        >
-                      </span>
-                    </label>
-                    <label class="flex items-start gap-2.5 cursor-pointer">
-                      <input type="checkbox" class="mt-1 w-4 h-4 rounded accent-primary" />
-                      <span class="text-sm leading-snug">
-                        <b class="font-display font-semibold">同時複製顧客專屬訊息到剪貼簿</b>
-                        <span class="text-fg-muted block text-xs mt-0.5"
-                          >方便您改傳到其他通訊軟體（FB / IG / SMS）</span
-                        >
-                      </span>
-                    </label>
+                  <div class="fld-lbl flex items-center justify-between">
+                    <span
+                      >結單通知訊息
+                      <span class="font-normal text-fg-subtle text-xs">（可編輯）</span></span
+                    >
+                    <button
+                      type="button"
+                      id="copyMsgBtn"
+                      onclick="copyMsg()"
+                      class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-secondary-bg text-secondary font-display font-semibold text-xs hover:bg-secondary hover:text-white transition"
+                    >
+                      <svg
+                        width="13"
+                        height="13"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="1.9"
+                        stroke-linecap="round"
+                      >
+                        <rect x="8" y="8" width="12" height="12" rx="2" />
+                        <path d="M4 16V5a1 1 0 011-1h11" />
+                      </svg>
+                      複製訊息
+                    </button>
                   </div>
+                  <div
+                    class="flex items-start gap-2 mb-2 px-3 py-2 rounded-md"
+                    style="background: var(--c-info-bg)"
+                  >
+                    <svg
+                      width="14"
+                      height="14"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="var(--c-info)"
+                      stroke-width="1.9"
+                      stroke-linecap="round"
+                      class="shrink-0 mt-0.5"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 8h.01M11 12h1v4h1" />
+                    </svg>
+                    <span class="text-[11px] text-fg-muted leading-snug"
+                      >LINE 自動通知尚未開通。請複製下方訊息，於 LINE
+                      手動傳給顧客；金額／付款資訊已帶入，可自行調整。</span
+                    >
+                  </div>
+                  <textarea
+                    id="notifyMsg"
+                    class="fld resize-y font-mono text-[13px] leading-relaxed"
+                    rows="7"
+                  >
+陳小美 您好，您的訂單 RS-2410 已可結單：
+・商品小計　NT$ 2,440
+・運費（宅配，粗估）　NT$ 210
+・應付金額　NT$ 2,650
+付款方式：匯款 / ATM（玉山銀行 808）
+匯款後請回覆帳號末五碼，我們會盡快為您安排出貨，謝謝！</textarea
+                  >
                 </div>
               </div>
             </div>
@@ -1073,7 +1132,7 @@
                     <span>商品小計</span><span class="font-mono">NT$ 2,440</span>
                   </div>
                   <div class="flex justify-between text-fg-muted">
-                    <span>運費</span><span class="font-mono">+ NT$ 210</span>
+                    <span>運費（宅配 · 粗估）</span><span class="font-mono">+ NT$ 210</span>
                   </div>
                   <div class="flex justify-between text-fg-muted">
                     <span>手續費</span><span class="font-mono">+ NT$ 0</span>
@@ -1081,6 +1140,27 @@
                   <div class="pt-2 mt-2 border-t border-line flex justify-between items-baseline">
                     <span class="font-display font-bold">應收</span>
                     <span class="font-mono font-bold text-2xl text-primary">NT$ 2,650</span>
+                  </div>
+                  <div
+                    class="flex items-start gap-2 mt-1.5 px-2.5 py-2 rounded-md"
+                    style="background: var(--c-info-bg)"
+                  >
+                    <svg
+                      width="13"
+                      height="13"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="var(--c-info)"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      class="shrink-0 mt-0.5"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <path d="M12 8h.01M11 12h1v4h1" />
+                    </svg>
+                    <span class="text-[11px] text-fg-muted leading-snug"
+                      >宅配運費為粗估，實際金額以賣家確認後為準。</span
+                    >
                   </div>
                 </div>
 
@@ -1101,7 +1181,7 @@
                 <button
                   class="w-full h-11 rounded-pill bg-primary text-white font-display font-bold shadow-pink hover:bg-primary-hv active:scale-[.98] transition flex items-center justify-center gap-1.5"
                 >
-                  確認結單並通知顧客
+                  確認結單
                   <svg
                     width="14"
                     height="14"
@@ -1128,7 +1208,7 @@
                 <code class="font-mono">'merchant'</code>
               </p>
               <p>• 訂單狀態 <code class="font-mono">已到貨 → 待付款</code></p>
-              <p>• 顧客 LINE 會收到一張結單卡片（含付款方式 / 應付金額）</p>
+              <p>• 複製結單訊息後手動傳給顧客（LINE 自動通知尚未開通）</p>
             </div>
           </aside>
         </div>
@@ -1158,6 +1238,36 @@
           p.classList.add('is-selected')
         })
       })
+
+      // 複製結單通知訊息
+      function copyMsg() {
+        const ta = document.getElementById('notifyMsg')
+        const btn = document.getElementById('copyMsgBtn')
+        const done = () => {
+          const html = btn.innerHTML
+          btn.innerHTML =
+            '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>已複製'
+          btn.classList.add('bg-secondary', 'text-white')
+          setTimeout(() => {
+            btn.innerHTML = html
+            btn.classList.remove('bg-secondary', 'text-white')
+          }, 1600)
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard
+            .writeText(ta.value)
+            .then(done)
+            .catch(() => {
+              ta.select()
+              document.execCommand('copy')
+              done()
+            })
+        } else {
+          ta.select()
+          document.execCommand('copy')
+          done()
+        }
+      }
     </script>
   </body>
 </html>

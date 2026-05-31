@@ -10,7 +10,14 @@ interface ProductRow extends Product {
   supplier: Supplier | null
 }
 
-export default async function ProductsPage() {
+export default async function ProductsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ supplier?: string }>
+}) {
+  const params = await searchParams
+  const initialSupplierId = params.supplier ?? ''
+
   const store = await getServerStore()
 
   let products: ProductRow[] = []
@@ -28,14 +35,14 @@ export default async function ProductsPage() {
           *,
           variants:product_variants(*),
           product_images(*),
-          supplier:suppliers(id, name)
+          supplier:suppliers(id, name, tag)
         `
         )
         .eq('store_id', store.id)
         .order('created_at', { ascending: false }),
       serviceClient
         .from('suppliers')
-        .select('id, name')
+        .select('id, name, tag, currency, avg_arrival_days')
         .eq('store_id', store.id)
         .order('name', { ascending: true }),
       serviceClient
@@ -75,25 +82,6 @@ export default async function ProductsPage() {
             </p>
           </div>
           <div className='flex items-center gap-2'>
-            <div className='relative hidden lg:block'>
-              <input
-                className='w-64 h-10 pl-10 pr-4 rounded-pill border border-line bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] transition text-sm placeholder:text-fg-subtle'
-                placeholder='搜尋商品名稱、類別…'
-              />
-              <svg
-                width='16'
-                height='16'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='1.8'
-                strokeLinecap='round'
-                className='absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-subtle pointer-events-none'
-              >
-                <circle cx='11' cy='11' r='6' />
-                <path d='M20 20l-4-4' />
-              </svg>
-            </div>
             <Link
               href='/admin/products/new'
               className='inline-flex items-center gap-2 h-10 rounded-pill bg-primary text-white px-5 font-display font-semibold text-sm shadow-pink hover:bg-primary-hv active:scale-[.97] transition'
@@ -121,6 +109,7 @@ export default async function ProductsPage() {
           initialProducts={products}
           suppliers={suppliers}
           initialCategories={categories}
+          initialSupplierId={initialSupplierId}
         />
       </div>
     </>

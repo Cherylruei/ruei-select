@@ -62,11 +62,67 @@ export async function optimizeCopywriting(
   const start = raw.indexOf('{')
   const end = raw.lastIndexOf('}')
   if (start === -1 || end === -1) throw new Error('AI 回傳格式錯誤：找不到 JSON 物件')
-  const result = JSON.parse(raw.slice(start, end + 1)) as CopywritingResult
+
+  const jsonStr = raw.slice(start, end + 1)
+
+  let result: CopywritingResult
+  try {
+    result = JSON.parse(jsonStr) as CopywritingResult
+  } catch {
+    // AI 有時在 JSON 字串值內含字面控制字元（如未 escape 的換行 0x0A），
+    // 標準 JSON.parse 會拒絕。此函式逐字元掃描，只對字串值內的控制字元補 escape。
+    result = JSON.parse(escapeJsonControlChars(jsonStr)) as CopywritingResult
+  }
 
   return {
     name: result.name ?? '',
     description: result.description ?? '',
     detectedVariants: Array.isArray(result.detectedVariants) ? result.detectedVariants : [],
   }
+}
+
+/**
+ * 修正 AI 有時輸出的「字串值內含字面控制字元」問題。
+ * 逐字元追蹤是否在 JSON 字串內，遇到控制字元（code < 0x20）時補上 escape，
+ * 避免 JSON.parse 因 "Bad control character" 報錯。
+ */
+function escapeJsonControlChars(json: string): string {
+  let inString = false
+  let escaped = false
+  let out = ''
+
+  for (let i = 0; i < json.length; i++) {
+    const ch = json[i]
+    const code = json.charCodeAt(i)
+
+    if (escaped) {
+      escaped = false
+      out += ch
+      continue
+    }
+
+    if (ch === '\\' && inString) {
+      escaped = true
+      out += ch
+      continue
+    }
+
+    if (ch === '"') {
+      inString = !inString
+      out += ch
+      continue
+    }
+
+    if (inString && code < 0x20) {
+      if (code === 0x0a) out += '\\n'
+      else if (code === 0x0d) out += '\\r'
+      else if (code === 0x09) out += '\\t'
+      else out += `\\u${code.toString(16).padStart(4, '0')}`
+      continue
+    }
+
+    out += ch
+  }
+
+  return out
 }
