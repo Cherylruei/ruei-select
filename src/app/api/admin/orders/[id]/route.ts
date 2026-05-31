@@ -80,8 +80,12 @@ interface DetailOrderRow {
   }[]
 }
 
+type ShippingVendor = '黑貓' | '7-11' | '全家' | '賣貨便' | '其他'
+
 interface PatchBody {
-  status: OrderStatus
+  status?: OrderStatus
+  shipping_number?: string
+  shipping_vendor?: ShippingVendor
 }
 
 interface OrderRow {
@@ -180,25 +184,48 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: 'Order not found' }, { status: 404 })
     }
 
-    // ── 驗證狀態轉移 ──────────────────────────────────────────
     const body = (await request.json()) as PatchBody
-    const { status: newStatus } = body
+    const { status: newStatus, shipping_number, shipping_vendor } = body
 
-    const currentStatus = order.status as OrderStatus
-    const allowedNext = ALLOWED_TRANSITIONS[currentStatus]
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const updateFields: Record<string, any> = { updated_at: new Date().toISOString() }
 
-    if (!allowedNext || allowedNext !== newStatus) {
-      return NextResponse.json(
-        { error: `Cannot transition from '${currentStatus}' to '${newStatus}'` },
-        { status: 400 }
-      )
+    // ── 狀態轉移（選填）──────────────────────────────────────
+    if (newStatus !== undefined) {
+      const currentStatus = order.status as OrderStatus
+      const allowedNext = ALLOWED_TRANSITIONS[currentStatus]
+
+      if (!allowedNext || allowedNext !== newStatus) {
+        return NextResponse.json(
+          { error: `Cannot transition from '${currentStatus}' to '${newStatus}'` },
+          { status: 400 }
+        )
+      }
+      updateFields.status = newStatus
     }
 
-    // ── 更新狀態 ──────────────────────────────────────────────
+    // ── 出貨資訊（僅 settled/shipped 狀態可填）───────────────
+    if (shipping_number !== undefined || shipping_vendor !== undefined) {
+      const currentStatus = order.status as OrderStatus
+      if (currentStatus !== 'settled' && currentStatus !== 'shipped') {
+        return NextResponse.json(
+          { error: 'Shipping info can only be set when order is settled or shipped' },
+          { status: 400 }
+        )
+      }
+      if (shipping_number !== undefined) updateFields.shipping_number = shipping_number
+      if (shipping_vendor !== undefined) updateFields.shipping_vendor = shipping_vendor
+    }
+
+    if (Object.keys(updateFields).length === 1) {
+      return NextResponse.json({ error: 'No fields to update' }, { status: 400 })
+    }
+
+    // ── 執行更新 ──────────────────────────────────────────────
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: updateError } = await (db as any)
       .from('orders')
-      .update({ status: newStatus, updated_at: new Date().toISOString() })
+      .update(updateFields)
       .eq('id', orderId)
 
     if (updateError) throw new Error(updateError.message)
