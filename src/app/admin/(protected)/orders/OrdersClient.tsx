@@ -2,40 +2,76 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { AdminOrder, OrderStatus, OrderStatusCounts } from '@/types'
-import { Button } from '@/components/ui/Button'
 import { OrderStatusBadge } from '@/components/ui/Badge'
-import { ConfirmModal } from '@/components/ui/Modal'
 import { ToastContainer, useToast } from '@/components/ui/Toast'
-import { EmptyState } from '@/components/ui/EmptyState'
-import { StatCard } from '@/components/ui/StatCard'
-import { Table, Thead, Th, Tbody, Tr, Td } from '@/components/ui/Table'
 
-// ── 狀態 Tab 定義 ──────────────────────────────────────────────────────────────
+// ── 型別 ───────────────────────────────────────────────────────────────────────
 
 type TabKey = 'all' | OrderStatus
 
-const STATUS_TABS: { key: TabKey; label: string }[] = [
-  { key: 'all', label: '全部' },
-  { key: 'pending_purchase', label: '待採買' },
-  { key: 'ordered', label: '已訂購' },
-  { key: 'allocated', label: '已配單' },
-  { key: 'settled', label: '已結單' },
-  { key: 'shipped', label: '已出貨' },
-  { key: 'completed', label: '已完成' },
-  { key: 'cancelled', label: '已取消' },
+// ── 常數 ───────────────────────────────────────────────────────────────────────
+
+const STATUS_TABS: { key: TabKey; label: string; dot: boolean }[] = [
+  { key: 'all', label: '全部', dot: false },
+  { key: 'pending_purchase', label: '待採買', dot: true },
+  { key: 'ordered', label: '已訂購', dot: true },
+  { key: 'allocated', label: '已配單', dot: true },
+  { key: 'settled', label: '已結單', dot: true },
+  { key: 'shipped', label: '已出貨', dot: true },
+  { key: 'completed', label: '已完成', dot: false },
+  { key: 'cancelled', label: '已取消', dot: false },
 ]
+
+// active 樣式（每個狀態各自的顏色）
+const TAB_ACTIVE: Record<TabKey, string> = {
+  all: 'bg-primary text-white',
+  pending_purchase: 'bg-warning-bg text-warning',
+  ordered: 'bg-info-bg text-info',
+  allocated: 'bg-success-bg text-success',
+  settled: 'bg-sakura-100 text-sakura-700',
+  shipped: 'bg-earth-100 text-earth-700',
+  completed: 'bg-sunken text-fg-muted',
+  cancelled: 'bg-sunken text-fg-subtle',
+}
+
+// Pipeline 設定
+const PIPELINE: { key: OrderStatus; label: string; dot: string; hint: string }[] = [
+  { key: 'pending_purchase', label: '待採買', dot: 'bg-warning', hint: '等待商家訂貨' },
+  { key: 'ordered', label: '已訂購', dot: 'bg-info', hint: '廠商備貨中' },
+  { key: 'allocated', label: '已配單', dot: 'bg-success', hint: '等待顧客結單' },
+  { key: 'settled', label: '已結單', dot: 'bg-sakura-400', hint: '準備出貨' },
+  { key: 'shipped', label: '已出貨', dot: 'bg-earth-400', hint: '等待到貨確認' },
+]
+
+const PIPELINE_HOVER: Record<string, string> = {
+  pending_purchase: 'hover:border-warning',
+  ordered: 'hover:border-info',
+  allocated: 'hover:border-success',
+  settled: 'hover:border-sakura-300',
+  shipped: 'hover:border-earth-300',
+}
+
+const AVATAR_COLORS = [
+  'bg-sakura-300',
+  'bg-forest-400',
+  'bg-earth-400',
+  'bg-info',
+  'bg-sakura-400',
+  'bg-forest-300',
+]
+function avatarColor(name: string): string {
+  const hash = Array.from(name).reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
+}
 
 // ── 工具函式 ───────────────────────────────────────────────────────────────────
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleDateString('zh-TW', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getMonth() + 1}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 function specLabel(specs: Record<string, string> | null): string {
@@ -44,94 +80,11 @@ function specLabel(specs: Record<string, string> | null): string {
 }
 
 function shortId(fullId: string): string {
-  return 'RS-' + fullId.slice(-6).toUpperCase()
+  return 'RS-' + fullId.replace(/-/g, '').slice(0, 6).toUpperCase()
 }
 
 function orderSubtotal(order: AdminOrder): number {
   return order.items.reduce((sum, item) => sum + item.unit_price * item.quantity, 0)
-}
-
-function calcMonthRevenue(orders: AdminOrder[]): number {
-  const now = new Date()
-  const y = now.getFullYear()
-  const m = now.getMonth()
-  return orders
-    .filter((o) => {
-      const d = new Date(o.ordered_at)
-      return d.getFullYear() === y && d.getMonth() === m
-    })
-    .reduce((sum, o) => sum + orderSubtotal(o), 0)
-}
-
-// ── Icon helpers ───────────────────────────────────────────────────────────────
-
-function IconClipboard() {
-  return (
-    <svg
-      width='20'
-      height='20'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='1.8'
-      strokeLinecap='round'
-      strokeLinejoin='round'
-    >
-      <path d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2' />
-      <rect x='9' y='3' width='6' height='4' rx='1' />
-      <path d='M9 12h6M9 16h4' />
-    </svg>
-  )
-}
-
-function IconClock() {
-  return (
-    <svg
-      width='20'
-      height='20'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='1.8'
-      strokeLinecap='round'
-    >
-      <circle cx='12' cy='12' r='9' />
-      <path d='M12 7v5l3 3' />
-    </svg>
-  )
-}
-
-function IconCheckCircle() {
-  return (
-    <svg
-      width='20'
-      height='20'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='1.8'
-      strokeLinecap='round'
-    >
-      <circle cx='12' cy='12' r='9' />
-      <path d='M8 12l3 3 5-5' />
-    </svg>
-  )
-}
-
-function IconDollar() {
-  return (
-    <svg
-      width='20'
-      height='20'
-      viewBox='0 0 24 24'
-      fill='none'
-      stroke='currentColor'
-      strokeWidth='1.8'
-      strokeLinecap='round'
-    >
-      <path d='M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6' />
-    </svg>
-  )
 }
 
 // ── 主元件 ─────────────────────────────────────────────────────────────────────
@@ -142,13 +95,12 @@ export default function OrdersClient() {
   const activeTab = (searchParams.get('status') as TabKey | null) ?? 'all'
 
   const [orders, setOrders] = useState<AdminOrder[]>([])
-  const [allOrders, setAllOrders] = useState<AdminOrder[]>([])
   const [counts, setCounts] = useState<OrderStatusCounts | null>(null)
   const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
   const [groupByCustomer, setGroupByCustomer] = useState(false)
   const { toasts, toast, dismiss } = useToast()
 
-  // 拉篩選後的訂單列表
   const fetchOrders = useCallback(
     async (tab: TabKey) => {
       setLoading(true)
@@ -164,7 +116,6 @@ export default function OrdersClient() {
         if (json.success) {
           setOrders(json.data)
           setCounts(json.counts)
-          if (tab === 'all') setAllOrders(json.data)
         } else {
           toast(json.error ?? '載入失敗', 'error')
         }
@@ -177,28 +128,14 @@ export default function OrdersClient() {
     [toast]
   )
 
-  // 初次載入：拉全部訂單供 StatCard 本月營收計算
   useEffect(() => {
-    if (activeTab !== 'all') {
-      fetch('/api/admin/orders')
-        .then((r) => r.json())
-        .then((json: { success: boolean; data: AdminOrder[] }) => {
-          if (json.success) setAllOrders(json.data)
-        })
-        .catch(() => {})
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
-
-  // tab 切換時重新拉訂單（fetchOrders 是 async，setState 發生在 await 之後，非同步安全）
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrders(activeTab)
   }, [activeTab, fetchOrders])
 
   const switchTab = useCallback(
     (tab: TabKey) => {
-      setGroupByCustomer(false) // 切 tab 時同步重置分組狀態（不放 effect 避免 cascading render）
+      setGroupByCustomer(false)
+      setSearch('')
       const params = new URLSearchParams(searchParams.toString())
       if (tab === 'all') params.delete('status')
       else params.set('status', tab)
@@ -207,170 +144,152 @@ export default function OrdersClient() {
     [router, searchParams]
   )
 
-  const handleStatusUpdate = useCallback(
-    async (orderId: string, newStatus: OrderStatus) => {
-      const res = await fetch(`/api/admin/orders/${orderId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+  // 搜尋篩選
+  const filteredOrders = search
+    ? orders.filter((o) => {
+        const q = search.toLowerCase()
+        return (
+          shortId(o.id).toLowerCase().includes(q) ||
+          o.member_name.toLowerCase().includes(q) ||
+          o.items.some((i) => i.product_name.toLowerCase().includes(q))
+        )
       })
-      const json = (await res.json()) as { success?: boolean; error?: string }
-      if (json.success) {
-        toast('訂單狀態已更新', 'success')
-        await fetchOrders(activeTab)
-      } else {
-        throw new Error(json.error ?? '更新失敗')
-      }
-    },
-    [activeTab, fetchOrders, toast]
-  )
-
-  // ── Stats 計算 ──────────────────────────────────────────────────────────────
-  const statsBase = allOrders.length > 0 ? allOrders : orders
-  const monthRevenue = calcMonthRevenue(statsBase)
-  const currentMonth = new Date().toLocaleDateString('zh-TW', { month: 'long' })
+    : orders
 
   return (
-    <div>
+    <>
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
 
-      {/* ── 頁面 Header ── */}
-      <div className='flex items-center justify-between mb-6'>
-        <h1 className='font-display font-bold text-2xl text-fg'>訂單管理</h1>
-        <Link
-          href='/admin/orders/new'
-          className='inline-flex items-center gap-2 h-9 px-4 rounded-pill bg-secondary text-white font-display font-semibold text-sm shadow-green hover:bg-secondary-hv active:scale-[.97] transition no-underline'
-        >
-          <svg
-            viewBox='0 0 24 24'
-            width='15'
-            height='15'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='2.5'
-            strokeLinecap='round'
-          >
-            <path d='M12 5v14M5 12h14' />
-          </svg>
-          代客建立訂單
-        </Link>
-      </div>
-
-      {/* ── StatCards ── */}
+      {/* ── Pipeline 進度摘要 ─────────────────────────────────────────── */}
       {counts && (
-        <div className='grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6'>
-          <StatCard
-            icon={<IconClipboard />}
-            label='訂單總數'
-            value={counts.all}
-            unit='筆'
-            tone='accent'
-          />
-          <StatCard
-            icon={<IconClock />}
-            label='待處理'
-            value={counts.pending_purchase}
-            unit='筆'
-            tone='earth'
-          />
-          <StatCard
-            icon={<IconCheckCircle />}
-            label='已配單'
-            value={counts.allocated}
-            unit='筆'
-            tone='green'
-          />
-          <StatCard
-            icon={<IconDollar />}
-            label='本月營收'
-            value={`NT$ ${monthRevenue.toLocaleString()}`}
-            tone='pink'
-            meta={currentMonth}
-          />
-        </div>
+        <section className='bg-surface border border-line rounded-xl p-5'>
+          <div className='flex items-center justify-between mb-4'>
+            <div>
+              <h2 className='font-display font-bold text-base'>處理進度</h2>
+              <p className='text-xs text-fg-muted mt-0.5'>各階段待處理訂單數量</p>
+            </div>
+            <span className='font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase'>
+              PIPELINE
+            </span>
+          </div>
+          <div className='grid grid-cols-5 gap-3'>
+            {PIPELINE.map(({ key, label, dot, hint }) => (
+              <button
+                key={key}
+                type='button'
+                onClick={() => switchTab(key)}
+                className={`rounded-md border border-line p-3 text-left transition cursor-pointer ${PIPELINE_HOVER[key] ?? ''} ${activeTab === key ? 'border-opacity-100' : ''}`}
+              >
+                <div className='flex items-center gap-1.5'>
+                  <span className={`w-2 h-2 rounded-pill ${dot}`} />
+                  <span className='font-mono text-[10px] text-fg-muted uppercase tracking-wider'>
+                    {label}
+                  </span>
+                </div>
+                <div className='font-display font-bold text-2xl mt-1'>
+                  {counts[key as OrderStatus] ?? 0}
+                </div>
+                <div className='text-[11px] text-fg-subtle mt-1'>{hint}</div>
+              </button>
+            ))}
+          </div>
+        </section>
       )}
 
-      {/* ── 狀態 Tab 列 ── */}
-      <div className='flex gap-1 overflow-x-auto pb-1 mb-4' role='tablist'>
-        {STATUS_TABS.map(({ key, label }) => {
-          const isActive = activeTab === key
-          const count = counts ? (key === 'all' ? counts.all : counts[key as OrderStatus]) : null
-          return (
-            <button
-              key={key}
-              role='tab'
-              aria-selected={isActive}
-              onClick={() => switchTab(key)}
-              className={[
-                'shrink-0 inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md text-sm font-display font-medium transition cursor-pointer whitespace-nowrap',
-                isActive
-                  ? 'bg-secondary text-white shadow-green'
-                  : 'bg-sunken text-fg-muted hover:text-fg hover:bg-ink-100',
-              ].join(' ')}
-            >
-              {label}
-              {count !== null && (
-                <span
+      {/* ── 訂單表格卡片 ──────────────────────────────────────────────── */}
+      <section className='bg-surface border border-line rounded-xl overflow-hidden'>
+        {/* Tabs + 搜尋 */}
+        <div className='px-5 pt-4 pb-3 border-b border-line'>
+          <div className='flex items-center gap-1.5 flex-wrap'>
+            {STATUS_TABS.map(({ key, label, dot }) => {
+              const isActive = activeTab === key
+              const count = counts
+                ? key === 'all'
+                  ? counts.all
+                  : counts[key as OrderStatus]
+                : null
+              return (
+                <button
+                  key={key}
+                  type='button'
+                  onClick={() => switchTab(key)}
                   className={[
-                    'font-mono text-xs font-bold px-1.5 py-px rounded-pill min-w-[20px] text-center',
-                    isActive ? 'bg-white/20 text-white' : 'bg-ink-200 text-fg-muted',
+                    'inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill font-display font-semibold text-xs transition whitespace-nowrap',
+                    isActive ? TAB_ACTIVE[key] : 'bg-sunken text-fg-muted hover:bg-ink-200',
                   ].join(' ')}
                 >
-                  {count}
-                </span>
-              )}
-            </button>
-          )
-        })}
-      </div>
-
-      {/* ── 已配單 Tab：切換依顧客分組 ── */}
-      {activeTab === 'allocated' && !loading && orders.length > 0 && (
-        <div className='flex items-center gap-2 mb-4'>
-          <button
-            onClick={() => setGroupByCustomer(false)}
-            className={[
-              'px-3 py-1.5 rounded-md text-xs font-display font-semibold transition cursor-pointer',
-              !groupByCustomer ? 'bg-ink-800 text-white' : 'bg-sunken text-fg-muted hover:text-fg',
-            ].join(' ')}
-          >
-            訂單列表
-          </button>
-          <button
-            onClick={() => setGroupByCustomer(true)}
-            className={[
-              'px-3 py-1.5 rounded-md text-xs font-display font-semibold transition cursor-pointer',
-              groupByCustomer ? 'bg-ink-800 text-white' : 'bg-sunken text-fg-muted hover:text-fg',
-            ].join(' ')}
-          >
-            依顧客分組
-          </button>
+                  {dot && isActive && <span className='w-1.5 h-1.5 rounded-pill bg-current' />}
+                  {label}
+                  {count !== null && <span className='font-mono opacity-80'>{count}</span>}
+                </button>
+              )
+            })}
+            <div className='flex-1' />
+            {/* 搜尋 */}
+            <div className='relative'>
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder='搜尋訂單號、顧客、商品…'
+                className='w-64 h-8 pl-9 pr-3 rounded-pill border border-line bg-surface text-sm outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition placeholder:text-fg-subtle'
+              />
+              <svg
+                width='14'
+                height='14'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='1.8'
+                className='absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle pointer-events-none'
+              >
+                <circle cx='11' cy='11' r='6' />
+                <path d='M20 20l-4-4' strokeLinecap='round' />
+              </svg>
+            </div>
+          </div>
         </div>
-      )}
 
-      {/* ── 主內容 ── */}
-      {loading ? (
-        <TableSkeleton />
-      ) : orders.length === 0 ? (
-        <EmptyState
-          icon={<IconClipboard />}
-          title='目前沒有訂單'
-          description='顧客下單或代客建立訂單後將顯示在這裡'
-          action={
-            <Link
-              href='/admin/orders/new'
-              className='inline-flex items-center gap-2 h-9 px-4 rounded-pill bg-secondary text-white font-display font-semibold text-sm shadow-green hover:bg-secondary-hv transition no-underline'
-            >
-              代客建立訂單
-            </Link>
-          }
-        />
-      ) : activeTab === 'allocated' && groupByCustomer ? (
-        <CustomerGroupGrid orders={orders} onStatusUpdate={handleStatusUpdate} />
-      ) : (
-        <OrdersTable orders={orders} />
-      )}
-    </div>
+        {/* 已配單分組切換 */}
+        {activeTab === 'allocated' && !loading && orders.length > 0 && (
+          <div className='flex items-center gap-1.5 px-5 py-2.5 border-b border-line bg-ink-50'>
+            {[
+              { val: false, label: '訂單列表' },
+              { val: true, label: '依顧客分組' },
+            ].map(({ val, label }) => (
+              <button
+                key={String(val)}
+                type='button'
+                onClick={() => setGroupByCustomer(val)}
+                className={[
+                  'h-7 px-3 rounded-pill font-display font-semibold text-xs transition',
+                  groupByCustomer === val
+                    ? 'bg-secondary text-white'
+                    : 'bg-surface border border-line text-fg-muted hover:bg-sunken',
+                ].join(' ')}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* 主內容 */}
+        {loading ? (
+          <TableSkeleton />
+        ) : filteredOrders.length === 0 ? (
+          <EmptyOrders
+            hasSearch={search.length > 0}
+            onNewOrder={() => router.push('/admin/orders/new')}
+          />
+        ) : activeTab === 'allocated' && groupByCustomer ? (
+          <div className='p-5'>
+            <CustomerGroupGrid orders={filteredOrders} />
+          </div>
+        ) : (
+          <OrdersTable orders={filteredOrders} />
+        )}
+      </section>
+    </>
   )
 }
 
@@ -379,80 +298,160 @@ export default function OrdersClient() {
 function OrdersTable({ orders }: { orders: AdminOrder[] }) {
   return (
     <div className='overflow-x-auto'>
-      <Table>
-        <Thead>
-          <Th className='w-[130px]'>訂單編號</Th>
-          <Th>顧客</Th>
-          <Th>商品 / 廠商</Th>
-          <Th className='text-right'>金額</Th>
-          <Th>狀態</Th>
-        </Thead>
-        <Tbody>
+      <table className='w-full text-sm'>
+        <thead>
+          <tr className='bg-ink-50'>
+            <th className='text-left pl-5 pr-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+              訂單
+            </th>
+            <th className='text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+              顧客
+            </th>
+            <th className='text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+              商品
+            </th>
+            <th className='text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted hidden md:table-cell'>
+              供應商
+            </th>
+            <th className='text-right px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+              金額
+            </th>
+            <th className='px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+              狀態
+            </th>
+            <th className='text-center px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted hidden sm:table-cell'>
+              來源
+            </th>
+            <th className='w-10' />
+          </tr>
+        </thead>
+        <tbody>
           {orders.map((order) => (
             <OrderRow key={order.id} order={order} />
           ))}
-        </Tbody>
-      </Table>
+        </tbody>
+      </table>
     </div>
   )
 }
 
 function OrderRow({ order }: { order: AdminOrder }) {
   const router = useRouter()
-  const subtotal = order.items.reduce((s, i) => s + i.unit_price * i.quantity, 0)
-
-  // 商品欄：顯示第一件，多件時補 "+ N 件"
+  const subtotal = orderSubtotal(order)
   const firstItem = order.items[0]
   const extraCount = order.items.length - 1
-  const itemLabel = firstItem
+  const itemName = firstItem
     ? firstItem.product_name +
-      (firstItem.variant_specs ? `・${specLabel(firstItem.variant_specs)}` : '') +
-      (extraCount > 0 ? ` +${extraCount} 件` : '')
+      (firstItem.variant_specs ? `・${specLabel(firstItem.variant_specs)}` : '')
     : '—'
+  const supplierName = firstItem?.supplier_name ?? null
+  const bgColor = avatarColor(order.member_name)
+
+  function goToDetail() {
+    router.push(`/admin/orders/${order.id}`)
+  }
 
   return (
-    <Tr className='cursor-pointer' onClick={() => router.push(`/admin/orders/${order.id}`)}>
-      {/* 訂單編號 */}
-      <Td isId>{shortId(order.id)}</Td>
+    <tr
+      className='border-t border-line hover:bg-ink-50 transition cursor-pointer'
+      onClick={goToDetail}
+    >
+      {/* 訂單 */}
+      <td className='pl-5 pr-3 py-3'>
+        <div className='font-mono font-semibold text-fg'>{shortId(order.id)}</div>
+        <div className='font-mono text-[10px] text-fg-subtle'>{formatDate(order.ordered_at)}</div>
+      </td>
 
       {/* 顧客 */}
-      <Td>
+      <td className='px-3 py-3'>
         <div className='flex items-center gap-2'>
-          <div className='w-7 h-7 rounded-pill bg-forest-100 text-forest-700 font-display font-bold text-xs flex items-center justify-center shrink-0 select-none'>
+          <div
+            className={`w-7 h-7 rounded-pill ${bgColor} text-white font-display font-bold text-xs flex items-center justify-center shrink-0 select-none`}
+          >
             {order.member_name.charAt(0)}
           </div>
           <div className='leading-tight'>
-            <div className='font-semibold text-sm text-fg'>{order.member_name}</div>
-            {order.created_by === 'merchant' && (
-              <span className='font-mono text-[10px] px-1.5 py-px rounded bg-earth-100 text-earth-700 border border-earth-200'>
-                代客建單
-              </span>
+            <div className='font-semibold'>{order.member_name}</div>
+            <div className='font-mono text-[10px] text-fg-subtle'>{order.member_line_id}</div>
+          </div>
+        </div>
+      </td>
+
+      {/* 商品 */}
+      <td className='px-3 py-3'>
+        <div className='flex items-center gap-2'>
+          <div
+            className='w-8 h-8 rounded-md shrink-0 border border-line bg-ink-50'
+            style={{
+              background:
+                'repeating-linear-gradient(135deg,var(--ink-100),var(--ink-100) 5px,var(--ink-50) 5px,var(--ink-50) 10px)',
+            }}
+          />
+          <div className='leading-tight min-w-0'>
+            <div className='font-semibold truncate max-w-[180px]'>{itemName}</div>
+            {extraCount > 0 && (
+              <div className='font-mono text-[10px] text-fg-subtle'>+{extraCount} 件</div>
             )}
           </div>
         </div>
-      </Td>
+      </td>
 
-      {/* 商品 */}
-      <Td>
-        <span className='text-fg-muted text-sm'>{itemLabel}</span>
-        <div className='flex items-center gap-2 mt-1'>
-          {firstItem?.supplier_name && (
-            <span className='font-mono text-xs px-1.5 py-0.5 rounded bg-ink-100 text-fg-muted border border-line'>
-              {firstItem.supplier_name}
-            </span>
-          )}
-          <span className='font-mono text-xs text-fg-subtle'>{formatDate(order.ordered_at)}</span>
-        </div>
-      </Td>
+      {/* 供應商 */}
+      <td className='px-3 py-3 hidden md:table-cell'>
+        {supplierName ? (
+          <span className='inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]'>
+            {supplierName}
+          </span>
+        ) : (
+          <span className='text-fg-subtle text-xs'>—</span>
+        )}
+      </td>
 
       {/* 金額 */}
-      <Td numeric>NT$ {subtotal.toLocaleString()}</Td>
+      <td className='px-3 py-3 text-right'>
+        <span className='font-mono font-semibold'>NT$ {subtotal.toLocaleString()}</span>
+      </td>
 
       {/* 狀態 */}
-      <Td>
+      <td className='px-3 py-3'>
         <OrderStatusBadge status={order.status} />
-      </Td>
-    </Tr>
+      </td>
+
+      {/* 來源 */}
+      <td className='px-3 py-3 text-center hidden sm:table-cell'>
+        {order.created_by === 'merchant' ? (
+          <span
+            className='inline-flex items-center justify-center w-6 h-6 rounded-pill bg-primary-bg text-primary-hv font-display font-bold text-[10px]'
+            title='代客建單'
+          >
+            代
+          </span>
+        ) : (
+          <span className='text-fg-subtle text-xs'>—</span>
+        )}
+      </td>
+
+      {/* Kebab */}
+      <td className='pr-4 pl-1 py-3' onClick={(e) => e.stopPropagation()}>
+        <Link
+          href={`/admin/orders/${order.id}`}
+          className='w-8 h-8 rounded-pill hover:bg-sunken flex items-center justify-center text-fg-subtle'
+          aria-label='查看訂單詳情'
+        >
+          <svg
+            width='16'
+            height='16'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.8'
+            strokeLinecap='round'
+          >
+            <path d='M9 6l6 6-6 6' />
+          </svg>
+        </Link>
+      </td>
+    </tr>
   )
 }
 
@@ -483,117 +482,123 @@ function buildCustomerGroups(orders: AdminOrder[]): CustomerGroup[] {
   return Array.from(map.values())
 }
 
-function CustomerGroupGrid({
-  orders,
-  onStatusUpdate,
-}: {
-  orders: AdminOrder[]
-  onStatusUpdate: (orderId: string, newStatus: OrderStatus) => Promise<void>
-}) {
+function CustomerGroupGrid({ orders }: { orders: AdminOrder[] }) {
   const groups = buildCustomerGroups(orders)
   return (
     <div className='grid sm:grid-cols-2 gap-4'>
       {groups.map((group) => (
-        <CustomerCard key={group.memberId} group={group} onStatusUpdate={onStatusUpdate} />
+        <CustomerCard key={group.memberId} group={group} />
       ))}
     </div>
   )
 }
 
-function CustomerCard({
-  group,
-  onStatusUpdate,
-}: {
-  group: CustomerGroup
-  onStatusUpdate: (orderId: string, newStatus: OrderStatus) => Promise<void>
-}) {
-  const [showConfirm, setShowConfirm] = useState(false)
-  const [isPending, startTransition] = useTransition()
-
+function CustomerCard({ group }: { group: CustomerGroup }) {
+  const router = useRouter()
+  const bgColor = avatarColor(group.memberName)
   const allItems = group.orders.flatMap((o) => o.items)
   const totalItems = allItems.length
-
-  const handleSettle = () => {
-    startTransition(async () => {
-      try {
-        // 對該顧客所有 allocated 訂單逐一結單
-        for (const order of group.orders) {
-          await onStatusUpdate(order.id, 'settled')
-        }
-        setShowConfirm(false)
-      } catch {
-        setShowConfirm(false)
-      }
-    })
-  }
+  const totalAmount = group.orders.reduce((sum, o) => sum + orderSubtotal(o), 0)
+  const firstOrderId = group.orders[0]?.id
 
   return (
-    <>
-      {showConfirm && (
-        <ConfirmModal
-          title='確認代客結單'
-          message={`確定要為 ${group.memberName} 代客結單？共 ${totalItems} 件商品將標記為「已結單」。`}
-          confirmLabel='確認結單'
-          onConfirm={handleSettle}
-          onCancel={() => setShowConfirm(false)}
-          isLoading={isPending}
-        />
-      )}
-
-      {/* 顧客卡片 — 對應 handoff 08 Customer Card 配方 */}
-      <div className='bg-surface border border-line rounded-xl p-5'>
-        {/* Header */}
-        <div className='flex items-center gap-3 mb-3'>
-          <div className='w-11 h-11 rounded-pill bg-forest-100 text-forest-700 font-display font-bold flex items-center justify-center shrink-0 select-none'>
-            {group.memberName.charAt(0)}
-          </div>
-          <div className='flex-1 min-w-0'>
-            <div className='font-display font-bold text-fg truncate'>{group.memberName}</div>
-            <div className='font-mono text-xs text-fg-subtle truncate'>
-              LINE: {group.memberLineId}
-            </div>
-          </div>
-          <span className='inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs shrink-0'>
+    <div className='bg-surface border border-line rounded-xl p-5 hover:shadow-md hover:border-transparent transition'>
+      {/* Header */}
+      <div className='flex items-center gap-3 mb-3'>
+        <div
+          className={`w-11 h-11 rounded-pill ${bgColor} text-white font-display font-bold flex items-center justify-center shrink-0 select-none`}
+        >
+          {group.memberName.charAt(0)}
+        </div>
+        <div className='flex-1 min-w-0'>
+          <div className='font-display font-bold text-fg truncate'>{group.memberName}</div>
+          <div className='font-mono text-xs text-fg-subtle truncate'>{group.memberLineId}</div>
+        </div>
+        <div className='text-right shrink-0'>
+          <span className='inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-success-bg text-success font-display font-semibold text-xs'>
             {totalItems} 件待出貨
           </span>
-        </div>
-
-        {/* 商品清單 */}
-        <div className='border-t border-line pt-3 space-y-2 text-sm'>
-          {allItems.map((item) => (
-            <div key={item.id} className='flex justify-between'>
-              <span className='text-fg-muted truncate mr-3'>
-                {item.product_name}
-                {item.variant_specs && `・${specLabel(item.variant_specs)}`}
-                {item.quantity > 1 && ` × ${item.quantity}`}
-              </span>
-              <span className='font-mono text-fg shrink-0'>
-                NT$ {(item.unit_price * item.quantity).toLocaleString()}
-              </span>
-            </div>
-          ))}
-        </div>
-
-        {/* 操作按鈕 */}
-        <div className='flex gap-2 mt-4'>
-          <Button
-            variant='secondary'
-            size='sm'
-            className='flex-1'
-            onClick={() => setShowConfirm(true)}
-            disabled={isPending}
-          >
-            代客結單
-          </Button>
-          <Link
-            href={`/admin/orders/${group.orders[0]?.id}`}
-            className='inline-flex items-center justify-center h-8 px-3.5 rounded-pill bg-transparent text-fg font-display font-semibold text-sm hover:bg-sunken transition no-underline'
-          >
-            查看訂單
-          </Link>
+          <div className='font-mono text-xs text-fg-muted mt-1'>
+            NT$ {totalAmount.toLocaleString()}
+          </div>
         </div>
       </div>
-    </>
+
+      {/* 商品清單 */}
+      <div className='border-t border-line pt-3 space-y-2 text-sm'>
+        {allItems.map((item) => (
+          <div key={item.id} className='flex justify-between'>
+            <span className='text-fg-muted truncate mr-3'>
+              {item.product_name}
+              {item.variant_specs && `・${specLabel(item.variant_specs)}`}
+              {item.quantity > 1 && ` × ${item.quantity}`}
+            </span>
+            <span className='font-mono text-fg shrink-0'>
+              NT$ {(item.unit_price * item.quantity).toLocaleString()}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      {/* 操作按鈕 */}
+      <div className='flex gap-2 mt-4 pt-3 border-t border-line'>
+        {firstOrderId && (
+          <button
+            type='button'
+            onClick={() => router.push(`/admin/orders/${firstOrderId}/checkout`)}
+            className='flex-1 h-9 rounded-pill bg-secondary text-white font-display font-semibold text-xs hover:bg-secondary-hv transition'
+          >
+            代客結單
+          </button>
+        )}
+        <Link
+          href={`/admin/orders/${firstOrderId}`}
+          className='inline-flex items-center justify-center h-9 px-4 rounded-pill border border-line text-fg font-display font-semibold text-xs hover:bg-sunken transition'
+        >
+          查看訂單
+        </Link>
+      </div>
+    </div>
+  )
+}
+
+// ── 空狀態 ────────────────────────────────────────────────────────────────────
+
+function EmptyOrders({ hasSearch, onNewOrder }: { hasSearch: boolean; onNewOrder: () => void }) {
+  return (
+    <div className='text-center py-16'>
+      <div className='w-16 h-16 mx-auto rounded-2xl bg-sunken flex items-center justify-center mb-4'>
+        <svg
+          width='28'
+          height='28'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='1.6'
+          strokeLinecap='round'
+          className='text-fg-subtle'
+        >
+          <path d='M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2' />
+          <rect x='9' y='3' width='6' height='4' rx='1' />
+          <path d='M9 12h6M9 16h4' />
+        </svg>
+      </div>
+      <div className='font-display font-bold text-base'>
+        {hasSearch ? '找不到符合的訂單' : '目前沒有訂單'}
+      </div>
+      <p className='text-sm text-fg-muted mt-1'>
+        {hasSearch ? '試試調整搜尋關鍵字' : '顧客下單或代客建立訂單後將顯示在這裡'}
+      </p>
+      {!hasSearch && (
+        <button
+          type='button'
+          onClick={onNewOrder}
+          className='mt-4 inline-flex items-center gap-1.5 h-9 px-5 rounded-pill bg-primary text-white text-sm font-display font-semibold shadow-pink hover:bg-primary-hv transition'
+        >
+          代客建單
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -601,25 +606,24 @@ function CustomerCard({
 
 function TableSkeleton() {
   return (
-    <div className='bg-surface border border-line rounded-lg overflow-hidden animate-pulse'>
-      {/* 骨架表頭 */}
-      <div className='bg-ink-50 px-4 py-3 flex gap-6'>
-        {[130, 120, 200, 80, 80].map((w, i) => (
-          <div key={i} className='h-3 bg-ink-200 rounded' style={{ width: w }} />
-        ))}
-      </div>
-      {/* 骨架列 */}
-      {[1, 2, 3, 4].map((i) => (
-        <div key={i} className='border-t border-line px-4 py-4 flex gap-6 items-center'>
-          <div className='h-4 w-[120px] bg-ink-100 rounded font-mono' />
+    <div className='animate-pulse'>
+      {[1, 2, 3, 4, 5].map((i) => (
+        <div key={i} className='border-t border-line px-5 py-4 flex gap-4 items-center'>
+          <div className='space-y-1.5'>
+            <div className='h-4 w-20 bg-ink-200 rounded font-mono' />
+            <div className='h-3 w-24 bg-ink-100 rounded' />
+          </div>
           <div className='flex items-center gap-2'>
             <div className='w-7 h-7 rounded-pill bg-ink-100' />
-            <div className='h-4 w-[100px] bg-ink-100 rounded' />
+            <div className='h-4 w-24 bg-ink-100 rounded' />
           </div>
-          <div className='h-4 w-[180px] bg-ink-100 rounded' />
-          <div className='h-4 w-[80px] bg-ink-100 rounded ml-auto' />
-          <div className='h-6 w-[60px] bg-ink-100 rounded-pill' />
-          <div className='h-6 w-6 bg-ink-100 rounded-pill' />
+          <div className='flex items-center gap-2'>
+            <div className='w-8 h-8 rounded-md bg-ink-100' />
+            <div className='h-4 w-36 bg-ink-100 rounded' />
+          </div>
+          <div className='h-6 w-12 bg-ink-100 rounded-pill hidden md:block' />
+          <div className='h-4 w-20 bg-ink-100 rounded ml-auto font-mono' />
+          <div className='h-6 w-14 bg-ink-100 rounded-pill' />
         </div>
       ))}
     </div>

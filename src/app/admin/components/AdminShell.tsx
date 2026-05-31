@@ -18,6 +18,7 @@ const CUSTOM_HEADER_PATHS = new Set([
   '/admin/suppliers',
   '/admin/products',
   '/admin/products/new',
+  '/admin/orders',
   '/admin/orders/new',
 ])
 
