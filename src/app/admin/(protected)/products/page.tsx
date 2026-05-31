@@ -1,3 +1,4 @@
+import Link from 'next/link'
 import { getServerStore } from '@/lib/auth/session'
 import { createServiceClient } from '@/lib/supabase/server'
 import type { Product, ProductVariant, ProductImage, Supplier, ProductCategory } from '@/types'
@@ -49,22 +50,79 @@ export default async function ProductsPage() {
     categories = (categoriesResult.data ?? []) as ProductCategory[]
   }
 
+  const totalCount = products.length
+  const activeCount = products.filter((p) => p.status === 'active').length
+  const inactiveCount = products.filter((p) => p.status === 'inactive').length
+
   return (
-    <div>
-      <div className='mb-6'>
-        <h1 className='text-[26px] font-bold text-[var(--neutral-800)] tracking-wide mb-1.5 [font-family:var(--font-zen-maru-gothic)]'>
-          商品管理
-        </h1>
-        <p className='text-[13.5px] text-[var(--neutral-500)]'>
-          管理賣場商品、規格定價與公開設定。
-        </p>
+    <>
+      {/* ── Sticky page topbar ───────────────────────────────────────────── */}
+      <div className='sticky top-0 md:top-0 z-20 border-b border-line bg-surface/80 backdrop-blur-md px-8 py-5'>
+        <div className='font-mono text-[11px] text-fg-subtle mb-2 flex items-center gap-1.5'>
+          <Link href='/admin' className='hover:text-fg'>
+            後台
+          </Link>
+          <span>›</span>
+          <span className='text-fg'>商品管理</span>
+        </div>
+        <div className='flex items-center justify-between gap-4 flex-wrap'>
+          <div>
+            <h1 className='font-display font-bold text-2xl'>商品管理</h1>
+            <p className='text-sm text-fg-muted mt-0.5'>
+              共 <b className='text-fg'>{totalCount}</b> 件商品 ·{' '}
+              <b className='text-success'>{activeCount}</b> 上架中 ·{' '}
+              <b className='text-fg-muted'>{inactiveCount}</b> 已下架
+            </p>
+          </div>
+          <div className='flex items-center gap-2'>
+            <div className='relative hidden lg:block'>
+              <input
+                className='w-64 h-10 pl-10 pr-4 rounded-pill border border-line bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] transition text-sm placeholder:text-fg-subtle'
+                placeholder='搜尋商品名稱、類別…'
+              />
+              <svg
+                width='16'
+                height='16'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='1.8'
+                strokeLinecap='round'
+                className='absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-subtle pointer-events-none'
+              >
+                <circle cx='11' cy='11' r='6' />
+                <path d='M20 20l-4-4' />
+              </svg>
+            </div>
+            <Link
+              href='/admin/products/new'
+              className='inline-flex items-center gap-2 h-10 rounded-pill bg-primary text-white px-5 font-display font-semibold text-sm shadow-pink hover:bg-primary-hv active:scale-[.97] transition'
+            >
+              <svg
+                width='16'
+                height='16'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2.2'
+                strokeLinecap='round'
+              >
+                <path d='M12 5v14M5 12h14' />
+              </svg>
+              新增商品
+            </Link>
+          </div>
+        </div>
       </div>
 
-      <ProductsClient
-        initialProducts={products}
-        suppliers={suppliers}
-        initialCategories={categories}
-      />
-    </div>
+      {/* ── Content ───────────────────────────────────────────────────────── */}
+      <div className='px-8 pt-6 pb-14'>
+        <ProductsClient
+          initialProducts={products}
+          suppliers={suppliers}
+          initialCategories={categories}
+        />
+      </div>
+    </>
   )
 }

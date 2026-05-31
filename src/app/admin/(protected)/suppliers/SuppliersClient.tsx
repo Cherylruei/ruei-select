@@ -1,472 +1,762 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import Link from 'next/link'
+import { useTransition, useState } from 'react'
 import type { Supplier } from '@/types'
-import styles from './suppliers.module.css'
+import { ToastContainer, useToast } from '@/components/ui/Toast'
+import { ConfirmModal } from '@/components/ui/Modal'
+
+// ── 型別 ──────────────────────────────────────────────────────────────────────
+
+interface SupplierWithCount extends Supplier {
+  productCount: number
+}
 
 interface Props {
-  initialSuppliers: Supplier[]
+  initialSuppliers: SupplierWithCount[]
+  totalProducts: number
 }
 
-interface ToastState {
-  message: string
-  type: 'success' | 'error'
-}
+type Currency = 'TWD' | 'JPY' | 'USD' | 'HKD'
 
-interface EditState {
-  id: string
+interface DrawerForm {
   name: string
+  tag: string
+  line_group: string
+  phone: string
+  currency: Currency
+  avg_arrival_days: string
   note: string
-  website_url: string
 }
 
-export default function SuppliersClient({ initialSuppliers }: Props) {
-  const [suppliers, setSuppliers] = useState<Supplier[]>(initialSuppliers)
-  const [newName, setNewName] = useState('')
-  const [newNote, setNewNote] = useState('')
-  const [newWebsiteUrl, setNewWebsiteUrl] = useState('')
-  const [editState, setEditState] = useState<EditState | null>(null)
-  const [deleteTarget, setDeleteTarget] = useState<Supplier | null>(null)
-  const [toast, setToast] = useState<ToastState | null>(null)
+const CURRENCIES: Currency[] = ['TWD', 'JPY', 'USD', 'HKD']
+const CUR_SYM: Record<Currency, string> = { TWD: 'NT$', JPY: '¥', USD: '$', HKD: 'HK$' }
+const EARTH_SHADES = [
+  'var(--earth-300)',
+  'var(--earth-400)',
+  'var(--earth-500)',
+  'var(--earth-200)',
+  'var(--forest-300)',
+  'var(--forest-400)',
+]
+
+function avatarBg(index: number) {
+  return EARTH_SHADES[index % EARTH_SHADES.length]
+}
+
+const FLD =
+  'w-full bg-surface border border-line rounded-lg px-3.5 py-2.5 text-sm outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition placeholder:text-fg-subtle'
+
+function emptyForm(): DrawerForm {
+  return {
+    name: '',
+    tag: '',
+    line_group: '',
+    phone: '',
+    currency: 'TWD',
+    avg_arrival_days: '',
+    note: '',
+  }
+}
+
+function supplierToForm(s: Supplier): DrawerForm {
+  return {
+    name: s.name,
+    tag: s.tag ?? '',
+    line_group: s.line_group ?? '',
+    phone: s.phone ?? '',
+    currency: s.currency ?? 'TWD',
+    avg_arrival_days: s.avg_arrival_days != null ? String(s.avg_arrival_days) : '',
+    note: s.note ?? '',
+  }
+}
+
+// ── 主元件 ────────────────────────────────────────────────────────────────────
+
+export default function SuppliersClient({ initialSuppliers, totalProducts }: Props) {
+  const [suppliers, setSuppliers] = useState<SupplierWithCount[]>(initialSuppliers)
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [form, setForm] = useState<DrawerForm>(emptyForm())
+  const [deleteTarget, setDeleteTarget] = useState<SupplierWithCount | null>(null)
   const [isPending, startTransition] = useTransition()
+  const { toasts, toast, dismiss } = useToast()
 
-  function showToast(message: string, type: ToastState['type']) {
-    setToast({ message, type })
-    setTimeout(() => setToast(null), 3000)
+  const setField = <K extends keyof DrawerForm>(k: K, v: DrawerForm[K]) =>
+    setForm((prev) => ({ ...prev, [k]: v }))
+
+  function openAdd() {
+    setEditingId(null)
+    setForm(emptyForm())
+    setDrawerOpen(true)
   }
 
-  async function handleAdd() {
-    const name = newName.trim()
-    if (!name) {
-      showToast('廠商名稱為必填', 'error')
+  function openEdit(s: SupplierWithCount) {
+    setEditingId(s.id)
+    setForm(supplierToForm(s))
+    setDrawerOpen(true)
+  }
+
+  function closeDrawer() {
+    setDrawerOpen(false)
+  }
+
+  function handleSave() {
+    if (!form.name.trim()) {
+      toast('廠商名稱為必填', 'error')
       return
     }
     startTransition(async () => {
       try {
-        const res = await fetch('/api/suppliers', {
-          method: 'POST',
+        const payload = {
+          name: form.name.trim(),
+          tag: form.tag.trim() || null,
+          line_group: form.line_group.trim() || null,
+          phone: form.phone.trim() || null,
+          currency: form.currency,
+          avg_arrival_days: form.avg_arrival_days ? Number(form.avg_arrival_days) : null,
+          note: form.note.trim() || null,
+        }
+        const url = editingId ? `/api/suppliers/${editingId}` : '/api/suppliers'
+        const method = editingId ? 'PATCH' : 'POST'
+        const res = await fetch(url, {
+          method,
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            note: newNote.trim() || null,
-            website_url: newWebsiteUrl.trim() || null,
-          }),
+          body: JSON.stringify(payload),
         })
-        const body = await res.json()
-        if (!res.ok) {
-          showToast(body.error || '新增失敗', 'error')
+        const json = (await res.json()) as { success?: boolean; data?: Supplier; error?: string }
+        if (!res.ok || !json.success) {
+          toast(json.error ?? '儲存失敗', 'error')
           return
         }
-        setSuppliers((prev) => [body.data as Supplier, ...prev])
-        setNewName('')
-        setNewNote('')
-        setNewWebsiteUrl('')
-        showToast('廠商已新增', 'success')
+        const updated = json.data!
+        if (editingId) {
+          setSuppliers((prev) =>
+            prev.map((s) => (s.id === editingId ? { ...updated, productCount: s.productCount } : s))
+          )
+          toast('廠商已更新', 'success')
+        } else {
+          setSuppliers((prev) => [{ ...updated, productCount: 0 }, ...prev])
+          toast('已新增廠商', 'success')
+        }
+        closeDrawer()
       } catch {
-        showToast('新增失敗，請稍後再試', 'error')
+        toast('儲存失敗，請稍後再試', 'error')
       }
     })
   }
 
-  function startEdit(supplier: Supplier) {
-    setEditState({
-      id: supplier.id,
-      name: supplier.name,
-      note: supplier.note ?? '',
-      website_url: supplier.website_url ?? '',
-    })
-  }
-
-  function cancelEdit() {
-    setEditState(null)
-  }
-
-  async function handleSaveEdit() {
-    if (!editState) return
-    const name = editState.name.trim()
-    if (!name) {
-      showToast('廠商名稱為必填', 'error')
-      return
-    }
-    startTransition(async () => {
-      try {
-        const res = await fetch(`/api/suppliers/${editState.id}`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            name,
-            note: editState.note.trim() || null,
-            website_url: editState.website_url.trim() || null,
-          }),
-        })
-        const body = await res.json()
-        if (!res.ok) {
-          showToast(body.error || '更新失敗', 'error')
-          return
-        }
-        setSuppliers((prev) =>
-          prev.map((s) => (s.id === editState.id ? (body.data as Supplier) : s))
-        )
-        setEditState(null)
-        showToast('廠商已更新', 'success')
-      } catch {
-        showToast('更新失敗，請稍後再試', 'error')
-      }
-    })
-  }
-
-  async function handleDelete() {
+  function handleDeleteConfirm() {
     if (!deleteTarget) return
     startTransition(async () => {
       try {
         const res = await fetch(`/api/suppliers/${deleteTarget.id}`, { method: 'DELETE' })
-        const body = await res.json()
-        if (!res.ok) {
+        const json = (await res.json()) as { success?: boolean; error?: string }
+        if (!res.ok || !json.success) {
+          toast(json.error ?? '刪除失敗', 'error')
           setDeleteTarget(null)
-          showToast(body.error || '刪除失敗', 'error')
           return
         }
         setSuppliers((prev) => prev.filter((s) => s.id !== deleteTarget.id))
+        toast(`已刪除「${deleteTarget.name}」`, 'success')
         setDeleteTarget(null)
-        showToast('廠商已刪除', 'success')
+        if (editingId === deleteTarget.id) closeDrawer()
       } catch {
+        toast('刪除失敗，請稍後再試', 'error')
         setDeleteTarget(null)
-        showToast('刪除失敗，請稍後再試', 'error')
       }
     })
   }
 
+  const totalSuppliers = suppliers.length
+  const realTotalProducts = suppliers.reduce((s, sup) => s + sup.productCount, 0) || totalProducts
+
   return (
     <>
-      {/* ── 新增廠商表單 ─────────────────────────────────────────────────── */}
-      <section className={styles.supCard}>
-        <div className={styles.supCardHead}>
-          <h2 className={styles.supCardTitle}>新增廠商</h2>
+      <ToastContainer toasts={toasts} onDismiss={dismiss} />
+
+      {/* ── Page-level sticky topbar ──────────────────────────────────────── */}
+      <div className='sticky top-0 md:top-0 z-20 border-b border-line bg-surface/80 backdrop-blur-md px-8 py-5'>
+        <div className='font-mono text-[11px] text-fg-subtle mb-2 flex items-center gap-1.5'>
+          <Link href='/admin' className='hover:text-fg'>
+            後台
+          </Link>
+          <span>›</span>
+          <span className='text-fg'>供應商</span>
         </div>
-        <div className={styles.supAddForm}>
-          <div className={styles.supFormRow}>
-            <label htmlFor='newSupName' className={styles.supFormLabel}>
-              廠商名稱<span className={styles.supFormReq}>*</span>
-            </label>
-            <input
-              id='newSupName'
-              type='text'
-              className={styles.supInput}
-              value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              maxLength={30}
-              placeholder='請輸入廠商名稱'
-              disabled={isPending}
-            />
-            <div className={styles.supFormMeta}>
-              <span className={newName.length > 30 ? styles.supCountError : styles.supCount}>
-                {newName.length} / 30
-              </span>
-            </div>
+        <div className='flex items-center justify-between gap-4 flex-wrap'>
+          <div>
+            <h1 className='font-display font-bold text-2xl'>供應商</h1>
+            <p className='text-sm text-fg-muted mt-0.5'>
+              共 <b className='text-fg'>{totalSuppliers}</b> 家供應商 · 串接{' '}
+              <b className='text-fg'>{realTotalProducts}</b> 件商品
+            </p>
           </div>
-          <div className={styles.supFormRow}>
-            <label htmlFor='newSupNote' className={styles.supFormLabel}>
-              備註
-            </label>
-            <input
-              id='newSupNote'
-              type='text'
-              className={styles.supInput}
-              value={newNote}
-              onChange={(e) => setNewNote(e.target.value)}
-              maxLength={100}
-              placeholder='例：日本品牌，出貨週期 2 週'
-              disabled={isPending}
-            />
-            <div className={styles.supFormMeta}>
-              <span className={newNote.length > 100 ? styles.supCountError : styles.supCount}>
-                {newNote.length} / 100
-              </span>
-            </div>
-          </div>
-          <div className={styles.supFormRow}>
-            <label htmlFor='newSupWebsite' className={styles.supFormLabel}>
-              賣場連結
-            </label>
-            <input
-              id='newSupWebsite'
-              type='url'
-              className={styles.supInput}
-              value={newWebsiteUrl}
-              onChange={(e) => setNewWebsiteUrl(e.target.value)}
-              placeholder='https://example.com/store'
-              disabled={isPending}
-            />
-            <div className={styles.supFormMeta}>
-              <span className={styles.supCount}>廠商的官網或賣場頁面 URL</span>
-            </div>
-          </div>
-          <div className={styles.supFormActions}>
-            <button
-              type='button'
-              className={`${styles.supBtn} ${styles.supBtnPrimary}`}
-              onClick={handleAdd}
-              disabled={isPending}
-            >
+          <div className='flex items-center gap-2'>
+            <div className='relative hidden lg:block'>
+              <input
+                className='w-64 h-10 pl-10 pr-4 rounded-pill border border-line bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] transition text-sm placeholder:text-fg-subtle'
+                placeholder='搜尋供應商名稱…'
+              />
               <svg
+                width='16'
+                height='16'
                 viewBox='0 0 24 24'
-                width='14'
-                height='14'
                 fill='none'
                 stroke='currentColor'
-                strokeWidth='2.5'
-                aria-hidden='true'
+                strokeWidth='1.8'
+                strokeLinecap='round'
+                className='absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-subtle pointer-events-none'
               >
-                <line x1='12' y1='5' x2='12' y2='19' />
-                <line x1='5' y1='12' x2='19' y2='12' />
+                <circle cx='11' cy='11' r='6' />
+                <path d='M20 20l-4-4' />
               </svg>
-              {isPending ? '處理中…' : '新增廠商'}
+            </div>
+            <button
+              type='button'
+              onClick={openAdd}
+              className='inline-flex items-center gap-2 h-10 rounded-pill bg-primary text-white px-5 font-display font-semibold text-sm shadow-pink hover:bg-primary-hv active:scale-[.97] transition'
+            >
+              <svg
+                width='16'
+                height='16'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2.2'
+                strokeLinecap='round'
+              >
+                <path d='M12 5v14M5 12h14' />
+              </svg>
+              新增供應商
             </button>
           </div>
         </div>
-      </section>
+      </div>
 
-      {/* ── 廠商列表 ─────────────────────────────────────────────────────── */}
-      <section className={styles.supCard}>
-        <div className={styles.supCardHead}>
-          <h2 className={styles.supCardTitle}>廠商列表</h2>
-          <span className={styles.supCardHint}>{suppliers.length} 個廠商</span>
+      {/* ── Mini stats ──────────────────────────────────────────────────────── */}
+      <div className='px-8 pt-6 pb-0'>
+        <div className='grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-[1180px]'>
+          <div className='bg-surface border border-line rounded-xl p-4'>
+            <div className='font-mono text-[10px] text-fg-subtle tracking-[0.12em] uppercase'>
+              供應商總數
+            </div>
+            <div className='flex items-baseline gap-1.5 mt-1'>
+              <span className='font-display font-bold text-2xl'>{totalSuppliers}</span>
+              <span className='text-xs text-fg-muted'>家</span>
+            </div>
+          </div>
+          <div className='bg-surface border border-line rounded-xl p-4'>
+            <div className='font-mono text-[10px] text-fg-subtle tracking-[0.12em] uppercase'>
+              串接商品
+            </div>
+            <div className='flex items-baseline gap-1.5 mt-1'>
+              <span className='font-display font-bold text-2xl'>{realTotalProducts}</span>
+              <span className='text-xs text-fg-muted'>件</span>
+            </div>
+          </div>
+          <div className='bg-surface border border-line rounded-xl p-4'>
+            <div className='font-mono text-[10px] text-fg-subtle tracking-[0.12em] uppercase'>
+              本月採購額
+            </div>
+            <div className='flex items-baseline gap-1.5 mt-1'>
+              <span className='font-mono text-fg-subtle text-sm'>NT$</span>
+              <span className='font-display font-bold text-2xl text-fg-subtle'>—</span>
+            </div>
+          </div>
+          <div className='bg-surface border border-line rounded-xl p-4'>
+            <div className='font-mono text-[10px] text-fg-subtle tracking-[0.12em] uppercase'>
+              平均到貨
+            </div>
+            <div className='flex items-baseline gap-1.5 mt-1'>
+              {(() => {
+                const withDays = suppliers.filter((s) => s.avg_arrival_days != null)
+                const avg =
+                  withDays.length > 0
+                    ? (
+                        withDays.reduce((sum, s) => sum + (s.avg_arrival_days ?? 0), 0) /
+                        withDays.length
+                      ).toFixed(1)
+                    : null
+                return avg ? (
+                  <>
+                    <span className='font-display font-bold text-2xl'>{avg}</span>
+                    <span className='text-xs text-fg-muted'>天</span>
+                  </>
+                ) : (
+                  <span className='font-display font-bold text-2xl text-fg-subtle'>—</span>
+                )
+              })()}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Supplier card grid ───────────────────────────────────────────────── */}
+      <div className='px-8 py-6 max-w-[1180px]'>
+        <div className='flex items-center gap-2 mb-5'>
+          <span className='font-display font-bold'>所有供應商</span>
+          <span className='font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted'>
+            {totalSuppliers}
+          </span>
         </div>
 
         {suppliers.length === 0 ? (
-          <div className={styles.supEmpty}>
-            <div className={styles.supEmptyIcon} aria-hidden='true'>
+          <div className='text-center py-20 bg-surface border border-line rounded-xl'>
+            <div className='w-14 h-14 mx-auto rounded-2xl bg-sunken flex items-center justify-center mb-4'>
               <svg
+                width='26'
+                height='26'
                 viewBox='0 0 24 24'
-                width='28'
-                height='28'
                 fill='none'
                 stroke='currentColor'
                 strokeWidth='1.5'
+                strokeLinecap='round'
               >
-                <path d='M3 7l9-4 9 4-9 4-9-4z' />
-                <path d='M3 12l9 4 9-4' />
-                <path d='M3 17l9 4 9-4' />
+                <path d='M3 9l9-5 9 5-9 5-9-5z' />
+                <path d='M3 9v7l9 5 9-5V9' />
               </svg>
             </div>
-            <p className={styles.supEmptyText}>尚未新增廠商，點擊上方按鈕新增</p>
+            <p className='font-display font-semibold text-fg-muted'>尚未新增廠商</p>
+            <button
+              type='button'
+              onClick={openAdd}
+              className='mt-4 inline-flex items-center gap-1.5 h-9 px-5 rounded-pill bg-primary text-white text-sm font-display font-semibold shadow-pink hover:bg-primary-hv transition'
+            >
+              新增第一家廠商
+            </button>
           </div>
         ) : (
-          <ul className={styles.supList} role='list'>
-            {suppliers.map((supplier) => (
-              <li key={supplier.id} className={styles.supItem}>
-                {editState?.id === supplier.id ? (
-                  /* ── 內嵌編輯模式 ── */
-                  <div className={styles.supEditForm}>
-                    <div className={styles.supFormRow}>
-                      <label htmlFor={`edit-name-${supplier.id}`} className={styles.supFormLabel}>
-                        廠商名稱<span className={styles.supFormReq}>*</span>
-                      </label>
-                      <input
-                        id={`edit-name-${supplier.id}`}
-                        type='text'
-                        className={styles.supInput}
-                        value={editState.name}
-                        onChange={(e) =>
-                          setEditState((prev) => prev && { ...prev, name: e.target.value })
-                        }
-                        maxLength={30}
-                        disabled={isPending}
-                        autoFocus
-                      />
-                    </div>
-                    <div className={styles.supFormRow}>
-                      <label htmlFor={`edit-note-${supplier.id}`} className={styles.supFormLabel}>
-                        備註
-                      </label>
-                      <input
-                        id={`edit-note-${supplier.id}`}
-                        type='text'
-                        className={styles.supInput}
-                        value={editState.note}
-                        onChange={(e) =>
-                          setEditState((prev) => prev && { ...prev, note: e.target.value })
-                        }
-                        maxLength={100}
-                        disabled={isPending}
-                      />
-                    </div>
-                    <div className={styles.supFormRow}>
-                      <label
-                        htmlFor={`edit-website-${supplier.id}`}
-                        className={styles.supFormLabel}
-                      >
-                        賣場連結
-                      </label>
-                      <input
-                        id={`edit-website-${supplier.id}`}
-                        type='url'
-                        className={styles.supInput}
-                        value={editState.website_url}
-                        onChange={(e) =>
-                          setEditState((prev) => prev && { ...prev, website_url: e.target.value })
-                        }
-                        placeholder='https://example.com/store'
-                        disabled={isPending}
-                      />
-                    </div>
-                    <div className={styles.supEditActions}>
-                      <button
-                        type='button'
-                        className={`${styles.supBtn} ${styles.supBtnGhost}`}
-                        onClick={cancelEdit}
-                        disabled={isPending}
-                      >
-                        取消
-                      </button>
-                      <button
-                        type='button'
-                        className={`${styles.supBtn} ${styles.supBtnPrimary}`}
-                        onClick={handleSaveEdit}
-                        disabled={isPending}
-                      >
-                        {isPending ? '儲存中…' : '儲存'}
-                      </button>
-                    </div>
-                  </div>
-                ) : (
-                  /* ── 顯示模式 ── */
-                  <div className={styles.supItemInner}>
-                    <div className={styles.supItemInfo}>
-                      <span className={styles.supItemName}>{supplier.name}</span>
-                      <div className={styles.supItemMeta}>
-                        {supplier.note && (
-                          <span className={styles.supItemNote}>{supplier.note}</span>
-                        )}
-                        {supplier.website_url && (
-                          <a
-                            href={supplier.website_url}
-                            target='_blank'
-                            rel='noopener noreferrer'
-                            className={styles.supItemLink}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <svg
-                              viewBox='0 0 24 24'
-                              width='12'
-                              height='12'
-                              fill='none'
-                              stroke='currentColor'
-                              strokeWidth='2'
-                              aria-hidden='true'
-                            >
-                              <path d='M10 13a5 5 0 007.07 0l3-3a5 5 0 10-7.07-7.07l-1 1' />
-                              <path d='M14 11a5 5 0 00-7.07 0l-3 3a5 5 0 107.07 7.07l1-1' />
-                            </svg>
-                            賣場連結
-                          </a>
-                        )}
-                      </div>
-                    </div>
-                    <div className={styles.supItemActions}>
-                      <button
-                        type='button'
-                        className={styles.supIconBtn}
-                        onClick={() => startEdit(supplier)}
-                        disabled={isPending}
-                        aria-label={`編輯 ${supplier.name}`}
-                        title='編輯'
-                      >
-                        <svg
-                          viewBox='0 0 24 24'
-                          width='15'
-                          height='15'
-                          fill='none'
-                          stroke='currentColor'
-                          strokeWidth='1.8'
-                          aria-hidden='true'
-                        >
-                          <path d='M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7' />
-                          <path d='M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z' />
-                        </svg>
-                      </button>
-                      <button
-                        type='button'
-                        className={`${styles.supIconBtn} ${styles.supIconBtnDanger}`}
-                        onClick={() => setDeleteTarget(supplier)}
-                        disabled={isPending}
-                        aria-label={`刪除 ${supplier.name}`}
-                        title='刪除'
-                      >
-                        <svg
-                          viewBox='0 0 24 24'
-                          width='15'
-                          height='15'
-                          fill='none'
-                          stroke='currentColor'
-                          strokeWidth='1.8'
-                          aria-hidden='true'
-                        >
-                          <polyline points='3 6 5 6 21 6' />
-                          <path d='M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6' />
-                          <path d='M10 11v6M14 11v6' />
-                          <path d='M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2' />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </li>
+          <div className='grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-5'>
+            {suppliers.map((s, idx) => (
+              <SupplierCard
+                key={s.id}
+                supplier={s}
+                avatarBg={avatarBg(idx)}
+                onEdit={() => openEdit(s)}
+                onDelete={() => setDeleteTarget(s)}
+              />
             ))}
-          </ul>
+          </div>
         )}
-      </section>
+      </div>
 
-      {/* ── 刪除確認 Modal ──────────────────────────────────────────────── */}
-      {deleteTarget && (
-        <div
-          role='dialog'
-          aria-modal='true'
-          aria-labelledby='del-modal-title'
-          className='fixed inset-0 z-[200] flex items-center justify-center bg-[rgba(28,54,16,0.4)] backdrop-blur-[3px]'
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setDeleteTarget(null)
-          }}
-        >
-          <div className={styles.supModal}>
-            <h3 id='del-modal-title' className={styles.supModalTitle}>
-              刪除廠商
-            </h3>
-            <p className={styles.supModalBody}>
-              確定刪除廠商「<strong>{deleteTarget.name}</strong>」？此動作無法復原。
-            </p>
-            <div className={styles.supModalActions}>
+      {/* ── Slide-over drawer ────────────────────────────────────────────────── */}
+      {drawerOpen && (
+        <div className='fixed inset-0 z-40 flex'>
+          <div
+            className='absolute inset-0'
+            style={{ background: 'rgba(28,54,16,0.35)' }}
+            onClick={closeDrawer}
+          />
+          <div className='absolute top-0 right-0 h-full w-full max-w-[460px] bg-surface shadow-lg flex flex-col'>
+            {/* header */}
+            <div className='px-6 py-5 border-b border-line flex items-start justify-between shrink-0'>
+              <div>
+                <div className='font-mono text-[11px] text-fg-subtle tracking-[0.12em] uppercase'>
+                  {editingId ? '編輯供應商' : '新增供應商'}
+                </div>
+                <h2 className='font-display font-bold text-xl mt-1'>
+                  {editingId ? form.name || '編輯供應商' : '新增供應商'}
+                </h2>
+              </div>
               <button
                 type='button'
-                className={`${styles.supBtn} ${styles.supBtnGhost}`}
-                onClick={() => setDeleteTarget(null)}
-                disabled={isPending}
+                onClick={closeDrawer}
+                className='w-9 h-9 rounded-pill hover:bg-sunken flex items-center justify-center text-fg-subtle'
+              >
+                <svg
+                  width='18'
+                  height='18'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='2'
+                  strokeLinecap='round'
+                >
+                  <path d='M6 6l12 12M6 18L18 6' />
+                </svg>
+              </button>
+            </div>
+
+            {/* body */}
+            <div className='flex-1 overflow-y-auto px-6 py-5 space-y-5'>
+              {/* name */}
+              <div>
+                <label className='block text-sm font-semibold mb-2'>
+                  廠商名稱 <span className='text-danger'>*</span>
+                </label>
+                <input
+                  className={FLD}
+                  placeholder='例：MIKI 日系選品'
+                  value={form.name}
+                  onChange={(e) => setField('name', e.target.value)}
+                  maxLength={30}
+                />
+              </div>
+
+              {/* tag */}
+              <div>
+                <label className='block text-sm font-semibold mb-2'>廠商標記（簡稱）</label>
+                <div className='flex items-center gap-3'>
+                  <input
+                    className={`${FLD} font-mono`}
+                    style={{ maxWidth: 160 }}
+                    placeholder='MIKI'
+                    maxLength={8}
+                    value={form.tag}
+                    onChange={(e) => setField('tag', e.target.value)}
+                  />
+                  <span className='text-xs text-fg-subtle'>預覽</span>
+                  <span className='inline-flex items-center h-6 px-2.5 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[11px]'>
+                    {form.tag || '標記'}
+                  </span>
+                </div>
+                <p className='text-xs text-fg-subtle mt-1.5'>顯示於訂單與商品列表的廠商標記。</p>
+              </div>
+
+              <hr className='border-line' />
+
+              {/* line_group */}
+              <div>
+                <label className='block text-sm font-semibold mb-2'>LINE 群組 / 聯絡名稱</label>
+                <div className='relative'>
+                  <input
+                    className={`${FLD} pl-10`}
+                    placeholder='例：MIKI 批發團 2024'
+                    value={form.line_group}
+                    onChange={(e) => setField('line_group', e.target.value)}
+                  />
+                  <svg
+                    width='17'
+                    height='17'
+                    viewBox='0 0 24 24'
+                    className='absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle'
+                    fill='currentColor'
+                  >
+                    <path d='M12 3C6.5 3 2 6.6 2 11c0 2.5 1.5 4.8 3.8 6.3-.1.6-.6 2.2-.7 2.6 0 0 0 .2.1.3.1 0 .2 0 .3 0 .4-.3 3-2 3.5-2.4.9.1 1.8.2 2.7.2 5.5 0 10-3.6 10-8S17.5 3 12 3z' />
+                  </svg>
+                </div>
+              </div>
+
+              {/* phone */}
+              <div>
+                <label className='block text-sm font-semibold mb-2'>
+                  聯絡電話 <span className='font-normal text-fg-subtle'>（選填）</span>
+                </label>
+                <input
+                  className={`${FLD} font-mono`}
+                  placeholder='0912-345-678'
+                  value={form.phone}
+                  onChange={(e) => setField('phone', e.target.value)}
+                />
+              </div>
+
+              <hr className='border-line' />
+
+              {/* currency */}
+              <div>
+                <label className='block text-sm font-semibold mb-2'>預設批發幣別</label>
+                <div className='flex items-center gap-1 bg-sunken p-1 rounded-pill w-fit'>
+                  {CURRENCIES.map((c) => (
+                    <button
+                      key={c}
+                      type='button'
+                      onClick={() => setField('currency', c)}
+                      className={[
+                        'h-8 px-4 rounded-pill font-display font-semibold text-xs transition',
+                        form.currency === c
+                          ? 'bg-surface text-primary-hv shadow-sm'
+                          : 'text-fg-muted hover:text-fg',
+                      ].join(' ')}
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+                <p className='text-xs text-fg-subtle mt-1.5'>新增商品時，批發價預設帶入此幣別。</p>
+              </div>
+
+              {/* avg_arrival_days */}
+              <div>
+                <label className='block text-sm font-semibold mb-2'>
+                  平均到貨天數 <span className='font-normal text-fg-subtle'>（選填）</span>
+                </label>
+                <div className='flex items-center gap-2'>
+                  <input
+                    type='number'
+                    min='0'
+                    className={`${FLD} font-mono`}
+                    style={{ maxWidth: 120 }}
+                    placeholder='5'
+                    value={form.avg_arrival_days}
+                    onChange={(e) => setField('avg_arrival_days', e.target.value)}
+                  />
+                  <span className='text-sm text-fg-muted'>天</span>
+                </div>
+              </div>
+
+              {/* note */}
+              <div>
+                <label className='block text-sm font-semibold mb-2'>
+                  備註 <span className='font-normal text-fg-subtle'>（選填）</span>
+                </label>
+                <textarea
+                  className={`${FLD} resize-y`}
+                  style={{ minHeight: 84 }}
+                  placeholder='出貨習慣、最低訂購量、匯款資訊…'
+                  value={form.note}
+                  onChange={(e) => setField('note', e.target.value)}
+                />
+              </div>
+            </div>
+
+            {/* footer */}
+            <div className='px-6 py-4 border-t border-line flex items-center gap-2 bg-surface shrink-0'>
+              {editingId && (
+                <button
+                  type='button'
+                  onClick={() => {
+                    const target = suppliers.find((s) => s.id === editingId)
+                    if (target) {
+                      closeDrawer()
+                      setTimeout(() => setDeleteTarget(target), 50)
+                    }
+                  }}
+                  className='inline-flex items-center gap-1.5 h-10 px-4 rounded-pill text-danger font-display font-semibold text-sm hover:bg-danger-bg transition'
+                >
+                  <svg
+                    width='15'
+                    height='15'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='1.9'
+                    strokeLinecap='round'
+                  >
+                    <path d='M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13' />
+                  </svg>
+                  刪除
+                </button>
+              )}
+              <div className='flex-1' />
+              <button
+                type='button'
+                onClick={closeDrawer}
+                className='h-10 px-5 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition'
               >
                 取消
               </button>
               <button
                 type='button'
-                className={`${styles.supBtn} ${styles.supBtnDanger}`}
-                onClick={handleDelete}
+                onClick={handleSave}
                 disabled={isPending}
+                className='h-10 px-6 rounded-pill bg-primary text-white font-display font-semibold text-sm shadow-pink hover:bg-primary-hv active:scale-[.97] transition disabled:opacity-60'
               >
-                {isPending ? '刪除中…' : '確定刪除'}
+                {isPending ? '儲存中…' : '儲存'}
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* ── Toast ──────────────────────────────────────────────────────── */}
-      {toast && (
-        <div
-          role='status'
-          aria-live='polite'
-          className={`${styles.supToast} ${toast.type === 'success' ? styles.supToastSuccess : styles.supToastError}`}
-        >
-          {toast.message}
-        </div>
+      {/* ── Delete confirm modal ─────────────────────────────────────────────── */}
+      {deleteTarget && (
+        <ConfirmModal
+          title={`刪除廠商「${deleteTarget.name}」？`}
+          message={
+            deleteTarget.productCount > 0
+              ? `此廠商目前串接 ${deleteTarget.productCount} 件商品。刪除後這些商品的廠商標記會被清空，歷史訂單紀錄不受影響。此動作無法復原。`
+              : '此動作無法復原。'
+          }
+          confirmLabel='確定刪除'
+          onConfirm={handleDeleteConfirm}
+          onCancel={() => setDeleteTarget(null)}
+          isLoading={isPending}
+          danger
+        />
       )}
     </>
+  )
+}
+
+// ── Supplier Card ─────────────────────────────────────────────────────────────
+
+function SupplierCard({
+  supplier: s,
+  avatarBg: bg,
+  onEdit,
+  onDelete,
+}: {
+  supplier: SupplierWithCount
+  avatarBg: string
+  onEdit: () => void
+  onDelete: () => void
+}) {
+  const initial = s.name.charAt(0)
+  const inactive = s.productCount === 0
+
+  return (
+    <div className='bg-surface border border-line rounded-xl p-5 flex flex-col hover:shadow-md hover:border-transparent transition group'>
+      {/* head */}
+      <div className='flex items-start gap-3'>
+        <div
+          className='w-12 h-12 rounded-lg flex items-center justify-center text-white font-display font-bold text-lg shrink-0'
+          style={{ background: bg }}
+        >
+          {initial}
+        </div>
+        <div className='min-w-0 flex-1'>
+          <h3 className='font-display font-bold text-base truncate'>{s.name}</h3>
+          <div className='flex items-center gap-1.5 mt-1 flex-wrap'>
+            {s.tag && (
+              <span className='inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]'>
+                {s.tag}
+              </span>
+            )}
+            <span className='inline-flex items-center gap-1 h-5 px-2 rounded-pill bg-sunken text-fg-muted font-mono text-[10px]'>
+              {CUR_SYM[s.currency]} {s.currency}
+            </span>
+          </div>
+        </div>
+        <button
+          type='button'
+          onClick={onEdit}
+          className='w-8 h-8 rounded-pill hover:bg-sunken flex items-center justify-center text-fg-subtle opacity-0 group-hover:opacity-100 transition shrink-0'
+          aria-label='編輯'
+        >
+          <svg
+            width='15'
+            height='15'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.9'
+            strokeLinecap='round'
+            strokeLinejoin='round'
+          >
+            <path d='M4 20h4l10-10-4-4L4 16v4z' />
+            <path d='M13.5 6.5l4 4' />
+          </svg>
+        </button>
+      </div>
+
+      {/* contact */}
+      <div className='mt-4 space-y-1.5 text-sm'>
+        <div className='flex items-center gap-2 text-fg-muted'>
+          <svg
+            width='14'
+            height='14'
+            viewBox='0 0 24 24'
+            fill='currentColor'
+            className='shrink-0 text-fg-subtle'
+          >
+            <path d='M12 3C6.5 3 2 6.6 2 11c0 2.5 1.5 4.8 3.8 6.3-.1.6-.6 2.2-.7 2.6 0 0 0 .2.1.3.1 0 .2 0 .3 0 .4-.3 3-2 3.5-2.4.9.1 1.8.2 2.7.2 5.5 0 10-3.6 10-8S17.5 3 12 3z' />
+          </svg>
+          <span className='truncate text-sm'>{s.line_group || '—'}</span>
+        </div>
+        <div className='flex items-center gap-2 text-fg-muted'>
+          <svg
+            width='14'
+            height='14'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.7'
+            className='shrink-0 text-fg-subtle'
+            strokeLinecap='round'
+          >
+            <path d='M5 4h3l1.5 4-2 1.5a11 11 0 005 5l1.5-2 4 1.5V18a2 2 0 01-2 2A14 14 0 015 6a2 2 0 010-2z' />
+          </svg>
+          <span className='font-mono text-xs'>{s.phone || '未填'}</span>
+        </div>
+      </div>
+
+      {/* stats */}
+      <div className='mt-4 grid grid-cols-3 gap-2 rounded-lg bg-ink-50 p-3'>
+        <div className='text-center'>
+          <div
+            className={`font-display font-bold text-lg leading-none ${inactive ? 'text-fg-subtle' : ''}`}
+          >
+            {s.productCount}
+          </div>
+          <div className='font-mono text-[9px] text-fg-subtle uppercase tracking-wider mt-1'>
+            商品
+          </div>
+        </div>
+        <div className='text-center border-x border-line'>
+          <div className='font-display font-bold text-lg leading-none text-fg-subtle'>—</div>
+          <div className='font-mono text-[9px] text-fg-subtle uppercase tracking-wider mt-1'>
+            進行中
+          </div>
+        </div>
+        <div className='text-center'>
+          <div className='font-display font-bold text-lg leading-none'>
+            {s.avg_arrival_days != null ? (
+              <>
+                {s.avg_arrival_days}
+                <span className='text-xs font-normal text-fg-subtle'>天</span>
+              </>
+            ) : (
+              <span className='text-fg-subtle'>—</span>
+            )}
+          </div>
+          <div className='font-mono text-[9px] text-fg-subtle uppercase tracking-wider mt-1'>
+            平均到貨
+          </div>
+        </div>
+      </div>
+
+      {/* note */}
+      {s.note && (
+        <p className='mt-3 text-xs text-fg-muted leading-relaxed line-clamp-2'>{s.note}</p>
+      )}
+
+      {/* footer actions */}
+      <div className='mt-4 pt-3.5 border-t border-line flex items-center gap-2'>
+        <button
+          type='button'
+          onClick={onEdit}
+          className='flex-1 h-9 rounded-pill border border-line text-fg font-display font-semibold text-xs hover:bg-sunken transition'
+        >
+          編輯
+        </button>
+        <Link
+          href={`/admin/products?supplier=${s.id}`}
+          className='flex-1 h-9 rounded-pill bg-secondary-bg text-secondary font-display font-semibold text-xs hover:bg-secondary hover:text-white transition flex items-center justify-center gap-1'
+        >
+          查看商品
+          <svg
+            width='12'
+            height='12'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='2.2'
+            strokeLinecap='round'
+          >
+            <path d='M9 6l6 6-6 6' />
+          </svg>
+        </Link>
+        <button
+          type='button'
+          onClick={onDelete}
+          className='w-9 h-9 rounded-pill text-fg-subtle hover:bg-danger-bg hover:text-danger flex items-center justify-center transition'
+          aria-label='刪除'
+        >
+          <svg
+            width='14'
+            height='14'
+            viewBox='0 0 24 24'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.9'
+            strokeLinecap='round'
+          >
+            <path d='M5 7h14M9 7V5h6v2M7 7l1 13h8l1-13' />
+          </svg>
+        </button>
+      </div>
+    </div>
   )
 }

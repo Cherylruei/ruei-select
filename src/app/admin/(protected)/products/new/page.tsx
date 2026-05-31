@@ -27,24 +27,57 @@ export default async function NewProductPage() {
   const categories = (categoriesResult.data ?? []) as ProductCategory[]
 
   return (
-    <div>
-      <div className='mb-6'>
-        <div className='flex items-center gap-2 text-[12.5px] text-[var(--neutral-400)] mb-3'>
-          <Link
-            href='/admin/products'
-            className='hover:text-[var(--neutral-600)] transition-colors'
-          >
+    <>
+      {/* ── Sticky page topbar ───────────────────────────────────────────── */}
+      <div className='sticky top-0 md:top-0 z-20 border-b border-line bg-surface/80 backdrop-blur-md px-9 py-5'>
+        <div className='font-mono text-[11px] text-fg-subtle mb-2 flex items-center gap-1.5'>
+          <Link href='/admin/products' className='hover:text-fg'>
             商品管理
           </Link>
           <span>/</span>
-          <span className='text-[var(--neutral-600)]'>新增商品</span>
+          <span className='text-fg'>新增商品</span>
         </div>
-        <h1 className='text-[26px] font-bold text-[var(--neutral-800)] tracking-wide [font-family:var(--font-zen-maru-gothic)]'>
-          新增商品
-        </h1>
+        <div className='flex items-end justify-between gap-4 flex-wrap'>
+          <h1 className='font-display font-bold text-2xl'>新增商品</h1>
+          <div className='flex items-center gap-2'>
+            <Link
+              href='/admin/products'
+              className='h-10 px-5 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition flex items-center'
+            >
+              取消
+            </Link>
+            <Link
+              href='/admin/products'
+              className='h-10 px-5 rounded-pill bg-secondary-bg text-secondary font-display font-semibold text-sm hover:bg-secondary hover:text-white transition flex items-center'
+            >
+              儲存草稿
+            </Link>
+            <button
+              type='submit'
+              form='product-form'
+              className='inline-flex items-center gap-2 h-10 rounded-pill bg-primary text-white px-5 font-display font-semibold text-sm shadow-pink hover:bg-primary-hv active:scale-[.97] transition'
+            >
+              <svg
+                width='15'
+                height='15'
+                viewBox='0 0 24 24'
+                fill='none'
+                stroke='currentColor'
+                strokeWidth='2.2'
+                strokeLinecap='round'
+              >
+                <path d='M5 12l4 4L19 6' />
+              </svg>
+              儲存並上架
+            </button>
+          </div>
+        </div>
       </div>
 
-      <ProductForm mode='new' suppliers={suppliers} categories={categories} storeId={store.id} />
-    </div>
+      {/* ── Form ─────────────────────────────────────────────────────────── */}
+      <div className='px-9 py-7 pb-14'>
+        <ProductForm mode='new' suppliers={suppliers} categories={categories} storeId={store.id} />
+      </div>
+    </>
   )
 }

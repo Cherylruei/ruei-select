@@ -48,6 +48,11 @@ export interface Supplier {
   id: string
   store_id: string
   name: string
+  tag: string | null
+  line_group: string | null
+  phone: string | null
+  currency: 'TWD' | 'JPY' | 'USD' | 'HKD'
+  avg_arrival_days: number | null
   note: string | null
   website_url: string | null
   created_at: string

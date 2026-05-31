@@ -13,6 +13,9 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/orders': '訂單管理',
 }
 
+// 這些頁面有自己的完整頁首，隱藏 desktop topbar 避免重複
+const CUSTOM_HEADER_PATHS = new Set(['/admin/suppliers', '/admin/products', '/admin/products/new'])
+
 function getPageTitle(pathname: string): string {
   // 長路徑優先，避免 /admin 搶先匹配 /admin/orders 等子路徑
   const sorted = Object.entries(PAGE_TITLES).sort((a, b) => b[0].length - a[0].length)
@@ -34,6 +37,7 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const pathname = usePathname()
   const pageTitle = getPageTitle(pathname)
+  const hasCustomHeader = CUSTOM_HEADER_PATHS.has(pathname)
 
   return (
     <div data-variant='forest' className='flex min-h-screen bg-app text-fg'>
@@ -53,8 +57,10 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
 
       {/* Main content */}
       <div className='flex-1 min-w-0 flex flex-col min-h-screen ml-[220px] max-md:ml-0'>
-        {/* Topbar */}
-        <header className='h-[60px] bg-surface/[.88] backdrop-saturate-[140%] backdrop-blur-[8px] border-b border-line flex items-center gap-3.5 px-6 sticky top-0 z-30 shrink-0'>
+        {/* Topbar — custom-header 頁面在 desktop 隱藏，避免與頁面自己的 topbar 重複 */}
+        <header
+          className={`h-[60px] bg-surface/[.88] backdrop-saturate-[140%] backdrop-blur-[8px] border-b border-line flex items-center gap-3.5 px-6 sticky top-0 z-30 shrink-0 ${hasCustomHeader ? 'md:hidden' : ''}`}
+        >
           <button
             aria-label='開啟選單'
             onClick={() => setIsMobileOpen(true)}
@@ -95,7 +101,11 @@ export default function AdminShell({ displayName, avatarUrl, children }: AdminSh
         </header>
 
         {/* Page content */}
-        <main className='flex-1 px-8 pt-7 pb-14 max-w-[1400px] w-full'>{children}</main>
+        <main
+          className={`flex-1 max-w-[1400px] w-full ${hasCustomHeader ? '' : 'px-8 pt-7 pb-14'}`}
+        >
+          {children}
+        </main>
       </div>
     </div>
   )
