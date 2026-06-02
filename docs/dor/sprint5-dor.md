@@ -39,8 +39,11 @@ sprint5-order-ux         訂單管理 UX 升級
 sprint5-product-detail   前台商品詳細頁重建
                          （按 store-product-detail.html mockup 全頁重建，移除舊 desktop dual-column）
 
-sprint5-customers-ui     顧客管理後台重設計
-                         （待 Cheryl 提供 mockup 後確認 AC）
+sprint5-customers-ui     顧客管理後台重設計 + Banner 設定 + 公告管理
+                         （三者同屬後台 UI 工作，可合批進行）
+                         → 顧客管理：待 Cheryl 提供 mockup 後確認 AC
+                         → Banner：擴充 /admin/store 既有頁面
+                         → 公告管理：新增 /admin/announcements + StoreHeader 鈴鐺接通
 
 # ── 中優先（依賴 product-detail 完成）───────────────────────
 sprint5-inventory        規格庫存管理                ⚠️ 依賴 sprint5-product-detail
@@ -369,6 +372,122 @@ So that 我不需要手動逐一比對哪位顧客應該拿到哪件商品。
 
 ---
 
+### US-NEW：賣場橫幅設定（Banner）
+
+> ℹ️ 目前首頁桌面版英雄橫幅文字完全 hardcode，商家無法自訂。
+> 此 US 將橫幅的可編輯欄位存入 `stores` 表，前台從資料庫讀取。
+> 後台位置：`/admin/store`（賣場設定）擴充「橫幅設定」區塊。
+
+```
+As a 商家,
+I want to 在賣場設定頁自訂首頁橫幅的標語與 badge 文字,
+So that 橫幅內容能反映我當下的促銷主題，而不是永遠顯示預設文字。
+```
+
+**Acceptance Criteria：**
+
+**後台 — 賣場設定 Banner 區塊**
+
+- AC-BAN1：`/admin/store` 賣場設定頁新增「橫幅設定」區塊（折疊式 section 或直接顯示）
+- AC-BAN2：可編輯欄位：
+  - Badge 標籤（上限 30 字，如「★ 本週精選商品」）
+  - 主標題第一行（上限 20 字，如「精選好物」）
+  - 主標題第二行（上限 20 字，如「讓你的生活更精彩」）
+- AC-BAN3：「儲存橫幅設定」按鈕，送出後更新 `stores.banner_badge`、`stores.banner_title_1`、`stores.banner_title_2`
+- AC-BAN4：儲存成功顯示 Toast「橫幅設定已更新」
+- AC-BAN5：欄位為選填；若留空，前台使用預設文字（維持向下相容）
+
+**前台 — 首頁橫幅顯示**
+
+- AC-BAN6：`/store/{slug}` 桌面版 hero banner 從 `stores` 表讀取 badge / title 欄位顯示
+- AC-BAN7：欄位有值時顯示商家設定的文字；欄位為 NULL 時顯示預設文字（「★ 本週精選商品」/ 「精選好物」/ 「讓你的生活更精彩」）
+- AC-BAN8：橫幅梯形 / 漸層背景維持現有設計，不隨設定改變
+
+**測試完成標準**
+
+```
+單元測試（vitest）：
+□ PATCH /api/store/[id] — 更新 banner_badge / banner_title_1 / banner_title_2 → 200
+□ GET /api/store-products — 回傳的 store 資料包含 banner 欄位
+
+E2E 測試（playwright）：
+□ 後台賣場設定 → 修改 badge 文字 → 儲存 → Toast 成功 → 前台橫幅顯示新文字
+□ 欄位清空後儲存 → 前台顯示預設文字
+```
+
+**技術驗收標準**
+
+- [ ] `stores` 表新增 3 個欄位（`DEFAULT NULL`，不影響現有資料）
+- [ ] 前台首頁 `page.tsx` 改從 API 回傳的 store 資料讀取 banner 文字，移除 hardcode 字串
+
+---
+
+### US-NEW：商家公告管理 + 前台通知鈴鐺
+
+> ℹ️ 目前 `StoreHeader.tsx` 右上角通知鈴鐺是純 UI 裝飾，無任何功能。
+> 此 US 建立後台公告 CRUD、前台鈴鐺顯示未讀數量，並讓顧客可查看公告清單。
+> 後台位置：新增 `/admin/announcements` 獨立頁面 + Sidebar 項目。
+> **設計決策：不實作逐人已讀追蹤**。鈴鐺顯示「目前發布中公告筆數」，全體顧客看到相同數字，
+> 顧客瀏覽完公告後鈴鐺消失（用 localStorage 記錄最後看到的時間，不需要後端）。
+
+```
+As a 商家,
+I want to 在後台建立並管理公告，讓所有顧客在前台通知鈴鐺看到重要訊息,
+So that 我能快速廣播到貨通知、促銷活動、或賣場規則給所有顧客。
+```
+
+**Acceptance Criteria：**
+
+**後台 — 公告管理（`/admin/announcements`）**
+
+- AC-ANN1：後台 Sidebar 新增「公告管理」項目，位置在「許願池」與「顧客管理」之間
+- AC-ANN2：`/admin/announcements` 顯示此賣場所有公告，依 `created_at` 倒序，欄位：標題、類型 badge、狀態（發布中 / 未發布 / 已到期）、建立時間、到期時間
+- AC-ANN3：頂部「新增公告」按鈕 → 進入表單（或 inline 展開）
+- AC-ANN4：公告表單欄位：
+  - 標題（必填，上限 60 字）
+  - 內容（必填，上限 300 字，純文字）
+  - 類型（單選：📢 一般通知 / 🎉 促銷活動 / ⚠️ 重要公告）
+  - 是否立即發布（toggle，預設開啟）
+  - 到期日（選填；到期後自動不顯示在前台）
+- AC-ANN5：送出後建立 `store_announcements` 一筆 → Toast「公告已建立」
+- AC-ANN6：發布中公告可切換「下架」（`is_active = false`）；未發布可切換「上架」
+- AC-ANN7：可刪除公告 → 確認 dialog「確定刪除此公告？」→ 確認後刪除
+- AC-ANN8：Sidebar 的「公告管理」項目顯示目前「發布中」公告數量（小 badge）
+
+**前台 — 通知鈴鐺**
+
+- AC-ANN9：`StoreHeader.tsx` 鈴鐺按鈕：若有「發布中且未到期」公告，顯示紅點 badge（不顯示數字，只顯示有 / 無）
+- AC-ANN10：顧客首次進入賣場或有新公告時，鈴鐺有紅點；顧客點擊鈴鐺後紅點消失（用 `localStorage['ruei-ann-seen-{slug}']` 記錄最後查看時間，若最後查看後有新公告則重新顯示）
+- AC-ANN11：點擊鈴鐺 → 在 Header 下方展開公告列表 Popover（或導至 `/store/{slug}/announcements` 頁面）
+- AC-ANN12：公告列表顯示：類型 icon + 標題 + 日期；點擊可展開查看完整內容
+- AC-ANN13：無發布中公告時，鈴鐺無紅點；點擊顯示「目前沒有新消息」
+
+**測試完成標準**
+
+```
+單元測試（vitest）：
+□ GET /api/admin/announcements — 商家已登入 → 回傳此賣場所有公告
+□ POST /api/admin/announcements — 建立公告，is_active = true → 201
+□ PATCH /api/admin/announcements/[id] — 更新 is_active / expires_at → 200
+□ DELETE /api/admin/announcements/[id] — 公告不屬於此賣場 → 404
+□ GET /api/store/[slug]/announcements — 只回傳 is_active = true 且未到期的公告
+
+E2E 測試（playwright）：
+□ 後台新增公告 → 填標題 / 內容 / 類型 → 建立 → 公告出現在列表，狀態「發布中」
+□ 公告建立後，前台鈴鐺出現紅點
+□ 點擊鈴鐺 → 公告列表顯示 → 紅點消失
+□ 後台下架公告 → 前台鈴鐺紅點消失（無其他發布中公告）
+```
+
+**技術驗收標準**
+
+- [ ] 新增 `store_announcements` 表（詳見 SDD delta）
+- [ ] RLS：商家可讀 / 寫自己賣場的公告；顧客只能讀取 `is_active = true` 且未到期的公告
+- [ ] 前台已讀狀態用 `localStorage`，不需後端 DB（避免引入 `announcement_reads` 表的複雜度）
+- [ ] 公告 API 過濾邏輯：`is_active = true AND (expires_at IS NULL OR expires_at > NOW())`
+
+---
+
 ### US-NEW：顧客個人檔案編輯（草稿）
 
 > ℹ️ 2026-06-02 Cheryl 提出，待確認優先順序。
@@ -420,6 +539,8 @@ So that 我不需要每次重新輸入姓名、電話、地址。
 - 規格庫存管理（US-NEW-INV）— 依賴商品詳細頁重建
 - 許願池（US-22/23，從 Sprint 4 移入）— 依賴商品詳細頁重建
 - 現場快速上架（US-24）— 已確認為 Sprint 5
+- **賣場橫幅設定（US-NEW-BANNER）** — 讓商家自訂首頁英雄橫幅文字
+- **商家公告管理（US-NEW-ANNOUNCE）** — 後台 CRUD + 前台通知鈴鐺接通
 
 ### 待 Cheryl 確認優先序
 
