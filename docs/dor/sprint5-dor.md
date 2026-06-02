@@ -1,42 +1,169 @@
 # Sprint 5 — Definition of Ready (DoR)
 
-**版本：** v0.1 草稿
+**版本：** v0.2
 **建立日期：** 2026-05-24
-**Sprint 目標：** TBD（待 Sprint 4 完成後與 Cheryl 確認）
+**更新日期：** 2026-06-02（Sprint 4 Retro 補完）
+**Sprint 目標：** 訂單後台 UX 升級、商品詳細頁重建、庫存管理、許願池、快速上架
 
-> ⚠️ **此文件為草稿**，僅記錄已確認的功能方向。正式 DoR 待 Sprint 4 merge 後補完。
-> Sprint 5 開始前，所有 Acceptance Criteria 必須經 Cheryl 確認才能開發。
-
----
-
-## 背景（暫定）
-
-Sprint 4 完成了訂單完整閉環（下單→採買→到貨→結單→出貨）。
-Sprint 5 的核心方向：
-
-1. **訂單管理 UX 升級**（B-Light 商品視圖 + 批次操作）— 讓商家操作更貼近真實代購流程
-2. **顧客管理頁重設計**（新設計系統風格）— 套用 Sprint 4 設計 tokens
-3. **現場連線區域**（快速上架）— 商家現場擺攤 / 直播時快速建立商品
-4. **自動 / 手動配單升級**（Sprint 4 Out of Scope 延後項目）
-5. **許願池**（US-22/23，若 Sprint 4 未完成則移至此）
-6. TBD — 待 Sprint 4 Retro 後補充
+> ⚠️ **此文件仍為草稿**，多數 US 的 Acceptance Criteria 待 Cheryl 確認後才能開發。
+> Sprint 5 正式開始前必須補完所有 AC 並逐一確認。
+> **Retro 紀錄：** [km/decisions/sprint4-retro.md](../../km/decisions/sprint4-retro.md)
 
 ---
 
-## Features 與執行順序（草稿）
+## 背景
+
+Sprint 4 完成了訂單完整閉環（下單→採買→到貨→結單→出貨）並追加了 Design System 重建。
+Sprint 5 的核心方向（依 Cheryl 優先序排列）：
+
+1. **後台訂單系統 UX 升級**（B-Light 商品視圖 + 批次操作 + 顧客訂單展開）— 商家日常使用影響最大
+2. **前台商品詳細頁重建**（按 store-product-detail.html mockup）— 補上現貨/預購狀態顯示，為庫存 UI 鋪路
+3. **顧客管理後台重設計** — 視覺統一，套用設計系統
+4. **規格庫存管理**（現貨/預購雙模式）— 依賴商品詳細頁已重建
+5. **許願池**（US-22/23，從 Sprint 4 移入）— 依賴商品詳細頁有 wishlist nudge
+6. **現場快速上架**（US-24）— 商家新工具，獨立功能
+7. **輕量收尾**（顧客個人檔案編輯、結單資料預填）— 隨時可插入
+8. **自動配單升級**（US-25）— 最複雜，放最後
+
+---
+
+## Features 與執行順序（建議）
+
+> 依照「優先序 × 依賴關係」排列，帶 ⚠️ 者表示有前置依賴。
 
 ```
-sprint5-order-ux         訂單管理 UX 升級（B-Light 商品視圖 + 批次操作）
-sprint5-customers-ui     顧客管理頁重設計
-sprint5-quick-listing    現場連線區域 — 快速上架
-sprint5-wishlist         許願池（若 Sprint 4 未完成）
-sprint5-auto-alloc       自動配單升級版（依賴：Sprint 4 allocated 流程）
-sprint5-dashboard        商家配貨 Dashboard
+# ── 高優先（Cheryl 確認：優先序 1~3）──────────────────────
+sprint5-order-ux         訂單管理 UX 升級
+                         （AC-18.12 顧客訂單展開 + B-Light 商品分組視圖 + 批次操作）
+
+sprint5-product-detail   前台商品詳細頁重建
+                         （按 store-product-detail.html mockup 全頁重建，移除舊 desktop dual-column）
+
+sprint5-customers-ui     顧客管理後台重設計
+                         （待 Cheryl 提供 mockup 後確認 AC）
+
+# ── 中優先（依賴 product-detail 完成）───────────────────────
+sprint5-inventory        規格庫存管理                ⚠️ 依賴 sprint5-product-detail
+                         （在重建好的商品詳細頁上疊加庫存 UI）
+
+sprint5-wishlist         許願池 US-22/23             ⚠️ 依賴 sprint5-product-detail
+                         （商品詳細頁底部 wishlist nudge 已完成）
+
+# ── 後段（獨立功能）──────────────────────────────────────────
+sprint5-quick-listing    現場快速上架 US-24
+                         （後台獨立功能，不影響前台）
+
+sprint5-profile          顧客個人檔案編輯 + 結單資料預填
+                         （輕量，可隨時插入任一段）
+
+sprint5-auto-alloc       自動配單升級 US-25          ← 最後執行，邏輯最複雜
 ```
 
 ---
 
 ## User Stories（草稿）
+
+---
+
+### US-NEW：前台商品詳細頁重建
+
+> ℹ️ 設計依據：`docs/design/mockups/store-product-detail.html`
+> 此頁面是規格庫存管理（US-NEW-INV）的前置條件：庫存 UI（售完 badge、剩 N 件）將疊加在重建好的頁面上。
+
+```
+As a 已加入賣場的顧客,
+I want to 在視覺清晰、操作直覺的商品詳細頁瀏覽商品並下單,
+So that 我能快速理解商品資訊並完成下單，不被不必要的元素干擾。
+```
+
+**Acceptance Criteria：**
+
+**頁面整體結構**
+
+- AC-PD1：移除現有 desktop dual-column layout（左圖右資訊），改為 mobile-first 單欄設計；桌面以最大寬 420px 置中顯示（模擬手機 frame）
+- AC-PD2：移除現有的「加入收藏」愛心按鈕（已完成，2026-06-02）
+
+**浮動頂部導航**
+
+- AC-PD3：頁面頂部浮動導航列（`bg-white/90 backdrop-blur`），左側返回按鈕（pill 形白色半透明 + card-line）、右側分享按鈕（同樣式）
+- AC-PD4：分享按鈕點擊呼叫 `navigator.share`（若瀏覽器支援）；不支援時靜默不處理
+
+**圖片輪播**
+
+- AC-PD5：圖片區改為全寬 scroll-snap 輪播（`overflow-x: auto; scroll-snap-type: x mandatory`），支援滑動切換；無左右箭頭
+- AC-PD6：輪播右下角顯示「{目前}/{ 總張數}」計數器（`font-mono`，`bg-black/45 backdrop-blur`）
+- AC-PD7：dot 指示器顯示於輪播底部置中，當前項目 dot 拉長為 18px，其餘 6px
+- AC-PD8：無圖片時顯示 placeholder 漸層（`ph1` 樣式，同 ProductCard）
+
+**商品資訊區**
+
+- AC-PD9：標題區依序：分類 pill（`bg-sunken text-fg-muted`）→ 商品名稱（`text-xl font-display font-bold`）→ 商品描述（`text-[13px] text-fg-muted`，預設展開，不折疊）→ 售價（`text-3xl font-display font-bold text-primary`，前綴 NT$ 用 `font-mono text-xs`）
+- AC-PD10：售價在頁面載入後即顯示（若有規格顯示價格區間，選定規格後更新為單一價格）；不再等待選規格後才出現
+
+**購買狀態提示**
+
+- AC-PD11：商品資訊下方顯示「預購/現貨」狀態卡片（`bg-[#FBEBD2] border-[#F0D9A8] rounded-xl`）：
+  - 預購：卡車 icon（橘色）+ 「預購商品」+ `PRE-ORDER` badge + 說明文字「下單後由商家向廠商調貨，到貨後通知你出貨」
+  - 現貨（`stock_qty > 0`）：Sprint 5 庫存 US 實作後補上（此處先顯示預購樣式）
+- AC-PD12：此區塊於 Sprint 5 庫存管理（US-NEW-INV）完成後替換為規格選擇 + 售完 badge（AC-INV9~11）
+
+**數量選擇器（重新設計）**
+
+- AC-PD13：數量選擇器改為 pill 按鈕樣式：「-」使用 `bg-surface card-line-strong`，「+」使用 `bg-primary text-white shadow-pink`；數量數字顯示於兩按鈕中間（`font-display font-bold text-lg`）
+- AC-PD14：「-」按鈕在數量為 1 時 disabled；數量上限 99
+
+**資訊列卡片**
+
+- AC-PD15：數量選擇器下方顯示圓角卡片（`bg-surface card-line`），包含兩列 info row：
+  - 「✓ 驗貨保證」（綠色圓形核取圖示）+ 說明文字
+  - 「下單即購買」（橘色盾牌圖示）+ 「無購物車，送出即向商家登記，請確認規格」
+
+**你可能還會喜歡**
+
+- AC-PD16：商品資訊下方顯示「你可能還會喜歡」區塊，從同賣場其他商品（`status = 'active'`，排除當前商品）隨機取最多 4 件
+- AC-PD17：相關商品以 2×2 grid 呈現，每張卡片與 ProductCard 樣式一致（圓角、售價、分類 pill），點擊跳至對應商品詳細頁
+- AC-PD18：同賣場無其他商品時省略此區塊
+- AC-PD19：相關商品由 `/api/store-products?slug={slug}&exclude={id}&limit=4` 取得（擴充現有 API，加入 `exclude` 與 `limit` 參數）
+
+**許願池引導卡**
+
+- AC-PD20：相關商品區塊下方顯示許願池 nudge 卡片（紫色系漸層背景），連結至 `/store/{slug}/wishlist`；點擊進入許願池
+
+**固定底部 CTA**
+
+- AC-PD21：底部固定列（`bg-surface/95 backdrop-blur-md`）顯示「立即下單」按鈕（`flex-1 rounded-pill bg-primary`）；按鈕右側以「`·` NT$ {價格}」顯示已選規格價格，未選規格時不顯示價格
+- AC-PD22：有規格未選時「立即下單」按鈕 disabled，底部列顯示「請先選擇規格」提示
+
+**下單確認 Bottom Sheet（取代 Modal）**
+
+- AC-PD23：點擊「立即下單」開啟 bottom sheet（從底部滑入動畫），不再使用置中 Modal
+- AC-PD24：Bottom sheet 頂部拖曳把手（`w-10 h-1.5 rounded-pill bg-line-strong mx-auto`），點擊把手或遮罩關閉
+- AC-PD25：Bottom sheet 內容依序：商品摘要（縮圖 + 名稱 + 預購 badge）→ 價格明細列（單價、數量、小計）→「確認下單」按鈕
+- AC-PD26：下單成功後顯示 success overlay（置中 modal）：✓ 圖示 + 「下單成功 ✿」+ 說明文字 + 兩個 CTA（「繼續逛」導回商品列表、「看訂單」導至訂單頁）
+
+**測試完成標準**
+
+```
+單元測試（vitest）：
+□ GET /api/store-products?slug=X&exclude=Y&limit=4 — 回傳排除指定商品的其他商品，上限 4 件
+□ GET /api/store-products?slug=X&exclude=Y&limit=4 — 無其他商品時回傳空陣列
+□ 現有下單邏輯（POST /api/orders）不受頁面重建影響
+
+E2E 測試（playwright）：
+□ 進入商品詳細頁 → 圖片輪播顯示，滑動可切換，counter 更新
+□ 有規格商品：未選規格 → 下單按鈕 disabled → 選規格 → 按鈕 enabled，底部列顯示價格
+□ 無規格商品：直接點「立即下單」→ bottom sheet 開啟
+□ Bottom sheet：顯示商品摘要 + 價格明細 → 點「確認下單」→ success overlay 出現
+□ Success overlay：點「看訂單」→ 導至 /store/{slug}/orders
+□ 「你可能還會喜歡」顯示最多 4 件同賣場其他商品
+□ 許願池 nudge 點擊導至 /store/{slug}/wishlist
+```
+
+**技術驗收標準**
+
+- 現有下單 API（`POST /api/orders`）邏輯不變，只改前端頁面結構
+- 相關商品 API 擴充為可選參數（`exclude`、`limit`），不影響現有呼叫方
+- Bottom sheet 使用 CSS animation（`translateY`），不引入新動畫 library
 
 ---
 
@@ -100,19 +227,19 @@ I want to 以商品為主軸查看待採買訂單，並能批次更新多筆訂�
 So that 我的操作流程貼近真實代購採買習慣（整批訂、整批到貨、整批出貨）。
 ```
 
-**Acceptance Criteria（草稿，待 Cheryl 確認）：**
+**Acceptance Criteria：**
 
 **B-Light：待採買 / 已訂購 商品分組視圖**
 
 - AC-B1：待採買 Tab 新增「依商品分組」切換（預設為商品列表，可切換成訂單列表）
 - AC-B2：依商品分組視圖顯示：供應商 → 商品 → 訂購顧客清單（姓名 + 數量），每組商品顯示總需求量
-- AC-B3：每個商品群組右側提供「部分勾選或全部勾選標記已訂購」按鈕，點擊後批次更新該商品所有相關訂單 `status → ordered`
+- AC-B3：每個商品群組左側提供「部分勾選或全部勾選標記已訂購」按鈕，點擊後批次更新該商品所有相關訂單 `status → ordered`
 - AC-B4：已訂購 Tab 同樣提供「依商品分組」視圖，每組提供「部分勾選或全部標記已到貨（已配單）」按鈕
 - AC-B5：批次更新成功顯示 Toast「已更新 N 筆訂單為已訂購/已配單」
 
 **批次勾選出貨（已結單 Tab）**
 
-- AC-B6：已結單 Tab 每列訂單前加入 checkbox，可多選
+- AC-B6：已結單 Tab 每列訂單右側加入 checkbox，可多選
 - AC-B7：有勾選時，底部浮現 batch action bar：「已選 N 筆 [ 確認出貨 ] [ 取消選取 ]」
 - AC-B8：點擊「確認出貨」→ 填入物流商 + 單號（共用同一筆適用所有選取訂單）→ 批次更新 `status → shipped`
 - AC-B9：新增 `PATCH /api/admin/orders/batch` endpoint 接受 `orderIds[]` 批次狀態更新
@@ -125,7 +252,7 @@ So that 我的操作流程貼近真實代購採買習慣（整批訂、整批到
 **AC-18.12：顧客訂單展開（從 Sprint 4 移入，2026-06-02 確認）**
 
 - AC-18.12a：後台顧客 Tab 的 CustomerCard 可點擊展開，inline 顯示該顧客在此賣場的所有訂單（含未到貨灰色項目）
-- AC-18.12b：展開後顯示訂單狀態、商品名稱、金額；已到貨（allocated）訂單前方有 checkbox
+- AC-18.12b：展開後顯示訂單狀態、商品名稱、金額；已到貨（allocated）訂單右側有 checkbox
 - AC-18.12c：勾選一或多筆 allocated 訂單後，提供「代客結單」按鈕，點擊後導向 `/admin/orders/{id}/checkout`（本 Sprint 先支援單筆）
 - AC-18.12d：未到貨訂單（pending_purchase / ordered）以灰色呈現，checkbox disabled
 
@@ -133,7 +260,7 @@ So that 我的操作流程貼近真實代購採買習慣（整批訂、整批到
 
 ### US-NEW：顧客管理頁重設計
 
-> ℹ️ 現有顧客管理頁（待審核 + 會員名單）使用舊樣式，需套用設計系統。
+> ℹ️ 現有顧客管理頁（待審核 + 會員名單）使用舊樣式，需套用設計系統並參考 design/mockups/admin-customers。
 
 ```
 As a 商家,
@@ -141,7 +268,7 @@ I want to 在風格一致的介面中管理顧客審核和會員名單,
 So that 後台視覺統一，操作體驗更流暢。
 ```
 
-**Acceptance Criteria（草稿，待 Cheryl 提供 mockup 後確認）：**
+**Acceptance Criteria：**
 
 - AC-C1：待審核 Tab 使用設計系統卡片元件，顯示顧客姓名、LINE ID、申請時間、邀請來源
 - AC-C2：待審核卡片提供「通過」/ 「拒絕」按鈕，樣式符合 forest 主題
@@ -234,8 +361,6 @@ I want to 系統自動依下單時間將到貨商品分配給對應顧客,
 So that 我不需要手動逐一比對哪位顧客應該拿到哪件商品。
 ```
 
-**待確認項目：**
-
 - 配單邏輯：商家可手動指定配單，若沒先做手動配單直接點選自動配單，就預設先進先出（FIFO）
 - 同一商品多顧客下單時的配單順序
 - Acceptance Criteria 待 Sprint 4 完成後補充
@@ -287,10 +412,18 @@ So that 我不需要每次重新輸入姓名、電話、地址。
 
 ## 範圍邊界（草稿）
 
-### 可能 In Scope（待確認）
+### In Scope（已確認）
 
+- 訂單管理 UX 升級（AC-18.12 + B-Light + 批次操作）— 優先序 1
+- 前台商品詳細頁重建（US-NEW-PD）— 優先序 2，規格庫存 UI 前置條件
+- 顧客管理後台重設計（US-NEW-CUI）— 優先序 3
+- 規格庫存管理（US-NEW-INV）— 依賴商品詳細頁重建
+- 許願池（US-22/23，從 Sprint 4 移入）— 依賴商品詳細頁重建
 - 現場快速上架（US-24）— 已確認為 Sprint 5
-- 自動配單升級（US-25）
+
+### 待 Cheryl 確認優先序
+
+- 自動配單升級（US-25）— 複雜度高，確認是否同 Sprint
 - 顧客個人檔案編輯（US-NEW-PROF）
 - 結單資料預填（US-NEW-FILL）
 
