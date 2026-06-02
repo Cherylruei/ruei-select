@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { use, useCallback, useEffect, useState, useTransition } from 'react'
 import type { AdminOrder, OrderStatus } from '@/types'
 import { Button } from '@/components/ui/Button'
@@ -55,6 +56,7 @@ type ShippingVendor = (typeof SHIPPING_VENDORS)[number]
 
 export default function OrderDetailClient({ params }: { params: Promise<{ id: string }> }) {
   const { id: orderId } = use(params)
+  const router = useRouter()
   const [order, setOrder] = useState<AdminOrder | null>(null)
   const [loading, setLoading] = useState(true)
   const [showConfirm, setShowConfirm] = useState(false)
@@ -340,7 +342,13 @@ export default function OrderDetailClient({ params }: { params: Promise<{ id: st
           <div className='flex gap-3'>
             <Button
               variant='secondary'
-              onClick={() => setShowConfirm(true)}
+              onClick={() => {
+                if (nextStep.status === 'settled') {
+                  router.push(`/admin/orders/${orderId}/checkout`)
+                } else {
+                  setShowConfirm(true)
+                }
+              }}
               disabled={isPending}
               className='flex-1'
             >

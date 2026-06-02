@@ -72,8 +72,8 @@ type AdminOrderStatus =
   | 'completed'
   | 'cancelled'
 
-/** 顧客前台顯示狀態（已到貨 = allocated） */
-type CustomerOrderDisplayStatus = '已訂購' | '已到貨' | '已出貨' | '已完成' | '已取消'
+/** 顧客前台顯示狀態 */
+type CustomerOrderDisplayStatus = '已下單' | '已到貨' | '已結單' | '已出貨' | '已完成' | '已取消'
 
 type OrderStatusValue = AdminOrderStatus | CustomerOrderDisplayStatus
 
@@ -90,8 +90,9 @@ const STATUS_MAP: Record<OrderStatusValue, { tone: BadgeTone; label?: string; do
     // cancelled：neutral 底色 + danger 紅點，視覺上「靜止但警示」
     cancelled: { tone: 'neutral', label: '已取消', dotClass: 'bg-danger' },
     // Customer display keys (label = key itself)
-    已訂購: { tone: 'info' },
+    已下單: { tone: 'info' },
     已到貨: { tone: 'success' },
+    已結單: { tone: 'pink' },
     已出貨: { tone: 'earth' },
     已完成: { tone: 'neutral' },
     已取消: { tone: 'neutral', dotClass: 'bg-danger' },

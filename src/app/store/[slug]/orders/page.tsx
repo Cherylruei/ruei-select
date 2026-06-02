@@ -42,7 +42,6 @@ export default function OrdersPage() {
   const [pageState, setPageState] = useState<PageState>('loading')
   const [filterValue, setFilterValue] = useState<OrderFilterValue>('all')
   const [selectedSettleIds, setSelectedSettleIds] = useState<Set<string>>(new Set())
-  const [refreshKey, setRefreshKey] = useState(0)
 
   useEffect(() => {
     if (!slug) return
@@ -63,9 +62,7 @@ export default function OrdersPage() {
         }
         const data = (await res.json()) as { orders: CustomerOrder[] }
         setOrders(data.orders)
-        const settleIds = data.orders
-          .filter((o) => o.status === 'allocated' || o.status === 'settled')
-          .map((o) => o.id)
+        const settleIds = data.orders.filter((o) => o.status === 'allocated').map((o) => o.id)
         setSelectedSettleIds(new Set(settleIds))
         setPageState(data.orders.length === 0 ? 'empty' : 'ready')
       } catch {
@@ -74,36 +71,18 @@ export default function OrdersPage() {
     }
 
     load()
-  }, [slug, refreshKey])
-
-  const handleCancelOrder = async (orderId: string) => {
-    let token = 'dev-mock-token'
-    if (process.env.NODE_ENV !== 'development') {
-      const liff = await initLiff()
-      token = liff.getAccessToken() ?? ''
-    }
-    const res = await fetch(`/api/orders/${orderId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-      body: JSON.stringify({ storeSlug: slug }),
-    })
-    if (!res.ok) {
-      const json = (await res.json()) as { error?: string }
-      throw new Error(json.error ?? '取消失敗')
-    }
-    setRefreshKey((k) => k + 1)
-  }
+  }, [slug])
 
   // ── 統計 ──────────────────────────────────────────────────────────────────
 
   const counts = useMemo(
     () => ({
       all: orders.length,
-      ordered: orders.filter((o) => o.status === 'ordered').length,
+      pending: orders.filter((o) => o.status === 'pending_purchase' || o.status === 'ordered')
+        .length,
+      canSettle: orders.filter((o) => o.status === 'allocated').length,
+      settled: orders.filter((o) => o.status === 'settled').length,
       shipped: orders.filter((o) => o.status === 'shipped').length,
-      canSettle: orders.filter((o) => o.status === 'allocated' || o.status === 'settled').length,
-      done: orders.filter((o) => o.status === 'completed' || o.status === 'shipped').length,
-      cancelled: orders.filter((o) => o.status === 'cancelled').length,
       completed: orders.filter((o) => o.status === 'completed').length,
     }),
     [orders]
@@ -112,44 +91,41 @@ export default function OrdersPage() {
   const filterCounts = useMemo(
     (): Record<OrderFilterValue, number> => ({
       all: orders.length,
-      ordered: counts.ordered,
-      can_settle: counts.canSettle,
+      pending: counts.pending,
+      allocated: counts.canSettle,
+      settled: counts.settled,
       shipped: counts.shipped,
       completed: counts.completed,
-      cancelled: counts.cancelled,
     }),
     [orders, counts]
   )
 
   // ── 篩選 ──────────────────────────────────────────────────────────────────
 
-  const settleOrders = useMemo(
-    () => orders.filter((o) => o.status === 'allocated' || o.status === 'settled'),
-    [orders]
-  )
+  const settleOrders = useMemo(() => orders.filter((o) => o.status === 'allocated'), [orders])
 
   const otherOrders = useMemo(() => {
     const settleIds = new Set(settleOrders.map((o) => o.id))
     switch (filterValue) {
       case 'all':
         return orders.filter((o) => !settleIds.has(o.id))
-      case 'can_settle':
+      case 'allocated':
         return []
-      case 'ordered':
-        return orders.filter((o) => o.status === 'ordered')
+      case 'pending':
+        return orders.filter((o) => o.status === 'pending_purchase' || o.status === 'ordered')
+      case 'settled':
+        return orders.filter((o) => o.status === 'settled')
       case 'shipped':
         return orders.filter((o) => o.status === 'shipped')
       case 'completed':
         return orders.filter((o) => o.status === 'completed')
-      case 'cancelled':
-        return orders.filter((o) => o.status === 'cancelled')
       default:
         return []
     }
   }, [orders, filterValue, settleOrders])
 
   const showSettleCard =
-    settleOrders.length > 0 && (filterValue === 'all' || filterValue === 'can_settle')
+    settleOrders.length > 0 && (filterValue === 'all' || filterValue === 'allocated')
 
   // ── 結單小計 ──────────────────────────────────────────────────────────────
 
@@ -206,7 +182,13 @@ export default function OrdersPage() {
         style={{ borderColor: '#f7e5d8' }}
       >
         <div className='px-5 pt-3 pb-3'>
-          <MobileStatsRow counts={counts} />
+          <MobileStatsRow
+            counts={{
+              pending: counts.pending,
+              canSettle: counts.canSettle,
+              shipped: counts.shipped,
+            }}
+          />
         </div>
         <div className='px-5 pb-3'>
           <OrderStatusFilter value={filterValue} onChange={setFilterValue} counts={filterCounts} />
@@ -238,9 +220,9 @@ export default function OrdersPage() {
           )}
         </div>
 
-        {/* Desktop 5-segment stats bar */}
+        {/* Desktop 6-segment stats bar：全部 → 已下單 → 已到貨 → 已結單 → 已出貨 → 已完成 */}
         <div
-          className='grid grid-cols-5 bg-surface rounded-xl shadow-sm overflow-hidden'
+          className='grid grid-cols-6 bg-surface rounded-xl shadow-sm mb-8 overflow-hidden'
           style={{ border: '1px solid #f0d9cb' }}
         >
           {[
@@ -252,30 +234,37 @@ export default function OrdersPage() {
               filter: 'all' as const,
             },
             {
-              label: '已訂購',
-              value: counts.ordered,
+              label: '已下單',
+              value: counts.pending,
               color: '#4E94CE',
-              active: filterValue === 'ordered',
-              filter: 'ordered' as const,
+              active: filterValue === 'pending',
+              filter: 'pending' as const,
+            },
+            {
+              label: '已到貨',
+              value: counts.canSettle,
+              color: '#D94466',
+              active: filterValue === 'allocated',
+              filter: 'allocated' as const,
+            },
+            {
+              label: '已結單',
+              value: counts.settled,
+              color: '#5E9763',
+              active: filterValue === 'settled',
+              filter: 'settled' as const,
             },
             {
               label: '已出貨',
               value: counts.shipped,
-              color: '#5E9763',
+              color: '#7A5A36',
               active: filterValue === 'shipped',
               filter: 'shipped' as const,
             },
             {
-              label: '可結單',
-              value: counts.canSettle,
-              color: '#D94466',
-              active: filterValue === 'can_settle',
-              filter: 'can_settle' as const,
-            },
-            {
               label: '已完成',
               value: counts.completed,
-              color: '#5E9763',
+              color: undefined,
               active: filterValue === 'completed',
               filter: 'completed' as const,
             },
@@ -285,7 +274,7 @@ export default function OrdersPage() {
               onClick={() => setFilterValue(seg.filter)}
               className={[
                 'px-5 py-4 text-left border-r transition-colors',
-                i === 4 ? 'border-r-0' : '',
+                i === 5 ? 'border-r-0' : '',
                 seg.active ? 'bg-primary-bg/50' : 'hover:bg-primary-bg/20',
               ].join(' ')}
               style={{ borderColor: '#f7e5d8', position: 'relative' }}
@@ -295,7 +284,7 @@ export default function OrdersPage() {
               )}
               <div
                 className='font-mono text-[10px] text-fg-subtle tracking-wider uppercase'
-                style={seg.color && seg.label === '可結單' ? { color: '#B82F50' } : undefined}
+                style={seg.label === '已到貨' ? { color: '#B82F50' } : undefined}
               >
                 {seg.label}
               </div>
@@ -394,7 +383,7 @@ export default function OrdersPage() {
                       onClick={() => toggleSettle(order.id)}
                       aria-label={checked ? '取消選取' : '選取'}
                       className={[
-                        'w-5.5 h-5.5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
+                        'w-6 h-6 rounded-full border-2 flex items-center justify-center shrink-0 transition-all',
                         checked ? 'bg-primary border-primary' : 'bg-white border-line-strong',
                       ].join(' ')}
                     >
@@ -497,11 +486,14 @@ export default function OrdersPage() {
                 }
                 aria-disabled={selectedSettleIds.size === 0}
                 className={[
-                  'mt-auto inline-flex items-center justify-center gap-1.5 h-12 px-5 rounded-full font-display font-bold text-sm transition',
+                  'mt-auto inline-flex items-center justify-center gap-1.5 h-12 px-5 rounded-pill font-display font-bold text-sm shadow-sm transition',
                   selectedSettleIds.size > 0
-                    ? 'bg-white text-primary hover:bg-white/95 active:scale-[.98]'
-                    : 'bg-white/30 text-white/60 cursor-not-allowed',
+                    ? 'bg-white hover:bg-white/95 active:scale-[.98]'
+                    : 'bg-white/30 cursor-not-allowed',
                 ].join(' ')}
+                style={{
+                  color: selectedSettleIds.size > 0 ? 'var(--c-primary)' : 'rgba(255,255,255,0.6)',
+                }}
               >
                 前往結單 → 填寫物流
                 <svg
@@ -519,7 +511,7 @@ export default function OrdersPage() {
               </Link>
               <button
                 onClick={deselectAll}
-                className='mt-2 inline-flex items-center justify-center gap-1.5 h-9 rounded-full font-display font-semibold text-xs text-white'
+                className='mt-2 inline-flex items-center justify-center gap-1.5 h-9 rounded-pill font-display font-semibold text-xs text-white'
                 style={{
                   background: 'rgba(255,255,255,0.15)',
                   border: '1px solid rgba(255,255,255,0.32)',
@@ -532,21 +524,15 @@ export default function OrdersPage() {
         </div>
       )}
 
-      {/* ── Desktop: 其他訂單 heading + filter row（lg only）──────── */}
-      <div className='hidden lg:flex items-center gap-3 px-8 pt-8 pb-3'>
-        <h2 className='font-display font-bold text-lg whitespace-nowrap mr-2'>其他訂單</h2>
-        <OrderStatusFilter value={filterValue} onChange={setFilterValue} counts={filterCounts} />
-        <span
-          className='flex-1 h-px'
-          style={{ background: 'linear-gradient(to right, #e6c7b4, transparent)' }}
-        />
-        <button
-          className='inline-flex items-center gap-1 h-8 px-3.5 rounded-full bg-surface font-display font-semibold text-xs shrink-0'
-          style={{ border: '1px solid #f0d9cb', color: 'var(--fg-muted)' }}
-        >
-          時間 ↓
-        </button>
-      </div>
+      {/* ── Desktop: 其他訂單分隔（僅有其他訂單時顯示細分隔線）──────── */}
+      {otherOrders.length > 0 && showSettleCard && (
+        <div className='hidden lg:block px-8 pt-6 pb-0'>
+          <div
+            className='h-px'
+            style={{ background: 'linear-gradient(to right, #e6c7b4 0%, transparent 70%)' }}
+          />
+        </div>
+      )}
 
       {/* ── Mobile content + Desktop card grid ─────────────────── */}
       <div className='px-5 pt-3 lg:px-8 lg:pt-0'>
@@ -596,25 +582,9 @@ export default function OrdersPage() {
         {/* 其他訂單卡片 */}
         {otherOrders.length > 0 && (
           <div className='mt-4 lg:mt-0'>
-            {filterValue === 'all' && showSettleCard && (
-              <div className='flex items-center gap-3 pb-1 px-1 mb-3 lg:hidden'>
-                <span className='font-display font-bold text-xs tracking-wider text-fg-muted uppercase whitespace-nowrap'>
-                  其他訂單
-                </span>
-                <span
-                  className='flex-1 h-px'
-                  style={{ background: 'linear-gradient(to right, #e6c7b4, transparent)' }}
-                />
-              </div>
-            )}
-            <div className='space-y-3 lg:space-y-0 lg:grid lg:grid-cols-2 lg:gap-4'>
+            <div className='space-y-3'>
               {otherOrders.map((order) => (
-                <OtherOrderCard
-                  key={order.id}
-                  order={order}
-                  slug={slug}
-                  onCancel={handleCancelOrder}
-                />
+                <OtherOrderCard key={order.id} order={order} slug={slug} />
               ))}
             </div>
             <div className='py-6 flex items-center justify-center gap-3'>
@@ -630,7 +600,11 @@ export default function OrdersPage() {
         {/* 篩選後無結果 */}
         {pageState === 'ready' && !showSettleCard && otherOrders.length === 0 && (
           <div className='py-16 text-center'>
-            <p className='text-sm text-fg-muted'>目前沒有符合條件的訂單</p>
+            <p className='text-sm text-fg-muted'>
+              {filterValue === 'all'
+                ? '目前沒有待結單商品，點擊上方欄位查看各狀態訂單'
+                : '目前沒有符合條件的訂單'}
+            </p>
           </div>
         )}
       </div>
@@ -643,7 +617,7 @@ export default function OrdersPage() {
 function MobileStatsRow({
   counts,
 }: {
-  counts: { ordered: number; canSettle: number; shipped: number }
+  counts: { pending: number; canSettle: number; shipped: number }
 }) {
   return (
     <div
@@ -652,9 +626,9 @@ function MobileStatsRow({
     >
       <div className='px-2 py-2.5 text-center border-r' style={{ borderColor: '#f7e5d8' }}>
         <div className='font-display font-bold text-xl leading-none' style={{ color: '#4e94ce' }}>
-          {counts.ordered}
+          {counts.pending}
         </div>
-        <div className='text-[10px] text-fg-muted mt-1 tracking-wider'>已訂購</div>
+        <div className='text-[10px] text-fg-muted mt-1 tracking-wider'>已下單</div>
       </div>
       <div
         className={[
@@ -833,9 +807,10 @@ function MobileSettleCard({
           className={[
             'inline-flex items-center gap-1.5 h-10 px-5 rounded-pill font-display font-bold text-sm transition whitespace-nowrap',
             selectedIds.size > 0
-              ? 'bg-primary text-white shadow-pink hover:bg-primary-hv active:scale-[.97]'
-              : 'bg-ink-200 text-fg-muted cursor-not-allowed pointer-events-none',
+              ? 'bg-primary shadow-pink hover:bg-primary-hv active:scale-[.97]'
+              : 'bg-ink-200 cursor-not-allowed pointer-events-none',
           ].join(' ')}
+          style={{ color: selectedIds.size > 0 ? 'white' : 'var(--fg-muted)' }}
         >
           前往結單
           <svg
@@ -858,42 +833,15 @@ function MobileSettleCard({
 
 // ── 其他訂單卡片 ──────────────────────────────────────────────────────────────
 
-function OtherOrderCard({
-  order,
-  slug,
-  onCancel,
-}: {
-  order: CustomerOrder
-  slug: string
-  onCancel?: (id: string) => Promise<void>
-}) {
+function OtherOrderCard({ order, slug }: { order: CustomerOrder; slug: string }) {
   const item = order.items[0]
   if (!item) return null
-
-  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
-  const [cancelling, setCancelling] = useState(false)
-  const [cancelError, setCancelError] = useState<string | null>(null)
-
-  const handleCancelClick = async () => {
-    if (!onCancel) return
-    setCancelling(true)
-    setCancelError(null)
-    try {
-      await onCancel(order.id)
-    } catch (err) {
-      setCancelError(err instanceof Error ? err.message : '取消失敗，請重試')
-      setCancelling(false)
-      setShowCancelConfirm(false)
-    }
-  }
 
   const total = calcOrderTotal(order)
   const specs = item.variant ? Object.values(item.variant.specs) : []
   const isShipped = order.status === 'shipped' && order.shipping_number
   const hasNote = order.note && (order.status === 'pending_purchase' || order.status === 'ordered')
   const isCompleted = order.status === 'completed'
-  const isOrdered = order.status === 'ordered'
-  const isCancellable = order.status === 'ordered' || order.status === 'pending_purchase'
 
   return (
     <article
@@ -1014,74 +962,15 @@ function OtherOrderCard({
         </div>
       )}
 
-      {/* Action buttons (ordered / completed) */}
-      {(isCancellable || isCompleted) && (
-        <div className='px-4 lg:px-5 pb-3 lg:pb-3.5 flex flex-col items-end gap-2'>
-          {cancelError && (
-            <p className='text-[11px] text-danger w-full text-right'>{cancelError}</p>
-          )}
-          {isCancellable && (
-            <>
-              {showCancelConfirm ? (
-                <div className='flex items-center gap-2'>
-                  <span className='text-xs text-fg-muted'>確定取消？</span>
-                  <button
-                    type='button'
-                    disabled={cancelling}
-                    onClick={handleCancelClick}
-                    className='h-8 px-3.5 rounded-pill bg-danger text-white font-display font-semibold text-xs disabled:opacity-60'
-                  >
-                    {cancelling ? '取消中…' : '確定'}
-                  </button>
-                  <button
-                    type='button'
-                    disabled={cancelling}
-                    onClick={() => setShowCancelConfirm(false)}
-                    className='h-8 px-3.5 rounded-pill bg-surface font-display font-semibold text-xs text-fg-muted hover:text-fg'
-                    style={{ border: '1px solid #f0d9cb' }}
-                  >
-                    返回
-                  </button>
-                </div>
-              ) : (
-                <div className='flex items-center gap-2'>
-                  <button
-                    type='button'
-                    onClick={() => setShowCancelConfirm(true)}
-                    className='h-8 px-3.5 rounded-pill bg-surface font-display font-semibold text-xs text-fg-muted hover:text-fg'
-                    style={{ border: '1px solid #f0d9cb' }}
-                  >
-                    取消訂單
-                  </button>
-                  {isOrdered && (
-                    <button
-                      type='button'
-                      className='h-8 px-3.5 rounded-pill bg-surface font-display font-semibold text-xs text-primary hover:bg-primary-bg'
-                      style={{ border: '1px solid #f0d9cb' }}
-                    >
-                      追蹤進度 →
-                    </button>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-          {isCompleted && (
-            <>
-              <button
-                className='h-8 px-3.5 rounded-pill bg-surface font-display font-semibold text-xs text-fg-muted'
-                style={{ border: '1px solid #f0d9cb' }}
-              >
-                查看收據
-              </button>
-              <Link
-                href={`/store/${slug}`}
-                className='h-8 px-3.5 rounded-pill bg-primary text-white font-display font-bold text-xs shadow-pink inline-flex items-center'
-              >
-                再買一次
-              </Link>
-            </>
-          )}
+      {/* 已完成：快速操作 */}
+      {isCompleted && (
+        <div className='px-4 lg:px-5 pb-3 lg:pb-3.5 flex items-center justify-end gap-2'>
+          <Link
+            href={`/store/${slug}`}
+            className='h-8 px-3.5 rounded-pill bg-primary text-white font-display font-bold text-xs shadow-pink inline-flex items-center'
+          >
+            再買一次
+          </Link>
         </div>
       )}
     </article>
@@ -1166,7 +1055,7 @@ function OrdersSkeleton() {
           ))}
         </div>
         <div className='mt-6 h-52 rounded-2xl bg-ink-100 animate-pulse' />
-        <div className='mt-8 grid grid-cols-2 gap-4'>
+        <div className='mt-8 space-y-3'>
           {[0, 1, 2, 3].map((i) => (
             <div
               key={i}

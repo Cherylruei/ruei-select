@@ -2,20 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createServiceClient } from '@/lib/supabase/server'
 import { verifyStoreAccess } from '@/lib/store-auth'
 
-// Frontend ShippingMethod → DB shipping_method
-const SHIPPING_MAP: Record<string, string> = {
-  pickup: 'pickup',
-  cvs: 'convenience',
-  shopee: 'convenience',
-  home: 'home_delivery',
-}
-
-// Frontend PaymentMethod → DB payment_method
-const PAYMENT_MAP: Record<string, string> = {
-  atm: 'transfer',
-  linepay: 'cash',
-  cod: 'cod',
-}
+// DB enum 值（前台直接傳入，不需 mapping）
+const VALID_SHIPPING = new Set(['pickup', 'convenience', 'maihuobian', 'home_delivery'])
+const VALID_PAYMENT = new Set(['cash', 'transfer', 'cod'])
 
 interface SettlementBody {
   storeSlug: string
@@ -64,10 +53,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const dbShipping = SHIPPING_MAP[shippingMethod]
-    const dbPayment = PAYMENT_MAP[paymentMethod]
-
-    if (!dbShipping || !dbPayment) {
+    if (!VALID_SHIPPING.has(shippingMethod) || !VALID_PAYMENT.has(paymentMethod)) {
       return NextResponse.json({ error: 'Invalid shipping or payment method' }, { status: 400 })
     }
 
@@ -110,21 +96,23 @@ export async function POST(request: NextRequest) {
 
     // 組裝收件地址
     const recipientAddress =
-      shippingMethod === 'home' && city && district && address
+      shippingMethod === 'home_delivery' && city && district && address
         ? `${city}${district}${address}`
         : null
 
     // 取貨門市（超商 / 賣貨便）
     const storeName =
-      shippingMethod === 'cvs' || shippingMethod === 'shopee' ? (cvsBranch ?? null) : null
+      shippingMethod === 'convenience' || shippingMethod === 'maihuobian'
+        ? (cvsBranch ?? null)
+        : null
 
     // INSERT settlements + UPDATE orders.status 逐筆執行
     for (const orderId of orderIds) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: insertErr } = await (db as any).from('settlements').insert({
         order_id: orderId,
-        shipping_method: dbShipping,
-        payment_method: dbPayment,
+        shipping_method: shippingMethod,
+        payment_method: paymentMethod,
         recipient_name: recipientName || null,
         recipient_phone: recipientPhone || null,
         recipient_address: recipientAddress,

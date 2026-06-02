@@ -7,15 +7,20 @@ import Link from 'next/link'
 import { initLiff } from '@/lib/line/liff'
 import type { CustomerOrder } from '@/types'
 
-type ShippingMethod = 'pickup' | 'cvs' | 'shopee' | 'home'
-type PaymentMethod = 'atm' | 'linepay' | 'cod'
+type ShippingMethod = 'pickup' | 'convenience' | 'maihuobian' | 'home_delivery'
+type PaymentMethod = 'cash' | 'transfer' | 'cod'
 
-const SHIPPING_FEE: Record<ShippingMethod, number> = { pickup: 0, cvs: 60, shopee: 60, home: 210 }
+const SHIPPING_FEE: Record<ShippingMethod, number> = {
+  pickup: 0,
+  convenience: 60,
+  maihuobian: 38,
+  home_delivery: 210,
+}
 const SHIPPING_LABEL: Record<ShippingMethod, string> = {
   pickup: '自取',
-  cvs: '超商店到店',
-  shopee: '賣貨便',
-  home: '宅配',
+  convenience: '超商店到店',
+  maihuobian: '賣貨便',
+  home_delivery: '宅配',
 }
 const CITIES = [
   '台北市',
@@ -480,9 +485,15 @@ function ShippingSection({
   method: ShippingMethod
   onChange: (m: ShippingMethod) => void
 }) {
-  const opts = [
+  const opts: {
+    key: ShippingMethod
+    fee: string
+    label: string
+    desc: string
+    icon: React.ReactNode
+  }[] = [
     {
-      key: 'pickup' as const,
+      key: 'pickup',
       fee: '免運',
       label: '自取',
       desc: '約定時間到店面交',
@@ -501,10 +512,10 @@ function ShippingSection({
       ),
     },
     {
-      key: 'cvs' as const,
+      key: 'convenience',
       fee: 'NT$ 60',
       label: '超商店到店',
-      desc: '7-11 店到店',
+      desc: '僅 7-11 · 匯款',
       icon: (
         <svg
           width='18'
@@ -521,10 +532,10 @@ function ShippingSection({
       ),
     },
     {
-      key: 'shopee' as const,
-      fee: 'NT$ 60',
+      key: 'maihuobian',
+      fee: 'NT$ 38',
       label: '賣貨便',
-      desc: '7-11 店到店',
+      desc: '7-11 店到店 · 貨到付款',
       icon: (
         <svg
           width='18'
@@ -542,10 +553,10 @@ function ShippingSection({
       ),
     },
     {
-      key: 'home' as const,
+      key: 'home_delivery',
       fee: 'NT$ 210',
       label: '宅配',
-      desc: '黑貓 1-3 天（粗估）',
+      desc: '黑貓/郵局到府',
       icon: (
         <svg
           width='18'
@@ -629,15 +640,15 @@ function RecipientSection({
   cvsBranch: string
   onCvsBranch: (v: string) => void
 }) {
-  const isCvs = shippingMethod === 'cvs' || shippingMethod === 'shopee'
-  const isHome = shippingMethod === 'home'
+  const isCvs = shippingMethod === 'convenience' || shippingMethod === 'maihuobian'
+  const isHome = shippingMethod === 'home_delivery'
   const districts = DISTRICTS[city] ?? ['第一區', '第二區', '第三區']
   const methodLabel =
     shippingMethod === 'pickup'
       ? '自取'
-      : shippingMethod === 'shopee'
+      : shippingMethod === 'maihuobian'
         ? '賣貨便取貨'
-        : shippingMethod === 'cvs'
+        : shippingMethod === 'convenience'
           ? '7-11 取貨'
           : '宅配地址'
   return (
@@ -734,7 +745,9 @@ function RecipientSection({
         {isCvs && (
           <div>
             <Lbl
-              label={shippingMethod === 'shopee' ? '取貨門市（賣貨便 · 7-11）' : '取貨門市（7-11）'}
+              label={
+                shippingMethod === 'maihuobian' ? '取貨門市（賣貨便 · 7-11）' : '取貨門市（7-11）'
+              }
               required
             />
             <input
@@ -764,14 +777,14 @@ function RecipientSection({
 function PaymentSection({
   method,
   onChange,
-  atmDisabled,
-  linepayDisabled,
+  cashDisabled,
+  transferDisabled,
   codDisabled,
 }: {
   method: PaymentMethod
   onChange: (m: PaymentMethod) => void
-  atmDisabled: boolean
-  linepayDisabled: boolean
+  cashDisabled: boolean
+  transferDisabled: boolean
   codDisabled: boolean
 }) {
   const atmIcon = (
@@ -846,49 +859,27 @@ function PaymentSection({
           PAYMENT
         </span>
       </div>
-      <p className='text-xs text-fg-subtle mb-3 lg:ml-9'>
-        賣貨便僅限貨到付款 · 超商 / 宅配 / 自取僅限匯款或 LINE Pay
+      <p className='text-xs text-fg-subtle mb-3 lg:mb-4 lg:ml-9'>
+        自取→現金 · 超商/宅配→匯款 · 賣貨便→貨到付款
       </p>
-      <div
-        className='lg:hidden mb-2.5 px-3 py-2 rounded-md flex items-center gap-2'
-        style={{ background: '#fbf2ea', border: '1px solid #f2e2d0' }}
-      >
-        <svg
-          width='14'
-          height='14'
-          viewBox='0 0 24 24'
-          fill='none'
-          stroke='currentColor'
-          strokeWidth='1.8'
-          strokeLinecap='round'
-          className='text-fg-muted shrink-0'
-        >
-          <circle cx='12' cy='12' r='9' />
-          <path d='M12 8v4M12 16h.01' />
-        </svg>
-        <span className='text-[11px] text-fg-muted leading-snug'>
-          賣貨便<b className='text-fg'>僅限貨到付款</b>；超商 / 宅配 / 自取只能
-          <b className='text-fg'>匯款或 LINE Pay</b>
-        </span>
-      </div>
       <div className='space-y-2 lg:space-y-0 lg:grid lg:grid-cols-3 lg:gap-3 lg:ml-9'>
         <PayBtn
-          selected={method === 'atm'}
-          disabled={atmDisabled}
-          onClick={() => !atmDisabled && onChange('atm')}
+          selected={method === 'cash'}
+          disabled={cashDisabled}
+          onClick={() => !cashDisabled && onChange('cash')}
+          icon={atmIcon}
+          iconColor='var(--c-primary-hv)'
+          label='現金自取'
+          sub='取貨時現場付款'
+        />
+        <PayBtn
+          selected={method === 'transfer'}
+          disabled={transferDisabled}
+          onClick={() => !transferDisabled && onChange('transfer')}
           icon={atmIcon}
           iconColor='var(--c-primary-hv)'
           label='匯款 / ATM 轉帳'
           sub='玉山銀行 808 · 末五碼對帳'
-        />
-        <PayBtn
-          selected={method === 'linepay'}
-          disabled={linepayDisabled}
-          onClick={() => !linepayDisabled && onChange('linepay')}
-          icon={lineIcon}
-          iconColor='#00b900'
-          label='LINE Pay'
-          sub='即時付款'
         />
         <PayBtn
           selected={method === 'cod'}
@@ -979,7 +970,7 @@ function CostCard({
             <span>運費（{SHIPPING_LABEL[shippingMethod]}）</span>
             <span className='font-mono'>+ NT$ {shippingFee.toLocaleString()}</span>
           </div>
-          {shippingMethod === 'home' && (
+          {shippingMethod === 'home_delivery' && (
             <p className='text-[10px] text-fg-subtle -mt-0.5'>＊宅配運費為粗估，請與賣家確認</p>
           )}
           <div
@@ -1030,19 +1021,19 @@ function SummaryAside({
   submitError: string | null
 }) {
   const payLabel =
-    paymentMethod === 'atm' ? '匯款 / ATM' : paymentMethod === 'linepay' ? 'Line Pay' : '貨到付款'
+    paymentMethod === 'cash' ? '現金自取' : paymentMethod === 'transfer' ? '匯款 / ATM' : '貨到付款'
   const paySub =
-    paymentMethod === 'atm'
-      ? '送出後顯示帳號 · 末五碼對帳'
-      : paymentMethod === 'linepay'
-        ? '即時付款 · 手續費 $0'
+    paymentMethod === 'cash'
+      ? '取貨時現場付款'
+      : paymentMethod === 'transfer'
+        ? '送出後顯示帳號 · 末五碼對帳'
         : '到貨時現場付款'
   const addrLine =
-    shippingMethod === 'home'
+    shippingMethod === 'home_delivery'
       ? `${city}${district}\n${address || '（尚未填寫）'}`
       : shippingMethod === 'pickup'
         ? '面交取貨'
-        : shippingMethod === 'shopee'
+        : shippingMethod === 'maihuobian'
           ? '賣貨便取貨（7-11）'
           : '7-11 店到店'
   const shipIcon = (
@@ -1110,7 +1101,7 @@ function SummaryAside({
             <div className='font-mono text-[10px] text-fg-subtle mt-0.5 whitespace-pre-line'>
               {addrLine}
             </div>
-            {shippingMethod === 'home' && (
+            {shippingMethod === 'home_delivery' && (
               <div className='font-mono text-[10px] text-fg-subtle mt-0.5'>
                 ＊運費粗估，請與賣家確認
               </div>
@@ -1136,7 +1127,7 @@ function SummaryAside({
             <span>運費（{SHIPPING_LABEL[shippingMethod]}）</span>
             <span className='font-mono'>+ NT$ {shippingFee.toLocaleString()}</span>
           </div>
-          {shippingMethod === 'home' && (
+          {shippingMethod === 'home_delivery' && (
             <p className='text-[10px] text-fg-subtle -mt-1'>＊宅配運費為粗估，請與賣家確認</p>
           )}
           <div
@@ -1216,8 +1207,8 @@ function CheckoutContent() {
 
   const [orders, setOrders] = useState<CustomerOrder[]>([])
   const [pageState, setPageState] = useState<'loading' | 'ready' | 'error'>('loading')
-  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('home')
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('atm')
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('home_delivery')
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('transfer')
   const [name, setName] = useState('')
   const [phone, setPhone] = useState('')
   const [city, setCity] = useState('台北市')
@@ -1251,7 +1242,7 @@ function CheckoutContent() {
           return
         }
         const data = (await res.json()) as { orders: CustomerOrder[] }
-        const settle = data.orders.filter((o) => o.status === 'allocated' || o.status === 'settled')
+        const settle = data.orders.filter((o) => o.status === 'allocated')
         const filtered = selectedIds ? settle.filter((o) => selectedIds.has(o.id)) : settle
         setOrders(filtered)
         setPageState(filtered.length === 0 ? 'error' : 'ready')
@@ -1263,19 +1254,17 @@ function CheckoutContent() {
   }, [slug, selectedIds])
 
   useEffect(() => {
-    if (shippingMethod === 'shopee') {
-      setPaymentMethod('cod')
-    } else if (paymentMethod === 'cod') {
-      setPaymentMethod('atm')
-    }
-  }, [shippingMethod, paymentMethod])
+    if (shippingMethod === 'pickup') setPaymentMethod('cash')
+    else if (shippingMethod === 'maihuobian') setPaymentMethod('cod')
+    else setPaymentMethod('transfer')
+  }, [shippingMethod])
 
   const subtotal = useMemo(() => orders.reduce((s, o) => s + calcTotal(o), 0), [orders])
   const shippingFee = SHIPPING_FEE[shippingMethod]
   const total = subtotal + shippingFee
-  const atmDisabled = shippingMethod === 'shopee'
-  const linepayDisabled = shippingMethod === 'shopee'
-  const codDisabled = shippingMethod !== 'shopee'
+  const cashDisabled = shippingMethod !== 'pickup'
+  const transferDisabled = shippingMethod === 'pickup' || shippingMethod === 'maihuobian'
+  const codDisabled = shippingMethod !== 'maihuobian'
 
   const handleSubmit = async () => {
     setSubmitError(null)
@@ -1291,11 +1280,14 @@ function CheckoutContent() {
         return
       }
     }
-    if (shippingMethod === 'home' && !address.trim()) {
+    if (shippingMethod === 'home_delivery' && !address.trim()) {
       setSubmitError('請填寫詳細地址')
       return
     }
-    if ((shippingMethod === 'cvs' || shippingMethod === 'shopee') && !cvsBranch.trim()) {
+    if (
+      (shippingMethod === 'convenience' || shippingMethod === 'maihuobian') &&
+      !cvsBranch.trim()
+    ) {
       setSubmitError('請填寫取貨門市名稱')
       return
     }
@@ -1470,8 +1462,8 @@ function CheckoutContent() {
           <PaymentSection
             method={paymentMethod}
             onChange={setPaymentMethod}
-            atmDisabled={atmDisabled}
-            linepayDisabled={linepayDisabled}
+            cashDisabled={cashDisabled}
+            transferDisabled={transferDisabled}
             codDisabled={codDisabled}
           />
           <NoteSection note={note} onChange={setNote} />

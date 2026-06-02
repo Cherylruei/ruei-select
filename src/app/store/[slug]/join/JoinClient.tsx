@@ -253,7 +253,7 @@ export default function JoinClient({ slug, storeName, storeAvatarUrl }: JoinClie
         <div className='flex-1 overflow-y-auto'>
           <form
             onSubmit={handleSubmit}
-            className='h-full lg:flex lg:flex-col lg:justify-between px-4 lg:px-10 xl:px-16 pb-4 lg:py-10'
+            className='lg:h-full lg:flex lg:flex-col lg:justify-between px-4 lg:px-10 xl:px-16 pb-4 lg:py-10'
           >
             {/* 桌機版標題 */}
             <div className='hidden lg:block mb-6'>

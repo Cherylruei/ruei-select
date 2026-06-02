@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
-import type { AdminOrder, AdminOrderItem, OrderStatus, OrderStatusCounts } from '@/types'
+import type {
+  AdminOrder,
+  AdminOrderItem,
+  OrderSettlement,
+  OrderStatus,
+  OrderStatusCounts,
+  ShippingMethod,
+  PaymentMethod,
+} from '@/types'
 
 // ── 工具：從 Supabase Auth email 取出 line_id ─────────────────────────────────
 
@@ -45,6 +53,16 @@ async function getMerchantStoreId(): Promise<{ storeId: string } | NextResponse>
 
 // ── DB 查詢結果型別 ───────────────────────────────────────────────────────────
 
+interface SettlementRow {
+  shipping_method: string
+  payment_method: string
+  recipient_name: string | null
+  recipient_phone: string | null
+  recipient_address: string | null
+  store_name: string | null
+  note: string | null
+}
+
 interface OrderRow {
   id: string
   store_id: string
@@ -69,6 +87,7 @@ interface OrderRow {
     products: { name: string; suppliers: { name: string } | null } | null
     product_variants: { specs: Record<string, string> } | null
   }[]
+  settlements: SettlementRow[]
 }
 
 // ── GET /api/admin/orders?status=xxx ─────────────────────────────────────────
@@ -132,7 +151,8 @@ export async function GET(request: NextRequest) {
            id, quantity, unit_price,
            products(name, suppliers(name)),
            product_variants(specs)
-         )`
+         ),
+         settlements(shipping_method, payment_method, recipient_name, recipient_phone, recipient_address, store_name, note)`
       )
       .eq('store_id', storeId)
       .order('ordered_at', { ascending: false })
@@ -167,6 +187,17 @@ export async function GET(request: NextRequest) {
       shipping_number: row.shipping_number,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       shipping_vendor: row.shipping_vendor as any,
+      settlement: row.settlements[0]
+        ? ({
+            shipping_method: row.settlements[0].shipping_method as ShippingMethod,
+            payment_method: row.settlements[0].payment_method as PaymentMethod,
+            recipient_name: row.settlements[0].recipient_name,
+            recipient_phone: row.settlements[0].recipient_phone,
+            recipient_address: row.settlements[0].recipient_address,
+            store_name: row.settlements[0].store_name,
+            note: row.settlements[0].note,
+          } satisfies OrderSettlement)
+        : null,
       items: row.order_items.map(
         (item): AdminOrderItem => ({
           id: item.id,
