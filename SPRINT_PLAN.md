@@ -12,8 +12,8 @@
 | Sprint 1 | 商家建立賣場、供應商管理、邀請連結 | ✅ 完成 | merged to main |
 | Sprint 2 | 商品上架、AI 文案、規格管理、公開商品頁 | ✅ 完成 | merged to main |
 | Sprint 3 | 顧客前台：LIFF 登入、商品瀏覽、下單、訂單查詢 | 🔄 收尾中 | feature/sprint3-my-orders |
-| Sprint 4 | 商家訂單管理、代客建單、顧客結單物流、許願池 | 📋 待開始 | — |
-| Sprint 5 | 現場快速上架、自動配單升級、數據 Dashboard | 📝 草稿 | — |
+| Sprint 4 | 商家訂單管理、代客建單、顧客結單物流 + Design System 重建 | ✅ 完成 | merged to main |
+| Sprint 5 | 訂單 UX 升級、許願池、庫存管理、快速上架、顧客管理重設計 | 📋 待開始 | — |
 
 ---
 
@@ -33,26 +33,30 @@
 - 目前進度：sprint3-my-orders 分支，US-16 測試型別問題處理中
 - ⚠️ 待 merge 後 Sprint 4 才能開始
 
-### Sprint 4 📋
-- **DoR：[docs/dor/sprint4-dor.md](docs/dor/sprint4-dor.md)**（v1.0，Cheryl 確認中）
-- 主要功能：
-  - US-18：商家訂單管理後台 + **代客建立訂單**（Cheryl 確認：2026-05-24）
-  - US-19：商家出貨管理（物流單號 → 已出貨）
-  - US-20：顧客結單流程（4 種物流 + 付款方式）
-  - US-21：顧客取消訂單
-  - US-22：顧客許願池（送出）
-  - US-23：許願池後台（商家）
-- 新增資料表：`settlements`、`wishlists`
-- 新增欄位：`orders.created_by`、`orders.cancelled_by`、`orders.shipping_number`
-- 執行順序：sprint4-admin-orders → sprint4-checkout → sprint4-shipping / sprint4-cancel / sprint4-wishlist
+### Sprint 4 ✅
+- **DoR：[docs/dor/sprint4-dor.md](docs/dor/sprint4-dor.md)**（v1.1）
+- **Retro：[km/decisions/sprint4-retro.md](km/decisions/sprint4-retro.md)**
+- 交付功能：
+  - US-18：商家訂單管理後台 + 代客建立訂單 ✅
+  - US-19：商家出貨管理（物流單號 → 已出貨）✅
+  - US-20：顧客結單流程（4 種物流 + 付款聯動）✅
+  - Design System 重建（tokens + 10 UI 元件 + 全後台重設計）✅（追加）
+- 延後：US-22/23 許願池、AC-18.12 顧客訂單展開 → Sprint 5
 
-### Sprint 5 📝
-- **DoR：[docs/dor/sprint5-dor.md](docs/dor/sprint5-dor.md)**（v0.1 草稿）
-- 確認功能：
-  - US-24：**現場快速上架**（Cheryl 確認：2026-05-24）— 手機拍照 + 商品名 + 售價 → 30 秒上架
-- 草稿功能（待 Sprint 4 後確認）：
+### Sprint 5 📋
+- **DoR：[docs/dor/sprint5-dor.md](docs/dor/sprint5-dor.md)**（v0.1 草稿，待正式開始前補完 AC）
+- 已確認功能：
+  - US-22/23：許願池（從 Sprint 4 移入，2026-06-01）
+  - US-24：現場快速上架（2026-05-24）
+  - US-NEW：規格庫存管理（現貨/預購，2026-06-02）
+  - US-NEW：訂單管理 UX 升級（B-Light 商品視圖 + 批次操作）
+  - AC-18.12：顧客訂單展開（從 Sprint 4 移入，2026-06-02）
+  - 前台商品詳細頁按 mockup 重建（store-product-detail）
+  - 顧客管理後台重設計
+- 草稿待確認：
   - US-25：自動配單升級（FIFO）
-  - US-26：商家配貨數據 Dashboard
+  - US-NEW：顧客個人檔案編輯
+  - US-NEW：結單資料預填（localStorage）
 
 ---
 

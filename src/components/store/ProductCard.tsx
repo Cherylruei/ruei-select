@@ -61,33 +61,6 @@ export default function ProductCard({ product, slug, keyword = '' }: ProductCard
             aria-hidden='true'
           />
         )}
-
-        {/* Heart button */}
-        <button
-          onClick={(e) => {
-            e.preventDefault()
-          }}
-          aria-label='加入收藏'
-          className={[
-            'absolute top-2.5 right-2.5 w-9 h-9 rounded-full flex items-center justify-center',
-            'bg-white/90 shadow-sm transition-opacity',
-            'opacity-0 group-hover:opacity-100 lg:flex',
-          ].join(' ')}
-        >
-          <svg
-            width='17'
-            height='17'
-            viewBox='0 0 24 24'
-            fill='none'
-            stroke='currentColor'
-            strokeWidth='1.8'
-            strokeLinecap='round'
-            className='text-primary'
-            aria-hidden='true'
-          >
-            <path d='M12 20s-7-4.5-7-10a4 4 0 017-2.5A4 4 0 0119 10c0 5.5-7 10-7 10z' />
-          </svg>
-        </button>
       </div>
 
       {/* Info */}

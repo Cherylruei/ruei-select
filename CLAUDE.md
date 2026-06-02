@@ -226,21 +226,27 @@ DoR → SDD(delta) → DoD → TDD → Code → Verify → Done → KM
 > 完整 sprint 進度索引見 [SPRINT_PLAN.md](SPRINT_PLAN.md)。
 
 ```
-目前 Sprint：   Sprint 3（收尾）
-目前分支：      feature/sprint3-my-orders
+目前 Sprint：   Sprint 5（準備中）
+目前分支：      main
 
 Sprint 1 ✅ 完成（已 merge to main）
 Sprint 2 ✅ 完成（已 merge to main）
+Sprint 3 ✅ 完成（已 merge to main）
+Sprint 4 ✅ 完成（已 merge to main）
+  核心交付：
+  - US-18 商家訂單管理後台 + 代客建立訂單 ✅
+  - US-19 商家出貨管理（填物流單號）✅
+  - US-20 顧客結單流程（4 種物流 + 付款聯動）✅
+  追加交付（原 DoR 未列，Sprint 中新增）：
+  - Design System 重建（design-tokens.css + 10 個共用 UI 元件）✅
+  - 後台全頁面重設計（Dashboard / 訂單 / 商品 / 供應商）✅
+  - 前台商品頁 + 訂單頁 Candy 設計系統遷移 ✅
+  延後至 Sprint 5：
+  - US-22/23 許願池（2026-06-01 Cheryl 確認移出）
+  - AC-18.12 顧客訂單展開（2026-06-02 確認移入 Sprint 5）
 
-Sprint 3 進度：
-- [x] feature/sprint3-store-auth       顧客前台 auth guard（LIFF 登入）
-- [x] feature/sprint3-products         顧客前台商品列表 + 詳細頁
-- [x] feature/sprint3-order            顧客下單流程
-- [ ] feature/sprint3-my-orders        顧客訂單查詢（US-16 測試型別問題處理中）
-- [ ] feature/sprint3-account          顧客帳戶頁（US-17）
-
-Sprint 4 待開始（DoR 已備妥，等 Sprint 3 merge）：
-→ 詳見 docs/dor/sprint4-dor.md
+Sprint 5 待開始（DoR v0.1 草稿已備妥）：
+→ 詳見 docs/dor/sprint5-dor.md
 ```
 
 ---
