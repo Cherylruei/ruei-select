@@ -176,21 +176,12 @@ export default function OrdersPage() {
 
   return (
     <div className='pb-6 lg:pb-12'>
-      {/* ── Mobile sticky header（lg:hidden）─────────────────────── */}
+      {/* ── Mobile sticky filter tabs（lg:hidden）─────────────────── */}
       <div
-        className='lg:hidden sticky top-14 z-9 bg-app border-b'
+        className='lg:hidden sticky top-14 z-9 bg-app/90 backdrop-blur-md border-b'
         style={{ borderColor: '#f7e5d8' }}
       >
-        <div className='px-5 pt-3 pb-3'>
-          <MobileStatsRow
-            counts={{
-              pending: counts.pending,
-              canSettle: counts.canSettle,
-              shipped: counts.shipped,
-            }}
-          />
-        </div>
-        <div className='px-5 pb-3'>
+        <div className='px-5 py-3'>
           <OrderStatusFilter value={filterValue} onChange={setFilterValue} counts={filterCounts} />
         </div>
       </div>
@@ -612,51 +603,6 @@ export default function OrdersPage() {
   )
 }
 
-// ── Mobile 三格統計列 ─────────────────────────────────────────────────────────
-
-function MobileStatsRow({
-  counts,
-}: {
-  counts: { pending: number; canSettle: number; shipped: number }
-}) {
-  return (
-    <div
-      className='grid grid-cols-3 bg-surface rounded-xl shadow-sm overflow-hidden'
-      style={{ border: '1px solid #f0d9cb' }}
-    >
-      <div className='px-2 py-2.5 text-center border-r' style={{ borderColor: '#f7e5d8' }}>
-        <div className='font-display font-bold text-xl leading-none' style={{ color: '#4e94ce' }}>
-          {counts.pending}
-        </div>
-        <div className='text-[10px] text-fg-muted mt-1 tracking-wider'>已下單</div>
-      </div>
-      <div
-        className={[
-          'px-2 py-2.5 text-center border-r relative',
-          counts.canSettle > 0 ? 'bg-primary-bg/60' : '',
-        ].join(' ')}
-        style={{ borderColor: '#f7e5d8' }}
-      >
-        {counts.canSettle > 0 && (
-          <span className='absolute -top-0.5 left-1/2 -translate-x-1/2 w-6 h-1 rounded-full bg-primary' />
-        )}
-        <div className='font-display font-bold text-xl leading-none' style={{ color: '#d94466' }}>
-          {counts.canSettle}
-        </div>
-        <div className='text-[10px] mt-1 tracking-wider' style={{ color: '#b82f50' }}>
-          可結單
-        </div>
-      </div>
-      <div className='px-2 py-2.5 text-center'>
-        <div className='font-display font-bold text-xl leading-none' style={{ color: '#5e9763' }}>
-          {counts.shipped}
-        </div>
-        <div className='text-[10px] text-fg-muted mt-1 tracking-wider'>已出貨</div>
-      </div>
-    </div>
-  )
-}
-
 // ── Mobile 可結單漸層卡 ───────────────────────────────────────────────────────
 
 interface MobileSettleCardProps {
@@ -987,27 +933,7 @@ function OrdersSkeleton() {
         className='lg:hidden sticky top-14 z-9 bg-app border-b'
         style={{ borderColor: '#f7e5d8' }}
       >
-        <div className='px-5 pt-3 pb-3'>
-          <div
-            className='grid grid-cols-3 bg-surface rounded-xl overflow-hidden h-13'
-            style={{ border: '1px solid #f0d9cb' }}
-          >
-            {[0, 1, 2].map((i) => (
-              <div
-                key={i}
-                className={[
-                  'flex flex-col items-center justify-center py-2.5',
-                  i < 2 ? 'border-r' : '',
-                ].join(' ')}
-                style={i < 2 ? { borderColor: '#f7e5d8' } : undefined}
-              >
-                <div className='h-5 w-8 rounded-md bg-ink-100 animate-pulse mb-1' />
-                <div className='h-2 w-12 rounded bg-ink-100 animate-pulse' />
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className='px-5 pb-3 flex gap-1.5'>
+        <div className='px-5 py-3 flex gap-1.5'>
           {[72, 60, 60, 60, 60].map((w, i) => (
             <div
               key={i}

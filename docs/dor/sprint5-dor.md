@@ -122,6 +122,13 @@ So that 我的操作流程貼近真實代購採買習慣（整批訂、整批到
 - AC-B10：`status = 'shipped'` 超過 14 天的訂單，系統自動更新為 `status = 'completed'`
 - AC-B11：實作方式：Supabase Edge Function（cron job）或每次載入時 lazy 更新
 
+**AC-18.12：顧客訂單展開（從 Sprint 4 移入，2026-06-02 確認）**
+
+- AC-18.12a：後台顧客 Tab 的 CustomerCard 可點擊展開，inline 顯示該顧客在此賣場的所有訂單（含未到貨灰色項目）
+- AC-18.12b：展開後顯示訂單狀態、商品名稱、金額；已到貨（allocated）訂單前方有 checkbox
+- AC-18.12c：勾選一或多筆 allocated 訂單後，提供「代客結單」按鈕，點擊後導向 `/admin/orders/{id}/checkout`（本 Sprint 先支援單筆）
+- AC-18.12d：未到貨訂單（pending_purchase / ordered）以灰色呈現，checkbox disabled
+
 ---
 
 ### US-NEW：顧客管理頁重設計
@@ -235,12 +242,57 @@ So that 我不需要手動逐一比對哪位顧客應該拿到哪件商品。
 
 ---
 
+---
+
+### US-NEW：顧客個人檔案編輯（草稿）
+
+> ℹ️ 2026-06-02 Cheryl 提出，待確認優先順序。
+
+```
+As a 已審核通過的顧客,
+I want to 在前台編輯我的姓名與聯絡電話,
+So that 商家能聯繫到最新的收件人資訊。
+```
+
+**Acceptance Criteria（草稿，待確認）：**
+
+- AC-PROF1：顧客前台「帳戶」頁或個人資訊入口，提供「編輯基本資料」按鈕
+- AC-PROF2：可編輯欄位：姓名（必填）、手機（選填）
+- AC-PROF3：儲存後更新 `store_members` 表中該會員的 `name` / `phone`
+- AC-PROF4：LINE 顯示名稱與大頭貼維持從 LIFF 自動取得，不開放顧客自行修改
+
+---
+
+### US-NEW：結單資料預填（上次使用的出貨資訊）（草稿）
+
+> ℹ️ 2026-06-02 Cheryl 提出，可行性：高（localStorage 即可，不需額外 DB）。
+
+```
+As a 顧客,
+I want to 結單時自動帶入我上次填過的收件資訊，
+So that 我不需要每次重新輸入姓名、電話、地址。
+```
+
+**Acceptance Criteria（草稿，待確認）：**
+
+- AC-FILL1：結單 checkout 頁面載入時，若 localStorage 有上次填過的資料，自動帶入所有欄位
+- AC-FILL2：預填的欄位：收件人姓名、手機、地址、出貨方式、超商門市（若適用）
+- AC-FILL3：顧客可手動修改預填資料，送出後更新 localStorage
+- AC-FILL4：每次成功提交結單後，自動更新 localStorage 為最新填入資料
+- AC-FILL5：不儲存付款方式（每次需主動選擇）
+
+> **技術說明**：資料存在 `localStorage` 鍵值 `ruei-checkout-last`，JSON 格式。跨裝置不共享（可升級至 DB，但 localStorage 足以滿足大部分使用場景）。
+
+---
+
 ## 範圍邊界（草稿）
 
 ### 可能 In Scope（待確認）
 
 - 現場快速上架（US-24）— 已確認為 Sprint 5
 - 自動配單升級（US-25）
+- 顧客個人檔案編輯（US-NEW-PROF）
+- 結單資料預填（US-NEW-FILL）
 
 ### Out of Scope
 
