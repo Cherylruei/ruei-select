@@ -177,6 +177,7 @@ export default function CheckoutClient({ params }: { params: Promise<{ id: strin
   }, [orderId, toast])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrder()
   }, [fetchOrder])
 

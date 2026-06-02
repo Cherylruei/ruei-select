@@ -98,7 +98,6 @@ export async function PATCH(request: NextRequest, { params }: RouteContext) {
       return NextResponse.json({ error: '廠商標記不能超過 8 個字' }, { status: 400 })
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const patch: Record<string, unknown> = { name, note, website_url, tag, line_group, phone }
     if (currency !== undefined) patch.currency = currency
     if (avg_arrival_days !== undefined) patch.avg_arrival_days = avg_arrival_days

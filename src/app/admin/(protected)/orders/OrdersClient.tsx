@@ -158,6 +158,7 @@ export default function OrdersClient() {
   )
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchOrders(activeTab)
   }, [activeTab, fetchOrders])
 
@@ -362,11 +363,7 @@ export default function OrdersClient() {
           />
         ) : activeTab === 'allocated' && groupByCustomer ? (
           <div className='p-5'>
-            <CustomerGroupGrid
-              orders={filteredOrders}
-              onRefresh={() => fetchOrders(activeTab)}
-              toastFn={toast}
-            />
+            <CustomerGroupGrid orders={filteredOrders} toastFn={toast} />
           </div>
         ) : activeTab === 'settled' || activeTab === 'shipped' ? (
           <SettledOrdersList
@@ -577,16 +574,15 @@ function buildCustomerGroups(orders: AdminOrder[]): CustomerGroup[] {
 
 interface CustomerGroupGridProps {
   orders: AdminOrder[]
-  onRefresh: () => void
   toastFn: (msg: string, type: 'success' | 'error') => void
 }
 
-function CustomerGroupGrid({ orders, onRefresh, toastFn }: CustomerGroupGridProps) {
+function CustomerGroupGrid({ orders, toastFn }: CustomerGroupGridProps) {
   const groups = buildCustomerGroups(orders)
   return (
     <div className='grid sm:grid-cols-2 gap-4'>
       {groups.map((group) => (
-        <CustomerCard key={group.memberId} group={group} onRefresh={onRefresh} toastFn={toastFn} />
+        <CustomerCard key={group.memberId} group={group} toastFn={toastFn} />
       ))}
     </div>
   )
@@ -596,11 +592,10 @@ function CustomerGroupGrid({ orders, onRefresh, toastFn }: CustomerGroupGridProp
 
 interface CustomerCardProps {
   group: CustomerGroup
-  onRefresh: () => void
   toastFn: (msg: string, type: 'success' | 'error') => void
 }
 
-function CustomerCard({ group, onRefresh, toastFn }: CustomerCardProps) {
+function CustomerCard({ group, toastFn }: CustomerCardProps) {
   const router = useRouter()
   const bgColor = avatarColor(group.memberName)
   const totalItems = group.allocatedOrders.flatMap((o) => o.items).length
@@ -631,8 +626,6 @@ function CustomerCard({ group, onRefresh, toastFn }: CustomerCardProps) {
       setLoadingAll(false)
     }
   }
-
-  const selectedOrder = allOrders?.find((o) => o.id === selectedOrderId) ?? null
 
   return (
     <div className='bg-surface border border-line rounded-xl overflow-hidden hover:shadow-md hover:border-transparent transition'>

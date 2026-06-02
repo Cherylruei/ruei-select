@@ -141,6 +141,7 @@ export default function NewOrderClient() {
   }, [allSpecsSelected, selectedProduct, selectedSpecs])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setVariantId(matchedVariant?.id ?? '')
   }, [matchedVariant])
 
