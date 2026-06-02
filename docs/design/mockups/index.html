@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
+  <link rel="stylesheet" href="design-tokens.css" />
   <style>
     * { box-sizing: border-box; }
     body { font-family: var(--font-body); background: var(--bg-app); color: var(--fg-default); margin: 0; }
@@ -198,32 +198,36 @@
         desc:'顧客資訊 + 商品 + 採購時間軸 + 自動 / 手動配貨 + 狀態相依操作（示範狀態可切換）。' },
       { group:'admin', sprint:4, route:'/admin/orders/[id]/checkout', comp:'<AdminOrderCheckout/>', title:'代客結單', status:'done', file:'admin-orders-checkout.html', kind:'checkout', vp:'desktop',
         desc:'結單對象提示卡 + 物流四選一 RadioCard + 收件 / 付款聯動 + sticky 結單摘要。' },
-      { group:'admin', sprint:4, route:'/admin/orders/[id]/shipping', comp:'<AdminOrderShipping/>', title:'出貨管理', status:'planned', kind:'shipping', vp:'desktop',
+      { group:'admin', sprint:4, route:'/admin/orders/[id]/shipping', comp:'<AdminOrderShipping/>', title:'出貨管理', status:'done', file:'admin-orders-shipping.html', kind:'shipping', vp:'desktop',
         desc:'已結單收件資訊 + 複製至賣貨便 + 填物流單號 → 已出貨。' },
-      { group:'admin', sprint:4, route:'/admin/wishlists', comp:'<AdminWishlists/>', title:'許願池後台', status:'planned', kind:'wishlist', vp:'desktop',
-        desc:'顧客許願清單 + 標記狀態（待處理 / 已注意 / 已上架）。參考 dashboard 卡片網格。' },
+      { group:'admin', sprint:4, route:'/admin/wishlists', comp:'<AdminWishlists/>', title:'許願池後台', status:'done', file:'admin-wishlists.html', kind:'wishlist', vp:'desktop',
+        desc:'全店共享許願牆 + 需求排序（N 人想要）+ 標記狀態（待處理 / 已注意 / 已上架）+ 一鍵建立商品。' },
       { group:'admin', sprint:5, route:'/admin/products/quick', comp:'<AdminProductQuick/>', title:'現場快速上架', status:'planned', kind:'quick', vp:'mobile',
         desc:'手機優化：拍照 + 商品名 + 售價 → 30 秒內立即上架。' },
       { group:'admin', sprint:5, route:'/admin/analytics', comp:'<AdminAnalytics/>', title:'數據 Dashboard', status:'planned', kind:'analytics', vp:'desktop',
         desc:'月營業額 / 毛利 / 顧客消費 / 廠商排行 / 下單時段 / 到貨週期分析。' },
+      { group:'admin', sprint:5, route:'/admin/notifications', comp:'<AdminNotifications/>', title:'通知 / 群發設定', status:'planned', kind:'notifications', vp:'desktop',
+        desc:'鈴鐺通知來源：事件推播開關（訂單狀態 / 到貨 / 結單）+「群發公告」入口（走 LINE 推播，需顧客已加官方帳號好友）。先不做分眾 / 排程。' },
+      { group:'admin', sprint:5, route:'/admin/storefront', comp:'<AdminStorefront/>', title:'賣場佈置 / Banner', status:'planned', kind:'storefront', vp:'desktop',
+        desc:'首頁輪播 Banner 設定：圖片清單 CRUD + 點擊連結 + 排序 + 啟用區間。賣場外觀的行銷素材集中管理。' },
 
       // ---------- STORE (candy · mobile 390 + PC) ----------
-      { group:'store', sprint:3, route:'/store/[slug]/login', comp:'<StoreLogin/>', title:'顧客登入', status:'planned', kind:'login', vp:'mobile',
-        desc:'顧客 LINE LIFF 快速登入。' },
-      { group:'store', sprint:3, route:'/store/[slug]/register', comp:'<StoreRegister/>', title:'顧客申請', status:'planned', kind:'customers', vp:'mobile',
-        desc:'填姓名 / 手機 / LINE ID → 「待商家核准」狀態頁。' },
+      { group:'store', sprint:3, route:'/store/[slug]/login', comp:'<StoreLogin/>', title:'顧客登入', status:'done', file:'store-login.html', kind:'login', vp:'mobile',
+        desc:'邀請連結登陸頁 + LINE LIFF 快速登入 + 賣場賣點。' },
+      { group:'store', sprint:3, route:'/store/[slug]/register', comp:'<StoreRegister/>', title:'顧客申請', status:'done', file:'store-register.html', kind:'customers', vp:'mobile',
+        desc:'LINE 已連結卡 + 姓名 / LINE ID（必填）+ 手機（選填，下單時再補）→ 「待商家核准」狀態頁（含時間軸）。' },
       { group:'store', sprint:3, route:'/store/[slug]', comp:'<StoreProducts/>', title:'商品列表', status:'done', file:'store-products.html', pc:'store-products-pc.html', kind:'products', vp:'mobile',
         desc:'Hero banner + 分類 pills + 商品 grid + 許願池 CTA + bottom tab。' },
-      { group:'store', sprint:3, route:'/store/[slug]/products/[id]', comp:'<StoreProductDetail/>', title:'商品詳細', status:'planned', kind:'product-detail', vp:'mobile',
-        desc:'圖片輪播 + 規格選擇 + 數量 + 下單確認彈窗（無購物車，下單即購買）。' },
+      { group:'store', sprint:3, route:'/store/[slug]/products/[id]', comp:'<StoreProductDetail/>', title:'商品詳細', status:'done', file:'store-product-detail.html', kind:'product-detail', vp:'mobile',
+        desc:'圖片輪播 + 預購 / 現貨狀態 + 數量 + 下單確認 sheet（無購物車、無規格）+ 首次下單 just-in-time 補手機 +「你可能還會喜歡」推薦。' },
       { group:'store', sprint:4, route:'/store/[slug]/orders', comp:'<StoreOrders/>', title:'我的訂單', status:'done', file:'store-orders.html', pc:'store-orders-pc.html', kind:'orders', vp:'mobile',
         desc:'stats + 可結單漸層卡（勾選與小計）+ 其他訂單列表。' },
       { group:'store', sprint:4, route:'/store/[slug]/orders/checkout', comp:'<StoreCheckout/>', title:'結單', status:'done', file:'store-orders-checkout.html', pc:'store-orders-checkout-pc.html', kind:'checkout', vp:'mobile',
         desc:'物流四選一 RadioCard + 收件 / 付款聯動（含超商 SPEC）+ sticky 底欄 CTA。' },
-      { group:'store', sprint:4, route:'/store/[slug]/wishlist', comp:'<StoreWishlist/>', title:'許願清單', status:'planned', kind:'wishlist', vp:'mobile',
-        desc:'顧客自己的許願清單（含狀態）+「＋ 許願」入口。' },
-      { group:'store', sprint:4, route:'/store/[slug]/wishlist/new', comp:'<StoreWishlistNew/>', title:'新增許願', status:'planned', kind:'wishlist-new', vp:'mobile',
-        desc:'商品名（必填）/ 照片（必填上傳）/ 連結（選填）/ 型號規格（選填）。' },
+      { group:'store', sprint:4, route:'/store/[slug]/wishlist', comp:'<StoreWishlist/>', title:'共享許願牆', status:'done', file:'store-wishlist.html', pc:'store-wishlist-pc.html', kind:'wishlist', vp:'mobile',
+        desc:'全店公開許願牆，看得到大家的願望 + 附和「我也想要」+ 狀態 + 「＋ 許願」入口。' },
+      { group:'store', sprint:4, route:'/store/[slug]/wishlist/new', comp:'<StoreWishlistNew/>', title:'新增許願', status:'done', file:'store-wishlist-new.html', pc:'store-wishlist-new-pc.html', kind:'wishlist-new', vp:'mobile',
+        desc:'商品名（必填）/ 連結與照片擇一（有連結最佳，否則至少照片）/ 型號規格（選填）+ 即時許願牆預覽。' },
     ];
 
     // ---- glyphs (stroke icons) ----

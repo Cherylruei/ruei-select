@@ -235,31 +235,12 @@ So that 我不需要手動逐一比對哪位顧客應該拿到哪件商品。
 
 ---
 
-### US-26：商家配貨數據 Dashboard（草稿）
-
-> ℹ️ 此 US 為 Sprint 4 Out of Scope 的延後項目，細節待確認。
-
-```
-As a 商家,
-I want to 在 Dashboard 一眼看到訂單狀態分佈與待處理事項,
-So that 我能快速掌握今日需要處理哪些訂單。
-```
-
-**待確認項目：**
-
-- Dashboard 要顯示哪些指標？
-- 是替換現有 Dashboard，還是新增一個訂單 Dashboard 頁？ => Cheryl 補充: 已經有總覽 dashboard 了，不需要額外再做，此需求可以直接移除，若沒問題 DOR 這一段可以直接刪掉。
-- Acceptance Criteria 待 Sprint 4 完成後補充
-
----
-
 ## 範圍邊界（草稿）
 
 ### 可能 In Scope（待確認）
 
 - 現場快速上架（US-24）— 已確認為 Sprint 5
 - 自動配單升級（US-25）
-- 商家配貨 Dashboard（US-26）
 
 ### Out of Scope
 
@@ -293,10 +274,9 @@ Storage：
 
 ```
 □ Sprint 4 所有功能已完成且測試通過
-□ 確認 Sprint 5 功能範圍（US-24 快速上架確定做；US-25/26 是否同 Sprint？）
+□ 確認 Sprint 5 功能範圍（US-24 快速上架確定做；US-25 是否同 Sprint？）
 □ US-24 快速上架：單一規格自動建立邏輯是否符合預期？
 □ US-24 快速上架：成功後「繼續快速上架」vs「前往商品管理」按鈕順序是否正確？
 □ US-25 自動配單：配單邏輯確認（FIFO / 手動指定）
-□ US-26 Dashboard：要顯示的指標確認
 □ 現場連線區域入口位置確認（側邊欄獨立項目 or /admin/products 頁面內按鈕）
 ```
