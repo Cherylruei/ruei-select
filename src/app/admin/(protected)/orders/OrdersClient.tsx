@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState, useTransition } from 'react'
+import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
 import type {
   AdminOrder,
   OrderStatus,
@@ -12,6 +12,7 @@ import type {
 } from '@/types'
 import { OrderStatusBadge } from '@/components/ui/Badge'
 import { ToastContainer, useToast } from '@/components/ui/Toast'
+import ProductGroupView from './ProductGroupView'
 
 // ── 型別 ───────────────────────────────────────────────────────────────────────
 
@@ -30,7 +31,6 @@ const STATUS_TABS: { key: TabKey; label: string; dot: boolean }[] = [
   { key: 'cancelled', label: '已取消', dot: false },
 ]
 
-// active 樣式（每個狀態各自的顏色）
 const TAB_ACTIVE: Record<TabKey, string> = {
   all: 'bg-primary text-white',
   pending_purchase: 'bg-warning-bg text-warning',
@@ -42,7 +42,6 @@ const TAB_ACTIVE: Record<TabKey, string> = {
   cancelled: 'bg-sunken text-fg-subtle',
 }
 
-// Pipeline 設定
 const PIPELINE: { key: OrderStatus; label: string; dot: string; hint: string }[] = [
   { key: 'pending_purchase', label: '待採買', dot: 'bg-warning', hint: '等待商家訂貨' },
   { key: 'ordered', label: '已訂購', dot: 'bg-info', hint: '廠商備貨中' },
@@ -120,7 +119,15 @@ export default function OrdersClient() {
   const [counts, setCounts] = useState<OrderStatusCounts | null>(null)
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+
+  // B-Light: 依商品分組（pending_purchase / ordered）
+  const [groupByProduct, setGroupByProduct] = useState(false)
+  // AC-18.12: 依顧客分組（allocated）
   const [groupByCustomer, setGroupByCustomer] = useState(false)
+
+  // AC-B6~B9: 已結單批次出貨
+  const [selectedSettledIds, setSelectedSettledIds] = useState<Set<string>>(new Set())
+
   const { toasts, toast, dismiss } = useToast()
 
   const fetchOrders = useCallback(
@@ -156,7 +163,9 @@ export default function OrdersClient() {
 
   const switchTab = useCallback(
     (tab: TabKey) => {
+      setGroupByProduct(false)
       setGroupByCustomer(false)
+      setSelectedSettledIds(new Set())
       setSearch('')
       const params = new URLSearchParams(searchParams.toString())
       if (tab === 'all') params.delete('status')
@@ -166,7 +175,6 @@ export default function OrdersClient() {
     [router, searchParams]
   )
 
-  // 搜尋篩選
   const filteredOrders = search
     ? orders.filter((o) => {
         const q = search.toLowerCase()
@@ -177,6 +185,16 @@ export default function OrdersClient() {
         )
       })
     : orders
+
+  // B-Light toggle 適用的 Tab
+  const showProductGroupToggle =
+    !loading && orders.length > 0 && (activeTab === 'pending_purchase' || activeTab === 'ordered')
+
+  // 顧客分組 toggle 適用的 Tab
+  const showCustomerGroupToggle = !loading && orders.length > 0 && activeTab === 'allocated'
+
+  // 批次勾選適用的 Tab
+  const showBatchSelection = activeTab === 'settled'
 
   return (
     <>
@@ -200,7 +218,7 @@ export default function OrdersClient() {
                 key={key}
                 type='button'
                 onClick={() => switchTab(key)}
-                className={`rounded-md border border-line p-3 text-left transition cursor-pointer ${PIPELINE_HOVER[key] ?? ''} ${activeTab === key ? 'border-opacity-100' : ''}`}
+                className={`rounded-md border border-line p-3 text-left transition cursor-pointer ${PIPELINE_HOVER[key] ?? ''}`}
               >
                 <div className='flex items-center gap-1.5'>
                   <span className={`w-2 h-2 rounded-pill ${dot}`} />
@@ -247,7 +265,6 @@ export default function OrdersClient() {
               )
             })}
             <div className='flex-1' />
-            {/* 搜尋 */}
             <div className='relative'>
               <input
                 value={search}
@@ -271,9 +288,35 @@ export default function OrdersClient() {
           </div>
         </div>
 
-        {/* 已配單分組切換 */}
-        {activeTab === 'allocated' && !loading && orders.length > 0 && (
+        {/* B-Light toggle：待採買 / 已訂購 */}
+        {showProductGroupToggle && (
           <div className='flex items-center gap-1.5 px-5 py-2.5 border-b border-line bg-ink-50'>
+            <span className='text-xs text-fg-muted mr-1 font-display font-semibold'>視圖：</span>
+            {[
+              { val: false, label: '訂單列表' },
+              { val: true, label: '依商品分組' },
+            ].map(({ val, label }) => (
+              <button
+                key={String(val)}
+                type='button'
+                onClick={() => setGroupByProduct(val)}
+                className={[
+                  'h-7 px-3 rounded-pill font-display font-semibold text-xs transition',
+                  groupByProduct === val
+                    ? 'bg-info text-white'
+                    : 'bg-surface border border-line text-fg-muted hover:bg-sunken',
+                ].join(' ')}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* 已配單：依顧客分組 toggle */}
+        {showCustomerGroupToggle && (
+          <div className='flex items-center gap-1.5 px-5 py-2.5 border-b border-line bg-ink-50'>
+            <span className='text-xs text-fg-muted mr-1 font-display font-semibold'>視圖：</span>
             {[
               { val: false, label: '訂單列表' },
               { val: true, label: '依顧客分組' },
@@ -303,13 +346,41 @@ export default function OrdersClient() {
             hasSearch={search.length > 0}
             onNewOrder={() => router.push('/admin/orders/new')}
           />
+        ) : activeTab === 'pending_purchase' && groupByProduct ? (
+          <ProductGroupView
+            orders={filteredOrders}
+            targetStatus='ordered'
+            onRefresh={() => fetchOrders(activeTab)}
+            toastFn={toast}
+          />
+        ) : activeTab === 'ordered' && groupByProduct ? (
+          <ProductGroupView
+            orders={filteredOrders}
+            targetStatus='allocated'
+            onRefresh={() => fetchOrders(activeTab)}
+            toastFn={toast}
+          />
         ) : activeTab === 'allocated' && groupByCustomer ? (
           <div className='p-5'>
-            <CustomerGroupGrid orders={filteredOrders} />
+            <CustomerGroupGrid
+              orders={filteredOrders}
+              onRefresh={() => fetchOrders(activeTab)}
+              toastFn={toast}
+            />
           </div>
         ) : activeTab === 'settled' || activeTab === 'shipped' ? (
           <SettledOrdersList
             orders={filteredOrders}
+            showBatchSelection={showBatchSelection}
+            selectedIds={selectedSettledIds}
+            onToggleSelect={(id) =>
+              setSelectedSettledIds((prev) => {
+                const next = new Set(prev)
+                if (next.has(id)) next.delete(id)
+                else next.add(id)
+                return next
+              })
+            }
             onRefresh={() => fetchOrders(activeTab)}
             toastFn={toast}
           />
@@ -317,6 +388,19 @@ export default function OrdersClient() {
           <OrdersTable orders={filteredOrders} />
         )}
       </section>
+
+      {/* AC-B7: 已結單批次出貨 BatchActionBar */}
+      {showBatchSelection && selectedSettledIds.size > 0 && (
+        <BatchActionBar
+          selectedIds={selectedSettledIds}
+          onClear={() => setSelectedSettledIds(new Set())}
+          onSuccess={() => {
+            setSelectedSettledIds(new Set())
+            fetchOrders(activeTab)
+          }}
+          toastFn={toast}
+        />
+      )}
     </>
   )
 }
@@ -375,22 +459,15 @@ function OrderRow({ order }: { order: AdminOrder }) {
   const supplierName = firstItem?.supplier_name ?? null
   const bgColor = avatarColor(order.member_name)
 
-  function goToDetail() {
-    router.push(`/admin/orders/${order.id}`)
-  }
-
   return (
     <tr
       className='border-t border-line hover:bg-ink-50 transition cursor-pointer'
-      onClick={goToDetail}
+      onClick={() => router.push(`/admin/orders/${order.id}`)}
     >
-      {/* 訂單 */}
       <td className='pl-5 pr-3 py-3'>
         <div className='font-mono font-semibold text-fg'>{shortId(order.id)}</div>
         <div className='font-mono text-[10px] text-fg-subtle'>{formatDate(order.ordered_at)}</div>
       </td>
-
-      {/* 顧客 */}
       <td className='px-3 py-3'>
         <div className='flex items-center gap-2'>
           <div
@@ -404,8 +481,6 @@ function OrderRow({ order }: { order: AdminOrder }) {
           </div>
         </div>
       </td>
-
-      {/* 商品 */}
       <td className='px-3 py-3'>
         <div className='flex items-center gap-2'>
           <div
@@ -423,8 +498,6 @@ function OrderRow({ order }: { order: AdminOrder }) {
           </div>
         </div>
       </td>
-
-      {/* 供應商 */}
       <td className='px-3 py-3 hidden md:table-cell'>
         {supplierName ? (
           <span className='inline-flex items-center h-5 px-2 rounded-pill bg-earth-100 text-earth-700 font-display font-semibold text-[10px]'>
@@ -434,18 +507,12 @@ function OrderRow({ order }: { order: AdminOrder }) {
           <span className='text-fg-subtle text-xs'>—</span>
         )}
       </td>
-
-      {/* 金額 */}
       <td className='px-3 py-3 text-right'>
         <span className='font-mono font-semibold'>NT$ {subtotal.toLocaleString()}</span>
       </td>
-
-      {/* 狀態 */}
       <td className='px-3 py-3'>
         <OrderStatusBadge status={order.status} />
       </td>
-
-      {/* 來源 */}
       <td className='px-3 py-3 text-center hidden sm:table-cell'>
         {order.created_by === 'merchant' ? (
           <span
@@ -458,8 +525,6 @@ function OrderRow({ order }: { order: AdminOrder }) {
           <span className='text-fg-subtle text-xs'>—</span>
         )}
       </td>
-
-      {/* Kebab */}
       <td className='pr-4 pl-1 py-3' onClick={(e) => e.stopPropagation()}>
         <Link
           href={`/admin/orders/${order.id}`}
@@ -483,13 +548,13 @@ function OrderRow({ order }: { order: AdminOrder }) {
   )
 }
 
-// ── 依顧客分組視圖 ────────────────────────────────────────────────────────────
+// ── 依顧客分組視圖（已配單 Tab）───────────────────────────────────────────────
 
 interface CustomerGroup {
   memberId: string
   memberName: string
   memberLineId: string
-  orders: AdminOrder[]
+  allocatedOrders: AdminOrder[]
 }
 
 function buildCustomerGroups(orders: AdminOrder[]): CustomerGroup[] {
@@ -497,42 +562,86 @@ function buildCustomerGroups(orders: AdminOrder[]): CustomerGroup[] {
   for (const order of orders) {
     const existing = map.get(order.member_id)
     if (existing) {
-      existing.orders.push(order)
+      existing.allocatedOrders.push(order)
     } else {
       map.set(order.member_id, {
         memberId: order.member_id,
         memberName: order.member_name,
         memberLineId: order.member_line_id,
-        orders: [order],
+        allocatedOrders: [order],
       })
     }
   }
   return Array.from(map.values())
 }
 
-function CustomerGroupGrid({ orders }: { orders: AdminOrder[] }) {
+interface CustomerGroupGridProps {
+  orders: AdminOrder[]
+  onRefresh: () => void
+  toastFn: (msg: string, type: 'success' | 'error') => void
+}
+
+function CustomerGroupGrid({ orders, onRefresh, toastFn }: CustomerGroupGridProps) {
   const groups = buildCustomerGroups(orders)
   return (
     <div className='grid sm:grid-cols-2 gap-4'>
       {groups.map((group) => (
-        <CustomerCard key={group.memberId} group={group} />
+        <CustomerCard key={group.memberId} group={group} onRefresh={onRefresh} toastFn={toastFn} />
       ))}
     </div>
   )
 }
 
-function CustomerCard({ group }: { group: CustomerGroup }) {
+// ── CustomerCard：AC-18.12 可展開，顯示顧客全部訂單 ──────────────────────────
+
+interface CustomerCardProps {
+  group: CustomerGroup
+  onRefresh: () => void
+  toastFn: (msg: string, type: 'success' | 'error') => void
+}
+
+function CustomerCard({ group, onRefresh, toastFn }: CustomerCardProps) {
   const router = useRouter()
   const bgColor = avatarColor(group.memberName)
-  const allItems = group.orders.flatMap((o) => o.items)
-  const totalItems = allItems.length
-  const totalAmount = group.orders.reduce((sum, o) => sum + orderSubtotal(o), 0)
-  const firstOrderId = group.orders[0]?.id
+  const totalItems = group.allocatedOrders.flatMap((o) => o.items).length
+  const totalAmount = group.allocatedOrders.reduce((sum, o) => sum + orderSubtotal(o), 0)
+
+  // AC-18.12a: 展開/收起
+  const [expanded, setExpanded] = useState(false)
+  const [allOrders, setAllOrders] = useState<AdminOrder[] | null>(null)
+  const [loadingAll, setLoadingAll] = useState(false)
+  // AC-18.12b: 勾選 allocated 訂單
+  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+
+  async function handleExpand() {
+    if (expanded) {
+      setExpanded(false)
+      return
+    }
+    setExpanded(true)
+    if (allOrders !== null) return // 已載入，不重複 fetch
+    setLoadingAll(true)
+    try {
+      const res = await fetch(`/api/admin/orders?memberId=${group.memberId}`)
+      const json = (await res.json()) as { success: boolean; data: AdminOrder[] }
+      if (json.success) setAllOrders(json.data)
+    } catch {
+      toastFn('載入訂單失敗', 'error')
+    } finally {
+      setLoadingAll(false)
+    }
+  }
+
+  const selectedOrder = allOrders?.find((o) => o.id === selectedOrderId) ?? null
 
   return (
-    <div className='bg-surface border border-line rounded-xl p-5 hover:shadow-md hover:border-transparent transition'>
-      {/* Header */}
-      <div className='flex items-center gap-3 mb-3'>
+    <div className='bg-surface border border-line rounded-xl overflow-hidden hover:shadow-md hover:border-transparent transition'>
+      {/* Card Header（點擊展開）*/}
+      <button
+        type='button'
+        onClick={handleExpand}
+        className='w-full flex items-center gap-3 p-5 text-left'
+      >
         <div
           className={`w-11 h-11 rounded-pill ${bgColor} text-white font-display font-bold flex items-center justify-center shrink-0 select-none`}
         >
@@ -550,59 +659,150 @@ function CustomerCard({ group }: { group: CustomerGroup }) {
             NT$ {totalAmount.toLocaleString()}
           </div>
         </div>
-      </div>
+        <svg
+          width='16'
+          height='16'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+          strokeLinecap='round'
+          className={`shrink-0 text-fg-subtle transition-transform ml-1 ${expanded ? 'rotate-90' : ''}`}
+        >
+          <path d='M9 6l6 6-6 6' />
+        </svg>
+      </button>
 
-      {/* 商品清單 */}
-      <div className='border-t border-line pt-3 space-y-2 text-sm'>
-        {allItems.map((item) => (
-          <div key={item.id} className='flex justify-between'>
-            <span className='text-fg-muted truncate mr-3'>
-              {item.product_name}
-              {item.variant_specs && `・${specLabel(item.variant_specs)}`}
-              {item.quantity > 1 && ` × ${item.quantity}`}
-            </span>
-            <span className='font-mono text-fg shrink-0'>
-              NT$ {(item.unit_price * item.quantity).toLocaleString()}
-            </span>
-          </div>
-        ))}
-      </div>
+      {/* 展開：顯示全部訂單（AC-18.12a~d）*/}
+      {expanded && (
+        <div className='border-t border-line'>
+          {loadingAll ? (
+            <div className='px-5 py-4 text-sm text-fg-muted'>載入中…</div>
+          ) : allOrders && allOrders.length > 0 ? (
+            <>
+              <div className='divide-y divide-line'>
+                {allOrders.map((order) => {
+                  const isAllocated = order.status === 'allocated'
+                  const isSelected = selectedOrderId === order.id
+                  const firstItem = order.items[0]
+                  const label = firstItem
+                    ? firstItem.product_name +
+                      (firstItem.variant_specs ? `・${specLabel(firstItem.variant_specs)}` : '')
+                    : '—'
 
-      {/* 操作按鈕 */}
-      <div className='flex gap-2 mt-4 pt-3 border-t border-line'>
-        {firstOrderId && (
+                  return (
+                    <div
+                      key={order.id}
+                      className={[
+                        'flex items-center gap-3 px-5 py-3',
+                        isAllocated ? '' : 'opacity-40',
+                      ].join(' ')}
+                    >
+                      {/* AC-18.12b/d: checkbox */}
+                      <input
+                        type='checkbox'
+                        disabled={!isAllocated}
+                        checked={isSelected}
+                        onChange={() => setSelectedOrderId(isSelected ? null : order.id)}
+                        className='w-4 h-4 rounded accent-primary cursor-pointer disabled:cursor-not-allowed'
+                      />
+                      <div className='flex-1 min-w-0'>
+                        <div className='text-sm font-semibold text-fg truncate'>{label}</div>
+                        <div className='font-mono text-[10px] text-fg-subtle'>
+                          {shortId(order.id)} · {formatDate(order.ordered_at)}
+                        </div>
+                      </div>
+                      <div className='text-right shrink-0'>
+                        <div className='font-mono text-sm'>
+                          NT$ {orderSubtotal(order).toLocaleString()}
+                        </div>
+                        <OrderStatusBadge status={order.status} />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* AC-18.12c: 代客結單按鈕（選了一筆 allocated 才啟用）*/}
+              <div className='px-5 py-3 border-t border-line flex items-center justify-between bg-ink-50'>
+                <span className='text-xs text-fg-muted'>
+                  {selectedOrderId ? '已選 1 筆已到貨訂單' : '勾選已到貨訂單以代客結單'}
+                </span>
+                <button
+                  type='button'
+                  disabled={!selectedOrderId}
+                  onClick={() => {
+                    if (selectedOrderId) router.push(`/admin/orders/${selectedOrderId}/checkout`)
+                  }}
+                  className='h-8 px-4 rounded-pill bg-secondary text-white font-display font-semibold text-xs hover:bg-secondary-hv transition disabled:opacity-40 disabled:cursor-not-allowed'
+                >
+                  代客結單
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className='px-5 py-4 text-sm text-fg-muted'>此顧客沒有訂單</div>
+          )}
+        </div>
+      )}
+
+      {/* 未展開時：快捷操作 */}
+      {!expanded && (
+        <div className='flex gap-2 px-5 pb-5 border-t border-line pt-3'>
           <button
             type='button'
-            onClick={() => router.push(`/admin/orders/${firstOrderId}/checkout`)}
+            onClick={handleExpand}
             className='flex-1 h-9 rounded-pill bg-secondary text-white font-display font-semibold text-xs hover:bg-secondary-hv transition'
           >
-            代客結單
+            展開查看全部訂單
           </button>
-        )}
-        <Link
-          href={`/admin/orders/${firstOrderId}`}
-          className='inline-flex items-center justify-center h-9 px-4 rounded-pill border border-line text-fg font-display font-semibold text-xs hover:bg-sunken transition'
-        >
-          查看訂單
-        </Link>
-      </div>
+          <button
+            type='button'
+            onClick={() => {
+              const firstAllocated = group.allocatedOrders[0]
+              if (firstAllocated) router.push(`/admin/orders/${firstAllocated.id}`)
+            }}
+            className='inline-flex items-center justify-center h-9 px-4 rounded-pill border border-line text-fg font-display font-semibold text-xs hover:bg-sunken transition'
+          >
+            查看訂單
+          </button>
+        </div>
+      )}
     </div>
   )
 }
 
-// ── 已結單 / 已出貨 展開卡片清單 ─────────────────────────────────────────────
+// ── 已結單 / 已出貨 展開卡片清單（含批次勾選）────────────────────────────────
 
 interface SettledOrdersListProps {
   orders: AdminOrder[]
+  showBatchSelection: boolean
+  selectedIds: Set<string>
+  onToggleSelect: (id: string) => void
   onRefresh: () => void
   toastFn: (msg: string, type: 'success' | 'error') => void
 }
 
-function SettledOrdersList({ orders, onRefresh, toastFn }: SettledOrdersListProps) {
+function SettledOrdersList({
+  orders,
+  showBatchSelection,
+  selectedIds,
+  onToggleSelect,
+  onRefresh,
+  toastFn,
+}: SettledOrdersListProps) {
   return (
     <div className='divide-y divide-line'>
       {orders.map((order) => (
-        <SettledOrderCard key={order.id} order={order} onRefresh={onRefresh} toastFn={toastFn} />
+        <SettledOrderCard
+          key={order.id}
+          order={order}
+          showCheckbox={showBatchSelection}
+          isSelected={selectedIds.has(order.id)}
+          onToggleSelect={() => onToggleSelect(order.id)}
+          onRefresh={onRefresh}
+          toastFn={toastFn}
+        />
       ))}
     </div>
   )
@@ -610,11 +810,21 @@ function SettledOrdersList({ orders, onRefresh, toastFn }: SettledOrdersListProp
 
 interface SettledOrderCardProps {
   order: AdminOrder
+  showCheckbox: boolean
+  isSelected: boolean
+  onToggleSelect: () => void
   onRefresh: () => void
   toastFn: (msg: string, type: 'success' | 'error') => void
 }
 
-function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) {
+function SettledOrderCard({
+  order,
+  showCheckbox,
+  isSelected,
+  onToggleSelect,
+  onRefresh,
+  toastFn,
+}: SettledOrderCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [shippingNumber, setShippingNumber] = useState('')
   const [shippingVendor, setShippingVendor] = useState<ShippingVendor>('黑貓')
@@ -634,9 +844,8 @@ function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) 
     startTransition(async () => {
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const body: Record<string, any> = { status: 'shipped' }
+        const body: Record<string, any> = { status: 'shipped', shipping_vendor: shippingVendor }
         if (shippingNumber.trim()) body.shipping_number = shippingNumber.trim()
-        body.shipping_vendor = shippingVendor
         const res = await fetch(`/api/admin/orders/${order.id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
@@ -671,18 +880,29 @@ function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) 
 
   return (
     <div>
-      {/* 摘要列（點擊展開）*/}
       <div
-        className='flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-ink-50 transition select-none'
+        className='flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-ink-50 transition select-none'
         onClick={() => setExpanded((e) => !e)}
       >
-        {/* 訂單號 */}
+        {/* AC-B6: 批次勾選 checkbox */}
+        {showCheckbox && (
+          <input
+            type='checkbox'
+            checked={isSelected}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => {
+              e.stopPropagation()
+              onToggleSelect()
+            }}
+            className='w-4 h-4 rounded accent-primary cursor-pointer shrink-0'
+          />
+        )}
+
         <div className='w-28 shrink-0'>
           <div className='font-mono font-semibold text-sm text-fg'>{shortId(order.id)}</div>
           <div className='font-mono text-[10px] text-fg-subtle'>{formatDate(order.ordered_at)}</div>
         </div>
 
-        {/* 顧客 */}
         <div className='flex items-center gap-2 flex-1 min-w-0'>
           <div
             className={`w-7 h-7 rounded-pill ${bgColor} text-white font-display font-bold text-xs flex items-center justify-center shrink-0`}
@@ -692,7 +912,6 @@ function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) 
           <span className='font-semibold text-sm truncate'>{order.member_name}</span>
         </div>
 
-        {/* 商品 */}
         <div className='flex-[2] min-w-0 hidden sm:block'>
           <div className='text-sm truncate text-fg'>
             {itemLabel}
@@ -702,17 +921,14 @@ function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) 
           </div>
         </div>
 
-        {/* 金額 */}
         <div className='w-24 text-right shrink-0'>
           <span className='font-mono text-sm font-semibold'>NT$ {subtotal.toLocaleString()}</span>
         </div>
 
-        {/* 狀態 */}
         <div className='shrink-0'>
           <OrderStatusBadge status={order.status} />
         </div>
 
-        {/* 展開箭頭 */}
         <svg
           width='16'
           height='16'
@@ -727,10 +943,8 @@ function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) 
         </svg>
       </div>
 
-      {/* 展開面板 */}
       {expanded && (
         <div className='px-5 pb-5 bg-sunken border-t border-line space-y-4'>
-          {/* 收件資訊 */}
           {settlement ? (
             <div className='pt-4'>
               <div className='flex items-center justify-between mb-3'>
@@ -807,7 +1021,6 @@ function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) 
             <div className='pt-4 text-sm text-fg-muted'>尚無結單資訊</div>
           )}
 
-          {/* 已出貨：唯讀物流單號 */}
           {isShipped && (order.shipping_number || order.shipping_vendor) && (
             <div className='border-t border-line pt-4'>
               <h3 className='font-display font-semibold text-sm text-fg mb-3'>出貨資訊</h3>
@@ -828,7 +1041,6 @@ function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) 
             </div>
           )}
 
-          {/* 已結單：出貨表單 */}
           {!isShipped && (
             <div className='border-t border-line pt-4' onClick={(e) => e.stopPropagation()}>
               <h3 className='font-display font-semibold text-sm text-fg mb-3'>填寫出貨資訊</h3>
@@ -873,6 +1085,119 @@ function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) 
           )}
         </div>
       )}
+    </div>
+  )
+}
+
+// ── AC-B7~B8: BatchActionBar（已結單批次出貨）─────────────────────────────────
+
+interface BatchActionBarProps {
+  selectedIds: Set<string>
+  onClear: () => void
+  onSuccess: () => void
+  toastFn: (msg: string, type: 'success' | 'error') => void
+}
+
+function BatchActionBar({ selectedIds, onClear, onSuccess, toastFn }: BatchActionBarProps) {
+  const [showForm, setShowForm] = useState(false)
+  const [shippingVendor, setShippingVendor] = useState<ShippingVendor>('黑貓')
+  const [shippingNumber, setShippingNumber] = useState('')
+  const [isPending, startTransition] = useTransition()
+  const formRef = useRef<HTMLDivElement>(null)
+
+  function handleConfirm() {
+    startTransition(async () => {
+      try {
+        const res = await fetch('/api/admin/orders/batch', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            orderIds: Array.from(selectedIds),
+            status: 'shipped',
+            shipping_vendor: shippingVendor,
+            ...(shippingNumber.trim() ? { shipping_number: shippingNumber.trim() } : {}),
+          }),
+        })
+        const json = (await res.json()) as { success?: boolean; error?: string; updated?: number }
+        if (json.success) {
+          toastFn(`已批次確認出貨 ${json.updated} 筆訂單`, 'success')
+          onSuccess()
+        } else {
+          throw new Error(json.error ?? '批次出貨失敗')
+        }
+      } catch (err) {
+        toastFn(err instanceof Error ? err.message : '批次出貨失敗', 'error')
+      }
+    })
+  }
+
+  return (
+    <div className='fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-xl px-4'>
+      <div className='bg-fg text-white rounded-2xl shadow-xl overflow-hidden'>
+        {/* 主列 */}
+        <div className='flex items-center gap-3 px-5 py-3'>
+          <span className='font-display font-bold text-sm'>已選 {selectedIds.size} 筆</span>
+          <div className='flex-1' />
+          <button
+            type='button'
+            onClick={onClear}
+            className='h-8 px-3 rounded-pill bg-white/10 hover:bg-white/20 font-display font-semibold text-xs transition'
+          >
+            取消選取
+          </button>
+          <button
+            type='button'
+            onClick={() => setShowForm((f) => !f)}
+            className='h-8 px-4 rounded-pill bg-primary text-white font-display font-semibold text-xs shadow-pink hover:bg-primary-hv transition'
+          >
+            確認出貨
+          </button>
+        </div>
+
+        {/* AC-B8: 展開填寫共用物流資訊 */}
+        {showForm && (
+          <div ref={formRef} className='border-t border-white/15 px-5 py-4 space-y-3'>
+            <p className='text-xs text-white/70'>所有選取訂單將使用同一組物流資訊出貨</p>
+            <div className='grid grid-cols-2 gap-3'>
+              <div>
+                <label className='block text-white/70 text-[11px] mb-1'>物流商</label>
+                <select
+                  value={shippingVendor}
+                  onChange={(e) => setShippingVendor(e.target.value as ShippingVendor)}
+                  className='w-full h-9 px-3 rounded-lg bg-white/10 border border-white/20 text-white text-sm outline-none focus:border-primary transition'
+                >
+                  {SHIPPING_VENDORS.map((v) => (
+                    <option key={v} value={v} className='text-fg'>
+                      {v}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className='block text-white/70 text-[11px] mb-1'>
+                  物流單號
+                  <span className='ml-1 text-white/40'>（選填）</span>
+                </label>
+                <input
+                  type='text'
+                  value={shippingNumber}
+                  onChange={(e) => setShippingNumber(e.target.value)}
+                  placeholder='例：12345678901'
+                  className='w-full h-9 px-3 rounded-lg bg-white/10 border border-white/20 text-white text-sm font-mono outline-none focus:border-primary transition placeholder:text-white/30'
+                />
+              </div>
+            </div>
+            <button
+              type='button'
+              disabled={isPending}
+              onClick={handleConfirm}
+              className='w-full h-10 rounded-pill bg-primary text-white font-display font-bold text-sm shadow-pink hover:bg-primary-hv transition disabled:opacity-50'
+            >
+              {isPending ? '處理中…' : `確認批次出貨 ${selectedIds.size} 筆`}
+            </button>
+          </div>
+        )}
+      </div>
     </div>
   )
 }
