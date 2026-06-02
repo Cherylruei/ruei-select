@@ -1093,7 +1093,7 @@ interface BatchActionBarProps {
 
 function BatchActionBar({ selectedIds, onClear, onSuccess, toastFn }: BatchActionBarProps) {
   const [showForm, setShowForm] = useState(false)
-  const [shippingVendor, setShippingVendor] = useState<ShippingVendor>('黑貓')
+  const [shippingVendor, setShippingVendor] = useState<ShippingVendor>('7-11')
   const [shippingNumber, setShippingNumber] = useState('')
   const [isPending, startTransition] = useTransition()
   const formRef = useRef<HTMLDivElement>(null)
