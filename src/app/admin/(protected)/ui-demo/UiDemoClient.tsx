@@ -579,8 +579,9 @@ export default function UiDemoClient({ initialVariant }: UiDemoClientProps) {
             <OrderStatusBadge status='cancelled' />
           </Row>
           <Row label='OrderStatusBadge — customer display statuses'>
-            <OrderStatusBadge status='已訂購' />
+            <OrderStatusBadge status='已下單' />
             <OrderStatusBadge status='已到貨' />
+            <OrderStatusBadge status='已結單' />
             <OrderStatusBadge status='已出貨' />
             <OrderStatusBadge status='已完成' />
             <OrderStatusBadge status='已取消' />

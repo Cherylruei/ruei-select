@@ -7,7 +7,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../../../src/styles/design-tokens.css" />
+  <link rel="stylesheet" href="../src/styles/design-tokens.css" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="_tailwind-config.js"></script>
   <style>
@@ -140,28 +140,32 @@
       </div>
     </div>
 
-    <!-- Stats: 5 segments in one bordered card -->
-    <div class="grid grid-cols-5 bg-surface rounded-xl card-line shadow-sm overflow-hidden">
+    <!-- Stats: 6 segments in flow order — 已下單 → 已到貨 → 已結單 → 已出貨 → 已完成 -->
+    <div class="grid grid-cols-6 bg-surface rounded-xl card-line shadow-sm overflow-hidden">
       <a class="px-5 py-4 text-left border-r divider-warm hover:bg-primary-bg/30 transition cursor-pointer">
         <div class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">全部</div>
-        <div class="font-display font-bold text-2xl leading-none mt-1.5">6</div>
+        <div class="font-display font-bold text-2xl leading-none mt-1.5">8</div>
       </a>
       <a class="px-5 py-4 text-left border-r divider-warm hover:bg-primary-bg/30 transition cursor-pointer">
-        <div class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">已訂購</div>
+        <div class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">已下單</div>
         <div class="font-display font-bold text-2xl leading-none mt-1.5" style="color:#4E94CE">2</div>
       </a>
-      <a class="px-5 py-4 text-left border-r divider-warm hover:bg-primary-bg/30 transition cursor-pointer">
-        <div class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">已出貨</div>
-        <div class="font-display font-bold text-2xl leading-none mt-1.5" style="color:#5E9763">1</div>
-      </a>
       <a class="px-5 py-4 text-left border-r divider-warm relative bg-primary-bg/60 cursor-pointer">
-        <div class="font-mono text-[10px] tracking-wider uppercase" style="color:#B82F50">可結單</div>
+        <div class="font-mono text-[10px] tracking-wider uppercase" style="color:#B82F50">已到貨 · 可結單</div>
         <div class="font-display font-bold text-2xl leading-none mt-1.5" style="color:#D94466">3</div>
         <span class="absolute left-0 top-0 right-0 h-1 rounded-b-pill bg-primary"></span>
       </a>
+      <a class="px-5 py-4 text-left border-r divider-warm hover:bg-primary-bg/30 transition cursor-pointer">
+        <div class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">已結單</div>
+        <div class="font-display font-bold text-2xl leading-none mt-1.5" style="color:#5E9763">1</div>
+      </a>
+      <a class="px-5 py-4 text-left border-r divider-warm hover:bg-primary-bg/30 transition cursor-pointer">
+        <div class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">已出貨</div>
+        <div class="font-display font-bold text-2xl leading-none mt-1.5" style="color:#7A5A36">1</div>
+      </a>
       <a class="px-5 py-4 text-left hover:bg-primary-bg/30 transition cursor-pointer">
-        <div class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">已出貨 / 完成</div>
-        <div class="font-display font-bold text-2xl leading-none mt-1.5" style="color:#5E9763">2</div>
+        <div class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">已完成</div>
+        <div class="font-display font-bold text-2xl leading-none mt-1.5" style="color:#78766B">1</div>
       </a>
     </div>
   </section>
@@ -269,25 +273,16 @@
     </div>
   </section>
 
-  <!-- ===== Filter tabs ===== -->
-  <section class="max-w-[1280px] mx-auto px-8 pt-8 pb-3 flex items-center gap-2">
-    <h2 class="font-display font-bold text-lg whitespace-nowrap mr-2">其他訂單</h2>
-    <button class="inline-flex items-center h-8 px-3.5 rounded-pill bg-primary text-white font-display font-bold text-xs shadow-pink whitespace-nowrap">全部 · 3</button>
-    <button class="inline-flex items-center h-8 px-3.5 rounded-pill bg-surface text-fg-muted font-display font-semibold text-xs card-line whitespace-nowrap">已訂購 · 2</button>
-    <button class="inline-flex items-center h-8 px-3.5 rounded-pill bg-surface text-fg-muted font-display font-semibold text-xs card-line whitespace-nowrap">已出貨 · 1</button>
-    <button class="inline-flex items-center h-8 px-3.5 rounded-pill bg-surface text-fg-muted font-display font-semibold text-xs card-line whitespace-nowrap">已完成 · 1</button>
-    <span class="flex-1 h-px" style="background:linear-gradient(to right, var(--line-warm-strong), transparent);"></span>
-    <button class="inline-flex items-center gap-1 h-8 px-3.5 rounded-pill bg-surface text-fg-muted font-display font-semibold text-xs card-line whitespace-nowrap">
-      時間 ↓
-      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg>
-    </button>
-  </section>
+  <!-- ===== Filter view: 已下單 orders（條列式，按篩選顯示）===== -->
+  <!-- NOTE: 全部 view 只顯示上方「可結單」hero card。其他狀態透過 stats bar 篩選後顯示。 -->
+  <section class="max-w-[1280px] mx-auto px-8 pb-12 pt-6">
+    <div class="flex items-center gap-2 mb-4">
+      <span class="font-mono text-[11px] tracking-[0.15em] uppercase" style="color:var(--c-primary-hv)">2 筆訂單</span>
+      <span class="flex-1 h-px" style="background:linear-gradient(to right, var(--line-warm-strong), transparent);"></span>
+    </div>
+    <div class="space-y-3">
 
-  <!-- ===== Other orders: 2-col card grid ===== -->
-  <section class="max-w-[1280px] mx-auto px-8 pb-12">
-    <div class="grid grid-cols-2 gap-4">
-
-      <!-- 已訂購 1 -->
+      <!-- 已下單 1 -->
       <article class="bg-surface rounded-xl shadow-sm card-line overflow-hidden">
         <div class="flex items-center justify-between px-5 pt-3.5 pb-2.5 border-b divider-warm bg-[#FDF6F0]">
           <div class="flex items-baseline gap-2">
@@ -295,7 +290,7 @@
             <span class="font-mono text-[10px] text-fg-subtle">6/16 21:45</span>
           </div>
           <span class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-pill pill-info font-display font-bold text-[11px] whitespace-nowrap">
-            <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已訂購
+            <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已下單
           </span>
         </div>
         <div class="flex items-center gap-4 px-5 py-3.5">
@@ -317,7 +312,7 @@
         </div>
       </article>
 
-      <!-- 已訂購 2 -->
+      <!-- 已下單 2 -->
       <article class="bg-surface rounded-xl shadow-sm card-line overflow-hidden">
         <div class="flex items-center justify-between px-5 pt-3.5 pb-2.5 border-b divider-warm bg-[#FDF6F0]">
           <div class="flex items-baseline gap-2">
@@ -325,7 +320,7 @@
             <span class="font-mono text-[10px] text-fg-subtle">6/16 16:20</span>
           </div>
           <span class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-pill pill-info font-display font-bold text-[11px] whitespace-nowrap">
-            <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已訂購
+            <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已下單
           </span>
         </div>
         <div class="flex items-center gap-4 px-5 py-3.5">
@@ -341,9 +336,39 @@
             <div class="font-mono font-bold text-sm" style="color:#D94466">NT$ 1,980</div>
           </div>
         </div>
-        <div class="px-5 pb-3.5 flex items-center justify-end gap-2">
-          <button class="h-8 px-3.5 rounded-pill bg-surface card-line text-xs font-display font-semibold text-fg-muted hover:text-fg-default">取消訂單</button>
-          <button class="h-8 px-3.5 rounded-pill bg-surface card-line text-xs font-display font-semibold text-primary hover:bg-primary-bg">追蹤進度 →</button>
+        <div class="mx-5 mb-3 px-3 py-2 rounded-md flex items-center gap-2" style="background:#FBF2EA;border:1px solid #F2E2D0;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" class="text-fg-muted shrink-0"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span class="text-xs text-fg-muted">小美已向供應商下單，預計 3 週內到貨</span>
+        </div>
+      </article>
+
+      <!-- 已結單 (已付款 · 待出貨) -->
+      <article class="bg-surface rounded-xl shadow-sm card-line overflow-hidden">
+        <div class="flex items-center justify-between px-5 pt-3.5 pb-2.5 border-b divider-warm bg-[#F4FAF5]">
+          <div class="flex items-baseline gap-2">
+            <span class="font-mono text-xs font-semibold">RS-2405</span>
+            <span class="font-mono text-[10px] text-fg-subtle">6/14 09:30</span>
+          </div>
+          <span class="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-pill pill-success font-display font-bold text-[11px] whitespace-nowrap">
+            <span class="w-1.5 h-1.5 rounded-pill bg-current"></span>已結單
+          </span>
+        </div>
+        <div class="flex items-center gap-4 px-5 py-3.5">
+          <div class="w-14 h-14 rounded-md placeholder-img-mango shrink-0 card-line"></div>
+          <div class="flex-1 min-w-0">
+            <div class="font-display font-bold text-sm leading-tight">北海道限定牛奶糖</div>
+            <div class="flex items-center gap-1.5 mt-1">
+              <span class="inline-flex items-center h-5 px-2 rounded-pill font-display font-semibold text-[10px]" style="background:#F5EBDB;color:#6B502C;border:1px solid #E0CCAA;">Penny Lane</span>
+              <span class="font-mono text-[10px] text-fg-subtle">原味 · × 1</span>
+            </div>
+          </div>
+          <div class="text-right">
+            <div class="font-mono font-bold text-sm" style="color:#D94466">NT$ 420</div>
+          </div>
+        </div>
+        <div class="mx-5 mb-3 px-3 py-2 rounded-md flex items-center gap-2" style="background:#EEF7EF;border:1px solid #CFE7D2;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#5E9763" stroke-width="2.2" stroke-linecap="round" class="shrink-0"><path d="M5 12l4 4 10-10"/></svg>
+          <span class="text-xs" style="color:#3F6B45">已付款 NT$ 458（含運 NT$ 38）· 待小美安排出貨</span>
         </div>
       </article>
 
@@ -370,6 +395,10 @@
           <div class="text-right">
             <div class="font-mono font-bold text-sm" style="color:#D94466">NT$ 580</div>
           </div>
+        </div>
+        <div class="mx-5 mb-3 px-3 py-2 rounded-md flex items-center gap-2" style="background:#FBF6EE;border:1px solid #E8DBC4;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7A5A36" stroke-width="1.9" stroke-linecap="round" class="shrink-0"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          <span class="text-xs" style="color:#7A5A36">6/12 出貨 · 滿 14 天自動完成（還有 7 天）</span>
         </div>
         <div class="mx-5 mb-3.5 pt-3 border-t divider-warm flex items-center justify-between">
           <div class="flex items-center gap-2 text-xs">

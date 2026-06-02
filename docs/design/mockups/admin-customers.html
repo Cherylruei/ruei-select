@@ -1,0 +1,608 @@
+<!doctype html>
+<html lang="zh-Hant" data-variant="forest">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>芮選 · 商家後台 · 顧客審核</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../src/styles/design-tokens.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="_tailwind-config.js"></script>
+  <style>
+    body { font-family: var(--font-body); }
+    .logo-mark { fill: var(--c-primary); } .logo-leaf { fill: var(--c-secondary); opacity: 0.85; } .logo-center { fill: var(--c-primary-bg); }
+
+    .scrim { transition: opacity .28s var(--ease-out); }
+    .modal-box { transition: transform .28s var(--ease-spring), opacity .2s var(--ease-out); }
+
+    .review-card { transition: box-shadow .2s var(--ease-out), border-color .2s, transform .35s var(--ease-out), opacity .35s var(--ease-out); }
+    .review-card:hover { box-shadow: var(--shadow-md); border-color: var(--border-strong); }
+    .card-leaving { opacity: 0; transform: translateX(28px) scale(.98); }
+
+    .row-leaving { opacity: 0; transform: translateY(-6px); }
+    .cust-row { transition: opacity .3s var(--ease-out), transform .3s var(--ease-out), background .15s; }
+
+    .fld {
+      width: 100%; font-family: inherit; font-size: var(--fs-base); color: var(--fg-default);
+      background: var(--bg-surface); border: 1.5px solid var(--border); border-radius: var(--r-md);
+      padding: 10px 13px; outline: none;
+      transition: border-color .2s var(--ease-out), box-shadow .2s var(--ease-out);
+    }
+    .fld:hover { border-color: var(--border-strong); }
+    .fld:focus { border-color: var(--c-primary); box-shadow: 0 0 0 4px var(--c-primary-bg); }
+    .fld::placeholder { color: var(--ink-400); }
+
+    /* LINE-photo avatar placeholder (striped, like store mockups) */
+    .line-ava { background: repeating-linear-gradient(135deg,#E7EEE6,#E7EEE6 7px,#F1F6F1 7px,#F1F6F1 14px); }
+
+    .reason-chip {
+      cursor: pointer; transition: all .15s;
+    }
+    .reason-chip[aria-pressed="true"] { background: var(--c-danger); color:#fff; border-color: var(--c-danger); }
+
+    .no-scrollbar::-webkit-scrollbar { display:none; }
+    .no-scrollbar { -ms-overflow-style:none; scrollbar-width:none; }
+  </style>
+</head>
+<body class="bg-app text-fg">
+
+  <div class="flex min-h-screen">
+
+    <!-- ===== Sidebar ===== -->
+    <aside class="w-60 shrink-0 bg-surface border-r border-line flex flex-col sticky top-0 h-screen">
+      <div class="px-5 py-5 border-b border-line">
+        <div class="flex items-center gap-2.5">
+          <svg width="36" height="36" viewBox="0 0 40 40">
+            <ellipse class="logo-leaf" cx="32" cy="11" rx="5" ry="3" transform="rotate(35 32 11)" />
+            <circle class="logo-mark" cx="20" cy="11" r="9"/><circle class="logo-mark" cx="28.56" cy="17.22" r="9"/>
+            <circle class="logo-mark" cx="25.29" cy="27.28" r="9"/><circle class="logo-mark" cx="14.71" cy="27.28" r="9"/>
+            <circle class="logo-mark" cx="11.44" cy="17.22" r="9"/><circle class="logo-center" cx="20" cy="20" r="4.5"/>
+          </svg>
+          <div class="leading-none">
+            <div class="font-display font-bold text-lg tracking-wide">芮選</div>
+            <div class="font-mono text-[9px] text-fg-subtle tracking-[0.2em] mt-1">RUEI · SELECT</div>
+          </div>
+        </div>
+        <div class="mt-4 flex items-center gap-2 px-3 py-2 rounded-md bg-sunken">
+          <div class="w-2 h-2 rounded-pill bg-success"></div>
+          <span class="text-xs text-fg-muted">小美的選物店</span>
+        </div>
+      </div>
+
+      <nav class="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto no-scrollbar">
+        <div class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase px-3 mb-2">主要</div>
+        <a href="admin-dashboard.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 20h16M7 16V10M12 16V6M17 16v-8"/></svg>
+          <span class="flex-1">總覽</span>
+        </a>
+        <a href="admin-orders.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
+          <span class="flex-1">訂單管理</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">6</span>
+        </a>
+        <a href="admin-products.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 8l8-4 8 4-8 4-8-4z"/><path d="M4 8v8l8 4 8-4V8"/></svg>
+          <span class="flex-1">商品管理</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">42</span>
+        </a>
+        <a class="flex items-center gap-2.5 px-3 py-2.5 rounded-md bg-primary-bg font-semibold text-sm" style="color:var(--c-primary-hv)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+          <span class="flex-1">顧客審核</span>
+          <span id="navPendingBadge" class="font-mono text-xs px-2 py-0.5 rounded-pill bg-warning text-white">3</span>
+        </a>
+        <a href="admin-wishlists.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z"/></svg>
+          <span class="flex-1">許願池</span>
+          <span class="font-mono text-xs px-2 py-0.5 rounded-pill bg-sunken text-fg-muted">12</span>
+        </a>
+
+        <div class="font-mono text-[10px] text-fg-subtle tracking-[0.15em] uppercase px-3 mt-5 mb-2">設定</div>
+        <a href="admin-suppliers.html" class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 9c0-3 3-5 8-5s8 2 8 5-3 5-8 5l-3 3v-3c-3-1-5-3-5-5z"/></svg>
+          <span class="flex-1">供應商</span>
+        </a>
+        <a class="flex items-center gap-2.5 px-3 py-2.5 rounded-md text-fg hover:bg-sunken font-medium text-sm cursor-pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 00-.2-1.7l2-1.5-2-3.5-2.4.8a7 7 0 00-3-1.7L13 2h-2l-.4 2.4a7 7 0 00-3 1.7L5.2 5.3l-2 3.5 2 1.5A7 7 0 005 12c0 .6 0 1.2.2 1.7l-2 1.5 2 3.5 2.4-.8a7 7 0 003 1.7L11 22h2l.4-2.4a7 7 0 003-1.7l2.4.8 2-3.5-2-1.5c.1-.5.2-1.1.2-1.7z"/></svg>
+          <span class="flex-1">賣場設定</span>
+        </a>
+      </nav>
+
+      <div class="p-3 border-t border-line">
+        <div class="flex items-center gap-2.5 px-2 py-2 rounded-md hover:bg-sunken cursor-pointer">
+          <div class="w-9 h-9 rounded-pill bg-secondary text-white font-display font-bold flex items-center justify-center">C</div>
+          <div class="flex-1 leading-tight">
+            <div class="font-semibold text-sm">Cheryl</div>
+            <div class="font-mono text-[10px] text-fg-subtle"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="92f1faf7e0ebfed2e0e7f7fbbce6e5">[email&#160;protected]</a></div>
+          </div>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-fg-subtle"><path d="M9 6l6 6-6 6"/></svg>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ===== Main ===== -->
+    <main class="flex-1 min-w-0">
+
+      <!-- Top bar -->
+      <div class="px-8 py-5 border-b border-line bg-surface/70 backdrop-blur sticky top-0 z-10">
+        <div class="font-mono text-[11px] text-fg-subtle mb-2 flex items-center gap-1.5">
+          <a href="admin-dashboard.html" class="hover:text-fg cursor-pointer">後台</a><span>›</span><span class="text-fg">顧客審核</span>
+        </div>
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <h1 class="font-display font-bold text-2xl">顧客審核</h1>
+            <p class="text-sm text-fg-muted mt-0.5"><b id="subPending" class="text-warning">3</b> 筆申請待審核 · 賣場目前 <b id="subApproved" class="text-fg">28</b> 位顧客</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <div class="relative">
+              <input id="searchInput" oninput="renderList()" class="w-64 h-10 pl-10 pr-4 rounded-pill border-[1.5px] border-line bg-surface outline-none focus:border-primary focus:shadow-[0_0_0_4px_var(--c-primary-bg)] transition text-sm" placeholder="搜尋顧客姓名、LINE ID…" />
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" class="absolute left-3.5 top-1/2 -translate-y-1/2 text-fg-subtle"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4-4" stroke-linecap="round"/></svg>
+            </div>
+            <a href="store-login.html" target="_blank" class="inline-flex items-center gap-2 h-10 rounded-pill border border-line bg-surface text-fg px-4 font-display font-semibold text-sm hover:bg-sunken transition cursor-pointer">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1"/></svg>
+              邀請連結
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="p-8 space-y-6 max-w-[1080px]">
+
+        <!-- ===== Stat strip ===== -->
+        <section class="grid grid-cols-4 gap-4">
+          <div class="bg-surface rounded-xl p-4" style="border:1.5px solid var(--c-warning);box-shadow:var(--shadow-xs)">
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-pill bg-warning"></span><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider">待審核</span></div>
+            <div class="font-display font-bold text-3xl mt-1.5 text-warning" id="statPending">3</div>
+            <div class="text-[11px] text-fg-subtle mt-1">最久 1 天前申請</div>
+          </div>
+          <div class="bg-surface border border-line rounded-xl p-4">
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-pill bg-success"></span><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider">已通過</span></div>
+            <div class="font-display font-bold text-3xl mt-1.5" id="statApproved">28</div>
+            <div class="text-[11px] text-fg-subtle mt-1">本月新加入 6 位</div>
+          </div>
+          <div class="bg-surface border border-line rounded-xl p-4">
+            <div class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-pill" style="background:var(--ink-400)"></span><span class="font-mono text-[10px] text-fg-muted uppercase tracking-wider">已拒絕</span></div>
+            <div class="font-display font-bold text-3xl mt-1.5 text-fg-subtle" id="statRejected">2</div>
+            <div class="text-[11px] text-fg-subtle mt-1">多為廣告 / 重複帳號</div>
+          </div>
+          <div class="rounded-xl p-4 text-white relative overflow-hidden" style="background:linear-gradient(135deg,var(--forest-400),var(--forest-600));">
+            <div class="font-mono text-[10px] uppercase tracking-wider text-white/85">本月新申請</div>
+            <div class="font-display font-bold text-3xl mt-1.5 leading-none">9</div>
+            <div class="text-[11px] text-white/85 mt-1.5">通過率 78% · 平均 4 小時回覆</div>
+          </div>
+        </section>
+
+        <!-- ===== Filter tabs ===== -->
+        <section class="flex items-center gap-2">
+          <button data-tab="pending" onclick="switchTab('pending')" class="tab-btn inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill font-display font-semibold text-xs transition">待審核 <span class="font-mono tab-count">3</span></button>
+          <button data-tab="approved" onclick="switchTab('approved')" class="tab-btn inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill font-display font-semibold text-xs transition">已通過 <span class="font-mono tab-count">28</span></button>
+          <button data-tab="rejected" onclick="switchTab('rejected')" class="tab-btn inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill font-display font-semibold text-xs transition">已拒絕 <span class="font-mono tab-count">2</span></button>
+          <div class="flex-1"></div>
+          <button id="approveAllBtn" onclick="approveAll()" class="inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-secondary-bg text-secondary font-display font-semibold text-xs hover:bg-secondary hover:text-white transition">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>
+            全部通過
+          </button>
+        </section>
+
+        <!-- ===== List container ===== -->
+        <section id="listArea"></section>
+
+        <div class="text-center py-2 font-mono text-[10px] text-fg-subtle tracking-[0.15em]">
+          芮選 · 顧客審核 · DESIGN MOCKUP
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- Reject confirm modal                                         -->
+  <!-- ============================================================ -->
+  <div id="modalWrap" class="fixed inset-0 z-50 hidden items-center justify-center p-4">
+    <div id="modalScrim" class="scrim absolute inset-0 opacity-0" style="background:var(--bg-overlay)" onclick="closeModal()"></div>
+    <div id="modalBox" class="modal-box relative bg-surface rounded-2xl shadow-lg w-full max-w-[440px] p-6 opacity-0 scale-95">
+      <div class="flex items-start gap-3.5">
+        <div class="w-11 h-11 rounded-pill bg-danger-bg flex items-center justify-center shrink-0">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--c-danger)" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>
+        </div>
+        <div class="min-w-0">
+          <h3 class="font-display font-bold text-lg leading-snug">拒絕「<span id="rejName">—</span>」的申請？</h3>
+          <p class="text-sm text-fg-muted mt-1.5 leading-relaxed">對方將無法瀏覽賣場與下單。你可日後在「已拒絕」分頁改回通過。</p>
+        </div>
+      </div>
+
+      <div class="mt-5">
+        <label class="block text-sm font-semibold mb-2">拒絕原因 <span class="text-fg-subtle font-normal">（選填，僅商家可見）</span></label>
+        <div class="flex flex-wrap gap-1.5 mb-2.5">
+          <button class="reason-chip h-7 px-3 rounded-pill border border-line bg-surface text-fg-muted font-display font-semibold text-xs" aria-pressed="false" onclick="pickReason(this)">疑似廣告帳號</button>
+          <button class="reason-chip h-7 px-3 rounded-pill border border-line bg-surface text-fg-muted font-display font-semibold text-xs" aria-pressed="false" onclick="pickReason(this)">重複申請</button>
+          <button class="reason-chip h-7 px-3 rounded-pill border border-line bg-surface text-fg-muted font-display font-semibold text-xs" aria-pressed="false" onclick="pickReason(this)">非熟客 / 不認識</button>
+          <button class="reason-chip h-7 px-3 rounded-pill border border-line bg-surface text-fg-muted font-display font-semibold text-xs" aria-pressed="false" onclick="pickReason(this)">資料不完整</button>
+        </div>
+        <textarea id="rejReason" class="fld" style="min-height:64px;resize:vertical" placeholder="補充說明（選填）"></textarea>
+      </div>
+
+      <div class="flex items-center gap-2 mt-6">
+        <button onclick="closeModal()" class="flex-1 h-11 rounded-pill border border-line text-fg font-display font-semibold text-sm hover:bg-sunken transition">取消</button>
+        <button onclick="doReject()" class="flex-1 h-11 rounded-pill bg-danger text-white font-display font-semibold text-sm hover:brightness-95 active:scale-[.97] transition">確定拒絕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- toast -->
+  <div id="toast" class="fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-4 opacity-0 pointer-events-none transition-all duration-300 z-[60]">
+    <div class="toast toast-success"><span class="ico" id="toastIco"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg></span><span id="toastMsg">已通過</span></div>
+  </div>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    // ============================================================
+    //  Customer data (mock) — 與 store-register 欄位一致
+    //  status: pending | approved | rejected
+    // ============================================================
+    const PALETTE = ['var(--forest-400)','var(--sakura-400)','var(--earth-400)','var(--c-info)','var(--c-secondary)','var(--sakura-500)'];
+    let _c = 0; const nextColor = () => PALETTE[_c++ % PALETTE.length];
+
+    const CUSTOMERS = [
+      // ---------- pending ----------
+      { id:'c1', status:'pending', name:'Momo', initial:'M', color:'var(--sakura-400)',
+        lineId:'momo.shop', phone:'', appliedAt:'1 天前', source:'邀請連結',
+        msg:'在 IG 看到小美的選物好心動，想跟團買日韓小物 ✨' },
+      { id:'c2', status:'pending', name:'林佳穎', initial:'林', color:'var(--forest-400)',
+        lineId:'jiaying.lin', phone:'0928-114-220', appliedAt:'2 小時前', source:'邀請連結',
+        msg:'朋友 Anna 推薦我來的～想跟團日本零食！' },
+      { id:'c3', status:'pending', name:'陳柏宇', initial:'陳', color:'var(--c-info)',
+        lineId:'boyu_chen', phone:'', appliedAt:'剛剛', source:'邀請連結', msg:'' },
+
+      // ---------- approved ----------
+      { id:'c4', status:'approved', name:'王小美', initial:'王', color:'var(--sakura-500)',
+        lineId:'wang.meimei', phone:'0912-345-678', joinedAt:'3 個月前', orders:12, spend:18400 },
+      { id:'c5', status:'approved', name:'Anna Wu', initial:'A', color:'var(--earth-400)',
+        lineId:'anna_wu', phone:'0921-880-156', joinedAt:'2 個月前', orders:8, spend:9600 },
+      { id:'c6', status:'approved', name:'張庭瑄', initial:'張', color:'var(--forest-400)',
+        lineId:'ting.chang', phone:'0933-201-447', joinedAt:'6 週前', orders:5, spend:5200 },
+      { id:'c7', status:'approved', name:'Kevin', initial:'K', color:'var(--c-secondary)',
+        lineId:'kevin.lin', phone:'', joinedAt:'1 個月前', orders:3, spend:2800 },
+      { id:'c8', status:'approved', name:'李曉華', initial:'李', color:'var(--c-info)',
+        lineId:'xiaohua_li', phone:'0955-668-211', joinedAt:'3 週前', orders:1, spend:680 },
+      { id:'c9', status:'approved', name:'陳大文', initial:'陳', color:'var(--earth-400)',
+        lineId:'dawen.chen', phone:'', joinedAt:'5 天前', orders:0, spend:0 },
+
+      // ---------- rejected ----------
+      { id:'c10', status:'rejected', name:'代購批發888', initial:'代', color:'var(--ink-400)',
+        lineId:'free_money_88', phone:'', rejectedAt:'1 週前', reason:'疑似廣告帳號' },
+      { id:'c11', status:'rejected', name:'??', initial:'?', color:'var(--ink-400)',
+        lineId:'test_test_99', phone:'', rejectedAt:'2 週前', reason:'資料不完整' },
+    ];
+
+    let currentTab = 'pending';
+    let rejectingId = null;
+
+    const esc = (s) => (s||'').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+    const fmtSpend = (n) => n === 0 ? '尚未消費' : 'NT$ ' + n.toLocaleString();
+
+    // ============================================================
+    //  Counts / header sync
+    // ============================================================
+    function counts(){
+      return {
+        pending:  CUSTOMERS.filter(c=>c.status==='pending').length,
+        approved: CUSTOMERS.filter(c=>c.status==='approved').length,
+        rejected: CUSTOMERS.filter(c=>c.status==='rejected').length,
+      };
+    }
+    function syncCounts(){
+      const c = counts();
+      document.querySelector('[data-tab="pending"] .tab-count').textContent  = c.pending;
+      document.querySelector('[data-tab="approved"] .tab-count').textContent = c.approved;
+      document.querySelector('[data-tab="rejected"] .tab-count').textContent = c.rejected;
+      document.getElementById('statPending').textContent  = c.pending;
+      document.getElementById('statApproved').textContent = c.approved;
+      document.getElementById('statRejected').textContent = c.rejected;
+      document.getElementById('subPending').textContent   = c.pending;
+      document.getElementById('subApproved').textContent  = c.approved;
+      const badge = document.getElementById('navPendingBadge');
+      badge.textContent = c.pending;
+      badge.style.display = c.pending ? '' : 'none';
+      const allBtn = document.getElementById('approveAllBtn');
+      allBtn.style.display = (currentTab === 'pending' && c.pending > 0) ? '' : 'none';
+    }
+
+    // ============================================================
+    //  Tabs
+    // ============================================================
+    function paintTabs(){
+      document.querySelectorAll('.tab-btn').forEach(b=>{
+        const on = b.dataset.tab === currentTab;
+        b.className = 'tab-btn inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill font-display font-semibold text-xs transition '
+          + (on ? 'bg-primary text-white' : 'bg-sunken text-fg-muted hover:bg-ink-200');
+      });
+    }
+    function switchTab(t){ currentTab = t; paintTabs(); syncCounts(); renderList(); }
+
+    // ============================================================
+    //  Avatar
+    // ============================================================
+    function avatar(c, size){
+      const s = size || 48;
+      return `<div class="rounded-pill text-white font-display font-bold flex items-center justify-center shrink-0 relative" style="width:${s}px;height:${s}px;background:${c.color};font-size:${s*0.4}px">
+        ${esc(c.initial)}
+        <span class="absolute -bottom-0.5 -right-0.5 rounded-pill flex items-center justify-center ring-2 ring-white" style="width:${s*0.4}px;height:${s*0.4}px;background:#06C755">
+          <svg width="${s*0.22}" height="${s*0.22}" viewBox="0 0 24 24" fill="#fff"><path d="M12 3C6.9 3 2.75 6.43 2.75 10.66c0 3.79 3.3 6.96 7.76 7.56.3.06.71.2.81.46.09.24.06.6.03.85l-.13.79c-.04.24-.18.92.81.5s5.34-3.14 7.29-5.38c1.34-1.47 1.99-2.97 1.99-4.78C21.31 6.43 17.13 3 12 3z"/></svg>
+        </span>
+      </div>`;
+    }
+    const phoneChip = (p) => p
+      ? `<span class="inline-flex items-center gap-1 font-mono text-xs text-fg-muted"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" class="text-fg-subtle"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 005 5l1.5-2 4 1.5V18a2 2 0 01-2 2A14 14 0 015 6a2 2 0 010-2z"/></svg>${esc(p)}</span>`
+      : `<span class="inline-flex items-center gap-1 font-mono text-xs text-fg-subtle"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M5 4h3l1.5 4-2 1.5a11 11 0 005 5l1.5-2 4 1.5V18a2 2 0 01-2 2A14 14 0 015 6a2 2 0 010-2z"/></svg>手機下單時再補</span>`;
+
+    // ============================================================
+    //  Card builders
+    // ============================================================
+    function pendingCard(c){
+      const msg = c.msg
+        ? `<div class="mt-3 relative rounded-lg rounded-tl-sm bg-ink-50 border border-line px-3.5 py-2.5 text-sm text-fg leading-relaxed">
+             <span class="font-mono text-[9px] text-fg-subtle uppercase tracking-wider block mb-0.5">留言</span>${esc(c.msg)}
+           </div>`
+        : '';
+      return `
+      <article class="review-card bg-surface border border-line rounded-xl p-5" data-id="${c.id}">
+        <div class="flex items-start gap-4">
+          ${avatar(c, 48)}
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3 class="font-display font-bold text-md">${esc(c.name)}</h3>
+              <span class="inline-flex items-center h-5 px-2 rounded-pill font-display font-bold text-[10px]" style="background:#06C755;color:#fff">LINE 已連結</span>
+            </div>
+            <div class="flex items-center gap-3 mt-1.5 flex-wrap">
+              <span class="inline-flex items-center gap-1 font-mono text-xs text-fg-muted"><span class="text-fg-subtle">@</span>${esc(c.lineId)}</span>
+              ${phoneChip(c.phone)}
+            </div>
+            ${msg}
+          </div>
+          <div class="text-right shrink-0">
+            <div class="font-mono text-[11px] text-fg-subtle">${esc(c.appliedAt)}</div>
+            <div class="inline-flex items-center gap-1 mt-1 h-5 px-2 rounded-pill bg-sunken text-fg-muted font-mono text-[10px]">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1"/></svg>
+              ${esc(c.source)}
+            </div>
+          </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-line flex items-center gap-2">
+          <span class="font-mono text-[10px] text-fg-subtle uppercase tracking-wider flex-1">審核這位顧客的入會申請</span>
+          <button onclick="askReject('${c.id}')" class="inline-flex items-center gap-1.5 h-9 px-4 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-danger-bg hover:text-danger hover:border-danger transition">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>
+            拒絕
+          </button>
+          <button onclick="approve('${c.id}')" class="inline-flex items-center gap-1.5 h-9 px-5 rounded-pill bg-secondary text-white font-display font-bold text-xs shadow-green hover:bg-secondary-hv active:scale-[.97] transition">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>
+            通過申請
+          </button>
+        </div>
+      </article>`;
+    }
+
+    function approvedRow(c){
+      return `
+      <div class="cust-row flex items-center gap-4 px-5 py-3.5 hover:bg-ink-50" data-id="${c.id}">
+        ${avatar(c, 40)}
+        <div class="min-w-0" style="width:200px">
+          <div class="font-display font-bold text-sm truncate">${esc(c.name)}</div>
+          <div class="font-mono text-[11px] text-fg-subtle truncate">@${esc(c.lineId)}</div>
+        </div>
+        <div class="hidden lg:block" style="width:150px">${phoneChip(c.phone)}</div>
+        <div class="text-center" style="width:90px">
+          ${c.orders>0
+            ? `<div class="font-display font-bold text-sm">${c.orders} <span class="font-normal text-fg-subtle text-xs">筆</span></div>`
+            : `<div class="font-display font-bold text-sm text-fg-subtle">—</div>`}
+          <div class="font-mono text-[9px] text-fg-subtle uppercase tracking-wider">訂單</div>
+        </div>
+        <div class="text-right" style="width:120px">
+          <div class="font-mono text-xs ${c.orders>0?'font-semibold':'text-fg-subtle'}">${fmtSpend(c.spend)}</div>
+          <div class="font-mono text-[9px] text-fg-subtle uppercase tracking-wider">累計消費</div>
+        </div>
+        <div class="flex-1"></div>
+        <div class="font-mono text-[11px] text-fg-subtle hidden xl:block">加入 ${esc(c.joinedAt)}</div>
+        <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-success-bg text-success font-display font-bold text-[10px]">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>
+          已通過
+        </span>
+        <a href="admin-orders.html" class="w-8 h-8 rounded-pill hover:bg-sunken flex items-center justify-center text-fg-subtle" title="查看訂單">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg>
+        </a>
+      </div>`;
+    }
+
+    function rejectedRow(c){
+      return `
+      <div class="cust-row flex items-center gap-4 px-5 py-3.5 hover:bg-ink-50" data-id="${c.id}">
+        <div class="rounded-pill text-white font-display font-bold flex items-center justify-center shrink-0" style="width:40px;height:40px;background:${c.color};font-size:16px;opacity:.7">${esc(c.initial)}</div>
+        <div class="min-w-0" style="width:200px">
+          <div class="font-display font-bold text-sm truncate text-fg-muted">${esc(c.name)}</div>
+          <div class="font-mono text-[11px] text-fg-subtle truncate">@${esc(c.lineId)}</div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <span class="font-mono text-[10px] text-fg-subtle uppercase tracking-wider">原因</span>
+          <span class="inline-flex items-center h-6 px-2.5 rounded-pill bg-sunken text-fg-muted font-display font-semibold text-[11px]">${esc(c.reason||'—')}</span>
+        </div>
+        <div class="flex-1"></div>
+        <div class="font-mono text-[11px] text-fg-subtle hidden xl:block">拒絕於 ${esc(c.rejectedAt)}</div>
+        <span class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-sunken text-fg-subtle font-display font-bold text-[10px]">已拒絕</span>
+        <button onclick="restore('${c.id}')" class="inline-flex items-center gap-1.5 h-8 px-3 rounded-pill border border-line text-secondary font-display font-semibold text-xs hover:bg-secondary-bg transition">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 14l-4-4 4-4M5 10h9a5 5 0 010 10h-1"/></svg>
+          改為通過
+        </button>
+      </div>`;
+    }
+
+    // ============================================================
+    //  Empty states
+    // ============================================================
+    function emptyState(){
+      const map = {
+        pending: {
+          ico:`<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--c-success)" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M8 12l3 3 5-6"/></svg>`,
+          ring:'var(--c-success-bg)',
+          title:'沒有待審核的申請', desc:'所有入會申請都處理完囉，辛苦了 ✿<br/>新申請進來時會即時出現在這裡，側欄也會跳出提醒。',
+          cta:`<a href="store-login.html" target="_blank" class="inline-flex items-center gap-2 h-10 px-5 rounded-pill bg-primary text-white font-display font-bold text-sm shadow-pink hover:bg-primary-hv transition">
+                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1"/></svg>
+                 複製邀請連結招募顧客
+               </a>` },
+        approved: {
+          ico:`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--fg-subtle)" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>`,
+          ring:'var(--bg-sunken)',
+          title:'還沒有通過的顧客', desc:'通過第一筆申請後，顧客就會出現在這裡。', cta:'' },
+        rejected: {
+          ico:`<svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--fg-subtle)" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M15 9l-6 6M9 9l6 6"/></svg>`,
+          ring:'var(--bg-sunken)',
+          title:'沒有被拒絕的申請', desc:'被拒絕的申請會留存在這裡，方便日後改回通過。', cta:'' },
+      };
+      const e = map[currentTab];
+      return `
+      <div class="bg-surface border border-dashed border-line rounded-2xl py-16 px-8 flex flex-col items-center text-center">
+        <div class="w-20 h-20 rounded-pill flex items-center justify-center" style="background:${e.ring}">${e.ico}</div>
+        <h3 class="font-display font-bold text-lg mt-5">${e.title}</h3>
+        <p class="text-sm text-fg-muted mt-2 leading-relaxed max-w-sm">${e.desc}</p>
+        ${e.cta ? `<div class="mt-6">${e.cta}</div>` : ''}
+      </div>`;
+    }
+
+    function noSearchResult(){
+      return `<div class="bg-surface border border-line rounded-xl py-12 text-center">
+        <div class="font-display font-bold text-md text-fg-muted">找不到符合的顧客</div>
+        <p class="text-sm text-fg-subtle mt-1.5">試試其他關鍵字，或切換分頁</p>
+      </div>`;
+    }
+
+    // ============================================================
+    //  Render
+    // ============================================================
+    function renderList(){
+      const q = document.getElementById('searchInput').value.trim().toLowerCase();
+      let list = CUSTOMERS.filter(c => c.status === currentTab);
+      const total = list.length;
+      if (q) list = list.filter(c => (c.name+ ' '+c.lineId).toLowerCase().includes(q));
+
+      const area = document.getElementById('listArea');
+
+      if (total === 0){ area.innerHTML = emptyState(); return; }
+      if (list.length === 0){ area.innerHTML = noSearchResult(); return; }
+
+      if (currentTab === 'pending'){
+        area.className = 'space-y-3';
+        area.innerHTML = list.map(pendingCard).join('');
+      } else {
+        const rows = list.map(currentTab === 'approved' ? approvedRow : rejectedRow).join('<div class="border-t border-line"></div>');
+        area.className = '';
+        area.innerHTML = `<div class="bg-surface border border-line rounded-xl overflow-hidden">${rows}</div>`;
+      }
+    }
+
+    // ============================================================
+    //  Actions
+    // ============================================================
+    function flyOut(id, after){
+      const el = document.querySelector(`[data-id="${id}"]`);
+      if (!el){ after(); return; }
+      el.classList.add(currentTab === 'pending' ? 'card-leaving' : 'row-leaving');
+      setTimeout(after, 320);
+    }
+
+    function approve(id){
+      const c = CUSTOMERS.find(x=>x.id===id); if(!c) return;
+      flyOut(id, ()=>{
+        c.status = 'approved'; c.joinedAt = '剛剛'; c.orders = 0; c.spend = 0;
+        syncCounts(); renderList();
+        toast('已通過 '+c.name+' 的申請 · 已可逛賣場', 'success');
+      });
+    }
+    function approveAll(){
+      const pend = CUSTOMERS.filter(c=>c.status==='pending');
+      if (!pend.length) return;
+      const n = pend.length;
+      document.querySelectorAll('#listArea .review-card').forEach(el=>el.classList.add('card-leaving'));
+      setTimeout(()=>{
+        pend.forEach(c=>{ c.status='approved'; c.joinedAt='剛剛'; c.orders=0; c.spend=0; });
+        syncCounts(); renderList();
+        toast('已一次通過 '+n+' 位顧客 ✿', 'success');
+      }, 320);
+    }
+    function restore(id){
+      const c = CUSTOMERS.find(x=>x.id===id); if(!c) return;
+      flyOut(id, ()=>{
+        c.status='approved'; c.joinedAt='剛剛'; c.orders=c.orders||0; c.spend=c.spend||0;
+        syncCounts(); renderList();
+        toast('已改為通過 · '+c.name, 'success');
+      });
+    }
+
+    // ----- Reject modal -----
+    function askReject(id){
+      rejectingId = id;
+      const c = CUSTOMERS.find(x=>x.id===id);
+      document.getElementById('rejName').textContent = c ? c.name : '—';
+      document.getElementById('rejReason').value = '';
+      document.querySelectorAll('.reason-chip').forEach(b=>b.setAttribute('aria-pressed','false'));
+      const w = document.getElementById('modalWrap');
+      w.classList.remove('hidden'); w.classList.add('flex');
+      requestAnimationFrame(()=>{
+        document.getElementById('modalScrim').style.opacity='1';
+        document.getElementById('modalBox').classList.remove('opacity-0','scale-95');
+      });
+    }
+    function pickReason(btn){
+      const on = btn.getAttribute('aria-pressed')==='true';
+      document.querySelectorAll('.reason-chip').forEach(b=>b.setAttribute('aria-pressed','false'));
+      btn.setAttribute('aria-pressed', on ? 'false':'true');
+      const ta = document.getElementById('rejReason');
+      ta.value = on ? '' : btn.textContent.trim();
+    }
+    function closeModal(){
+      document.getElementById('modalScrim').style.opacity='0';
+      document.getElementById('modalBox').classList.add('opacity-0','scale-95');
+      setTimeout(()=>{ const w=document.getElementById('modalWrap'); w.classList.add('hidden'); w.classList.remove('flex'); }, 220);
+    }
+    function doReject(){
+      const c = CUSTOMERS.find(x=>x.id===rejectingId);
+      const reason = document.getElementById('rejReason').value.trim() || '未填原因';
+      closeModal();
+      if(!c) return;
+      setTimeout(()=>{
+        flyOut(c.id, ()=>{
+          c.status='rejected'; c.reason=reason; c.rejectedAt='剛剛';
+          syncCounts(); renderList();
+          toast('已拒絕 '+c.name+' 的申請', 'reject');
+        });
+      }, 180);
+    }
+
+    // ============================================================
+    //  Toast
+    // ============================================================
+    function toast(msg, kind){
+      const t = document.getElementById('toast');
+      const box = t.firstElementChild;
+      const ico = document.getElementById('toastIco');
+      document.getElementById('toastMsg').textContent = msg;
+      if (kind === 'reject'){
+        box.className = 'toast'; box.style.background = 'var(--ink-800)';
+        ico.style.background = 'var(--c-danger)';
+        ico.innerHTML = '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg>';
+      } else {
+        box.className = 'toast toast-success'; box.style.background = '';
+        ico.style.background = '';
+        ico.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>';
+      }
+      t.style.opacity='1'; t.style.transform='translate(-50%,0)';
+      clearTimeout(window.__tt);
+      window.__tt = setTimeout(()=>{ t.style.opacity='0'; t.style.transform='translate(-50%,16px)'; }, 2400);
+    }
+
+    document.addEventListener('keydown', e=>{
+      if (e.key==='Escape' && !document.getElementById('modalWrap').classList.contains('hidden')) closeModal();
+    });
+
+    // init
+    paintTabs(); syncCounts(); renderList();
+  </script>
+</body>
+</html>

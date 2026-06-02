@@ -8,7 +8,7 @@ import { ToastContainer, useToast } from '@/components/ui/Toast'
 
 // ── 型別 ───────────────────────────────────────────────────────────────────────
 
-type ShippingMethod = 'pickup' | 'convenience' | 'takkyubin' | 'home_delivery'
+type ShippingMethod = 'pickup' | 'convenience' | 'maihuobian' | 'home_delivery'
 type PaymentMethod = 'cash' | 'transfer' | 'cod'
 
 // ── 常數 ───────────────────────────────────────────────────────────────────────
@@ -60,7 +60,7 @@ const SHIPPING_OPTIONS: {
     ),
   },
   {
-    key: 'takkyubin',
+    key: 'maihuobian',
     label: '賣貨便',
     desc: '7-11 店到店・貨到付款',
     fee: '+ NT$ 38',
@@ -107,7 +107,7 @@ const SHIPPING_OPTIONS: {
 const PAYMENT_BY_SHIPPING: Record<ShippingMethod, { key: PaymentMethod; label: string }[]> = {
   pickup: [{ key: 'cash', label: '現金自取' }],
   convenience: [{ key: 'transfer', label: '匯款' }],
-  takkyubin: [{ key: 'cod', label: '賣貨便貨到付款' }],
+  maihuobian: [{ key: 'cod', label: '賣貨便貨到付款' }],
   home_delivery: [{ key: 'transfer', label: '匯款' }],
 }
 
@@ -185,7 +185,7 @@ export default function CheckoutClient({ params }: { params: Promise<{ id: strin
     const errs: Record<string, string> = {}
     const phoneRe = /^09\d{8}$/
 
-    if (shipping === 'convenience' || shipping === 'takkyubin') {
+    if (shipping === 'convenience' || shipping === 'maihuobian') {
       if (!recipientName.trim()) errs.recipientName = '請填寫收件人姓名'
       if (!recipientPhone.trim()) errs.recipientPhone = '請填寫手機號碼'
       else if (!phoneRe.test(recipientPhone.trim()))
@@ -206,7 +206,7 @@ export default function CheckoutClient({ params }: { params: Promise<{ id: strin
 
   const isValid = (): boolean => {
     const phoneRe = /^09\d{8}$/
-    if (shipping === 'convenience' || shipping === 'takkyubin') {
+    if (shipping === 'convenience' || shipping === 'maihuobian') {
       return (
         recipientName.trim() !== '' &&
         phoneRe.test(recipientPhone.trim()) &&
@@ -288,7 +288,7 @@ export default function CheckoutClient({ params }: { params: Promise<{ id: strin
       ? 210
       : shipping === 'convenience'
         ? 60
-        : shipping === 'takkyubin'
+        : shipping === 'maihuobian'
           ? 38
           : 0
   const total = subtotal + shippingFee
@@ -514,7 +514,7 @@ export default function CheckoutClient({ params }: { params: Promise<{ id: strin
                   )}
                 </div>
 
-                {(shipping === 'convenience' || shipping === 'takkyubin') && (
+                {(shipping === 'convenience' || shipping === 'maihuobian') && (
                   <div>
                     <label className='block text-sm font-semibold mb-1.5'>
                       超商門市名稱 <span className='text-danger'>*</span>

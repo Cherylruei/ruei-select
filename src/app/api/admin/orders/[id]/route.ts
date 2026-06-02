@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
 import type { AdminOrder, AdminOrderItem, OrderStatus } from '@/types'
 
+// settlement 欄位在此 API 暫不查詢（detail 頁不需要），設為 null
+
 function extractLineId(email: string | undefined): string | null {
   const match = email?.match(/^line_(.+)@internal\.rueiselect\.local$/)
   return match ? match[1] : null
@@ -144,6 +146,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       shipping_number: row.shipping_number,
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       shipping_vendor: row.shipping_vendor as any,
+      settlement: null,
       items: row.order_items.map(
         (item): AdminOrderItem => ({
           id: item.id,

@@ -125,19 +125,14 @@ export async function POST(request: NextRequest) {
     const email = deriveEmail(lineId)
     const password = derivePassword(lineId)
 
-    // Check if auth user already exists before attempting to create
-    const { data: listData } = await serviceClient.auth.admin.listUsers()
-    const existingAuthUser = listData?.users?.find((u) => u.email === email)
-
-    if (!existingAuthUser) {
-      const { error: createError } = await serviceClient.auth.admin.createUser({
-        email,
-        password,
-        email_confirm: true,
-      })
-      if (createError) {
-        throw new Error(`Failed to create auth user: ${createError.message}`)
-      }
+    // 嘗試建立 auth user，若已存在（unique constraint）則忽略
+    const { error: createError } = await serviceClient.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    })
+    if (createError && !createError.message.includes('already been registered')) {
+      throw new Error(`Failed to create auth user: ${createError.message}`)
     }
 
     // Sign in → sets session cookies via createRouteHandlerClient

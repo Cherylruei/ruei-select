@@ -1,12 +1,6 @@
 'use client'
 
-export type OrderFilterValue =
-  | 'all'
-  | 'ordered'
-  | 'can_settle'
-  | 'shipped'
-  | 'completed'
-  | 'cancelled'
+export type OrderFilterValue = 'all' | 'pending' | 'allocated' | 'settled' | 'shipped' | 'completed'
 
 interface OrderStatusFilterProps {
   value: OrderFilterValue
@@ -16,11 +10,11 @@ interface OrderStatusFilterProps {
 
 const TAB_LIST: { value: OrderFilterValue; label: string }[] = [
   { value: 'all', label: '全部' },
-  { value: 'ordered', label: '已訂購' },
-  { value: 'can_settle', label: '可結單' },
+  { value: 'pending', label: '已下單' },
+  { value: 'allocated', label: '已到貨' },
+  { value: 'settled', label: '已結單' },
   { value: 'shipped', label: '已出貨' },
   { value: 'completed', label: '已完成' },
-  { value: 'cancelled', label: '已取消' },
 ]
 
 export default function OrderStatusFilter({ value, onChange, counts }: OrderStatusFilterProps) {

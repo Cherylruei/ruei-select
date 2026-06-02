@@ -2,8 +2,14 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
-import type { AdminOrder, OrderStatus, OrderStatusCounts } from '@/types'
+import { useCallback, useEffect, useState, useTransition } from 'react'
+import type {
+  AdminOrder,
+  OrderStatus,
+  OrderStatusCounts,
+  ShippingMethod,
+  PaymentMethod,
+} from '@/types'
 import { OrderStatusBadge } from '@/components/ui/Badge'
 import { ToastContainer, useToast } from '@/components/ui/Toast'
 
@@ -51,6 +57,22 @@ const PIPELINE_HOVER: Record<string, string> = {
   allocated: 'hover:border-success',
   settled: 'hover:border-sakura-300',
   shipped: 'hover:border-earth-300',
+}
+
+const SHIPPING_VENDORS = ['黑貓', '7-11', '全家', '賣貨便', '其他'] as const
+type ShippingVendor = (typeof SHIPPING_VENDORS)[number]
+
+const SHIPPING_METHOD_LABELS: Record<ShippingMethod, string> = {
+  pickup: '自取',
+  convenience: '超商店到店',
+  maihuobian: '賣貨便',
+  home_delivery: '宅配',
+}
+
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  cash: '現金自取',
+  transfer: '匯款',
+  cod: '賣貨便貨到付款',
 }
 
 const AVATAR_COLORS = [
@@ -285,6 +307,12 @@ export default function OrdersClient() {
           <div className='p-5'>
             <CustomerGroupGrid orders={filteredOrders} />
           </div>
+        ) : activeTab === 'settled' || activeTab === 'shipped' ? (
+          <SettledOrdersList
+            orders={filteredOrders}
+            onRefresh={() => fetchOrders(activeTab)}
+            toastFn={toast}
+          />
         ) : (
           <OrdersTable orders={filteredOrders} />
         )}
@@ -558,6 +586,293 @@ function CustomerCard({ group }: { group: CustomerGroup }) {
           查看訂單
         </Link>
       </div>
+    </div>
+  )
+}
+
+// ── 已結單 / 已出貨 展開卡片清單 ─────────────────────────────────────────────
+
+interface SettledOrdersListProps {
+  orders: AdminOrder[]
+  onRefresh: () => void
+  toastFn: (msg: string, type: 'success' | 'error') => void
+}
+
+function SettledOrdersList({ orders, onRefresh, toastFn }: SettledOrdersListProps) {
+  return (
+    <div className='divide-y divide-line'>
+      {orders.map((order) => (
+        <SettledOrderCard key={order.id} order={order} onRefresh={onRefresh} toastFn={toastFn} />
+      ))}
+    </div>
+  )
+}
+
+interface SettledOrderCardProps {
+  order: AdminOrder
+  onRefresh: () => void
+  toastFn: (msg: string, type: 'success' | 'error') => void
+}
+
+function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) {
+  const [expanded, setExpanded] = useState(false)
+  const [shippingNumber, setShippingNumber] = useState('')
+  const [shippingVendor, setShippingVendor] = useState<ShippingVendor>('黑貓')
+  const [isPending, startTransition] = useTransition()
+  const isShipped = order.status === 'shipped'
+  const { settlement } = order
+  const subtotal = orderSubtotal(order)
+  const firstItem = order.items[0]
+  const itemLabel = firstItem
+    ? firstItem.product_name +
+      (firstItem.variant_specs ? `・${specLabel(firstItem.variant_specs)}` : '')
+    : '—'
+  const extraCount = order.items.length - 1
+  const bgColor = avatarColor(order.member_name)
+
+  function handleConfirmShip() {
+    startTransition(async () => {
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const body: Record<string, any> = { status: 'shipped' }
+        if (shippingNumber.trim()) body.shipping_number = shippingNumber.trim()
+        body.shipping_vendor = shippingVendor
+        const res = await fetch(`/api/admin/orders/${order.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        })
+        const json = (await res.json()) as { success?: boolean; error?: string }
+        if (json.success) {
+          toastFn('已確認出貨', 'success')
+          onRefresh()
+        } else {
+          throw new Error(json.error ?? '出貨失敗')
+        }
+      } catch (err) {
+        toastFn(err instanceof Error ? err.message : '出貨失敗', 'error')
+      }
+    })
+  }
+
+  async function handleCopy() {
+    if (!settlement) return
+    const lines: string[] = [`【訂單 ${shortId(order.id)}】`, `顧客：${order.member_name}`]
+    if (settlement.recipient_name) lines.push(`收件人：${settlement.recipient_name}`)
+    if (settlement.recipient_phone) lines.push(`手機：${settlement.recipient_phone}`)
+    lines.push(`物流：${SHIPPING_METHOD_LABELS[settlement.shipping_method]}`)
+    if (settlement.store_name) lines.push(`超商：${settlement.store_name}`)
+    if (settlement.recipient_address) lines.push(`地址：${settlement.recipient_address}`)
+    lines.push(`付款：${PAYMENT_METHOD_LABELS[settlement.payment_method]}`)
+    if (settlement.note) lines.push(`備註：${settlement.note}`)
+    await navigator.clipboard.writeText(lines.join('\n'))
+    toastFn('已複製收件資訊', 'success')
+  }
+
+  return (
+    <div>
+      {/* 摘要列（點擊展開）*/}
+      <div
+        className='flex items-center gap-4 px-5 py-4 cursor-pointer hover:bg-ink-50 transition select-none'
+        onClick={() => setExpanded((e) => !e)}
+      >
+        {/* 訂單號 */}
+        <div className='w-28 shrink-0'>
+          <div className='font-mono font-semibold text-sm text-fg'>{shortId(order.id)}</div>
+          <div className='font-mono text-[10px] text-fg-subtle'>{formatDate(order.ordered_at)}</div>
+        </div>
+
+        {/* 顧客 */}
+        <div className='flex items-center gap-2 flex-1 min-w-0'>
+          <div
+            className={`w-7 h-7 rounded-pill ${bgColor} text-white font-display font-bold text-xs flex items-center justify-center shrink-0`}
+          >
+            {order.member_name.charAt(0)}
+          </div>
+          <span className='font-semibold text-sm truncate'>{order.member_name}</span>
+        </div>
+
+        {/* 商品 */}
+        <div className='flex-[2] min-w-0 hidden sm:block'>
+          <div className='text-sm truncate text-fg'>
+            {itemLabel}
+            {extraCount > 0 && (
+              <span className='font-mono text-[10px] text-fg-subtle ml-1'>+{extraCount} 件</span>
+            )}
+          </div>
+        </div>
+
+        {/* 金額 */}
+        <div className='w-24 text-right shrink-0'>
+          <span className='font-mono text-sm font-semibold'>NT$ {subtotal.toLocaleString()}</span>
+        </div>
+
+        {/* 狀態 */}
+        <div className='shrink-0'>
+          <OrderStatusBadge status={order.status} />
+        </div>
+
+        {/* 展開箭頭 */}
+        <svg
+          width='16'
+          height='16'
+          viewBox='0 0 24 24'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='2'
+          strokeLinecap='round'
+          className={`shrink-0 text-fg-subtle transition-transform ${expanded ? 'rotate-90' : ''}`}
+        >
+          <polyline points='9 18 15 12 9 6' />
+        </svg>
+      </div>
+
+      {/* 展開面板 */}
+      {expanded && (
+        <div className='px-5 pb-5 bg-sunken border-t border-line space-y-4'>
+          {/* 收件資訊 */}
+          {settlement ? (
+            <div className='pt-4'>
+              <div className='flex items-center justify-between mb-3'>
+                <h3 className='font-display font-semibold text-sm text-fg'>收件資訊</h3>
+                <button
+                  type='button'
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    handleCopy()
+                  }}
+                  className='inline-flex items-center gap-1.5 h-7 px-3 rounded-pill border border-line bg-surface text-xs font-display font-semibold text-fg-muted hover:bg-ink-100 transition'
+                >
+                  <svg
+                    width='12'
+                    height='12'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='2'
+                    strokeLinecap='round'
+                  >
+                    <rect x='9' y='9' width='13' height='13' rx='2' />
+                    <path d='M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1' />
+                  </svg>
+                  複製收件資訊
+                </button>
+              </div>
+              <div className='grid grid-cols-2 gap-x-6 gap-y-3 text-sm'>
+                <div>
+                  <div className='text-fg-subtle text-[11px] mb-0.5'>物流方式</div>
+                  <div className='text-fg font-medium'>
+                    {SHIPPING_METHOD_LABELS[settlement.shipping_method]}
+                  </div>
+                </div>
+                <div>
+                  <div className='text-fg-subtle text-[11px] mb-0.5'>付款方式</div>
+                  <div className='text-fg font-medium'>
+                    {PAYMENT_METHOD_LABELS[settlement.payment_method]}
+                  </div>
+                </div>
+                {settlement.recipient_name && (
+                  <div>
+                    <div className='text-fg-subtle text-[11px] mb-0.5'>收件人</div>
+                    <div className='text-fg'>{settlement.recipient_name}</div>
+                  </div>
+                )}
+                {settlement.recipient_phone && (
+                  <div>
+                    <div className='text-fg-subtle text-[11px] mb-0.5'>手機</div>
+                    <div className='font-mono text-fg'>{settlement.recipient_phone}</div>
+                  </div>
+                )}
+                {settlement.store_name && (
+                  <div className='col-span-2'>
+                    <div className='text-fg-subtle text-[11px] mb-0.5'>超商名稱</div>
+                    <div className='text-fg'>{settlement.store_name}</div>
+                  </div>
+                )}
+                {settlement.recipient_address && (
+                  <div className='col-span-2'>
+                    <div className='text-fg-subtle text-[11px] mb-0.5'>收件地址</div>
+                    <div className='text-fg'>{settlement.recipient_address}</div>
+                  </div>
+                )}
+                {settlement.note && (
+                  <div className='col-span-2'>
+                    <div className='text-fg-subtle text-[11px] mb-0.5'>備註</div>
+                    <div className='text-fg'>{settlement.note}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          ) : (
+            <div className='pt-4 text-sm text-fg-muted'>尚無結單資訊</div>
+          )}
+
+          {/* 已出貨：唯讀物流單號 */}
+          {isShipped && (order.shipping_number || order.shipping_vendor) && (
+            <div className='border-t border-line pt-4'>
+              <h3 className='font-display font-semibold text-sm text-fg mb-3'>出貨資訊</h3>
+              <div className='grid grid-cols-2 gap-x-6 gap-y-3 text-sm'>
+                {order.shipping_vendor && (
+                  <div>
+                    <div className='text-fg-subtle text-[11px] mb-0.5'>物流商</div>
+                    <div className='text-fg font-medium'>{order.shipping_vendor}</div>
+                  </div>
+                )}
+                {order.shipping_number && (
+                  <div>
+                    <div className='text-fg-subtle text-[11px] mb-0.5'>物流單號</div>
+                    <div className='font-mono text-fg'>{order.shipping_number}</div>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* 已結單：出貨表單 */}
+          {!isShipped && (
+            <div className='border-t border-line pt-4' onClick={(e) => e.stopPropagation()}>
+              <h3 className='font-display font-semibold text-sm text-fg mb-3'>填寫出貨資訊</h3>
+              <div className='grid grid-cols-2 gap-3 mb-3'>
+                <div>
+                  <label className='block text-fg-subtle text-[12px] mb-1.5'>物流商</label>
+                  <select
+                    value={shippingVendor}
+                    onChange={(e) => setShippingVendor(e.target.value as ShippingVendor)}
+                    className='w-full h-9 px-3 rounded-lg border border-line bg-surface text-sm outline-none focus:border-primary transition'
+                  >
+                    {SHIPPING_VENDORS.map((v) => (
+                      <option key={v} value={v}>
+                        {v}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className='block text-fg-subtle text-[12px] mb-1.5'>
+                    物流單號
+                    <span className='text-fg-subtle ml-1'>（選填）</span>
+                  </label>
+                  <input
+                    type='text'
+                    value={shippingNumber}
+                    onChange={(e) => setShippingNumber(e.target.value)}
+                    placeholder='例：12345678901'
+                    className='w-full h-9 px-3 rounded-lg border border-line bg-surface text-sm font-mono outline-none focus:border-primary transition placeholder:text-fg-subtle'
+                  />
+                </div>
+              </div>
+              <button
+                type='button'
+                disabled={isPending}
+                onClick={handleConfirmShip}
+                className='inline-flex items-center justify-center h-9 px-5 rounded-pill bg-primary text-white font-display font-semibold text-sm shadow-pink hover:bg-primary-hv transition disabled:opacity-50'
+              >
+                {isPending ? '處理中…' : '確認出貨'}
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   )
 }

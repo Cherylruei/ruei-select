@@ -18,7 +18,7 @@ export type OrderStatus =
 export type OrderCreatedBy = 'customer' | 'merchant'
 export type OrderCancelledBy = 'customer' | 'merchant'
 export type ShippingVendor = '黑貓' | '7-11' | '全家' | '賣貨便' | '其他'
-export type ShippingMethod = 'pickup' | 'convenience' | 'takkyubin' | 'home_delivery'
+export type ShippingMethod = 'pickup' | 'convenience' | 'maihuobian' | 'home_delivery'
 export type PaymentMethod = 'cash' | 'transfer' | 'cod'
 
 export interface User {
@@ -160,6 +160,16 @@ export interface OrderItem {
 
 // ── Sprint 4：商家後台訂單類型 ─────────────────────────────────────────────────
 
+export interface OrderSettlement {
+  shipping_method: ShippingMethod
+  payment_method: PaymentMethod
+  recipient_name: string | null
+  recipient_phone: string | null
+  recipient_address: string | null
+  store_name: string | null
+  note: string | null
+}
+
 export interface AdminOrderItem {
   id: string
   quantity: number
@@ -184,6 +194,7 @@ export interface AdminOrder {
   cancelled_at: string | null
   shipping_number: string | null
   shipping_vendor: ShippingVendor | null
+  settlement: OrderSettlement | null
   items: AdminOrderItem[]
 }
 
@@ -262,16 +273,23 @@ export interface ExchangeRate {
 
 // ── Sprint 3：顧客前台類型 ─────────────────────────────────────────────────────
 
-export type CustomerOrderDisplayStatus = '已訂購' | '已到貨' | '已出貨' | '已完成' | '已取消'
+export type CustomerOrderDisplayStatus =
+  | '已下單'
+  | '已到貨'
+  | '已結單'
+  | '已出貨'
+  | '已完成'
+  | '已取消'
 
 export function toDisplayStatus(status: OrderStatus): CustomerOrderDisplayStatus {
   switch (status) {
     case 'pending_purchase':
     case 'ordered':
-      return '已訂購'
+      return '已下單'
     case 'allocated':
-    case 'settled':
       return '已到貨'
+    case 'settled':
+      return '已結單'
     case 'shipped':
       return '已出貨'
     case 'completed':
