@@ -3,13 +3,6 @@
 import { useState, useTransition } from 'react'
 import type { AdminOrder, OrderStatus } from '@/types'
 
-// ── 工具 ───────────────────────────────────────────────────────────────────────
-
-function specLabel(specs: Record<string, string> | null): string {
-  if (!specs) return ''
-  return Object.values(specs).join(' / ')
-}
-
 // ── 型別 ───────────────────────────────────────────────────────────────────────
 
 interface ProductGroup {
@@ -22,7 +15,15 @@ interface ProductGroup {
     memberName: string
     variantSpecs: Record<string, string> | null
     quantity: number
+    orderedAt: string
+    unitPrice: number
   }[]
+}
+
+function formatDate(iso: string): string {
+  const d = new Date(iso)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getMonth() + 1}/${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 interface ProductGroupViewProps {
@@ -46,6 +47,8 @@ function buildProductGroups(orders: AdminOrder[]): ProductGroup[] {
         memberName: order.member_name,
         variantSpecs: item.variant_specs,
         quantity: item.quantity,
+        orderedAt: order.ordered_at,
+        unitPrice: item.unit_price,
       }
       if (existing) {
         existing.totalQty += item.quantity
@@ -60,7 +63,11 @@ function buildProductGroups(orders: AdminOrder[]): ProductGroup[] {
       }
     }
   }
-  return Array.from(map.values())
+  const groups = Array.from(map.values())
+  for (const group of groups) {
+    group.orders.sort((a, b) => new Date(a.orderedAt).getTime() - new Date(b.orderedAt).getTime())
+  }
+  return groups
 }
 
 // ── 主元件 ─────────────────────────────────────────────────────────────────────
@@ -198,11 +205,35 @@ function ProductGroupCard({
               onChange={() => toggleOne(entry.orderId)}
               className='w-4 h-4 rounded accent-primary cursor-pointer'
             />
-            <span className='flex-1 text-sm text-fg'>{entry.memberName}</span>
-            {entry.variantSpecs && (
-              <span className='text-[11px] text-fg-subtle'>{specLabel(entry.variantSpecs)}</span>
-            )}
-            <span className='font-mono text-sm text-fg-muted shrink-0'>× {entry.quantity}</span>
+            <div className='flex-1 min-w-0'>
+              <div className='flex items-center justify-between gap-2'>
+                <div className='text-sm font-semibold text-fg'>{entry.memberName}</div>
+                <div className='font-mono text-[10px] text-fg-subtle shrink-0'>
+                  {formatDate(entry.orderedAt)}
+                </div>
+              </div>
+              {entry.variantSpecs && (
+                <div className='flex flex-wrap gap-1.5 mt-1'>
+                  {Object.entries(entry.variantSpecs).map(([key, val]) => (
+                    <span
+                      key={key}
+                      className='inline-flex items-center gap-1 h-6 px-2.5 rounded-pill bg-info-bg border border-info/20 whitespace-nowrap'
+                    >
+                      <span className='font-display font-medium text-[10px] text-info/60'>
+                        {key}
+                      </span>
+                      <span className='font-display font-bold text-[11px] text-info'>{val}</span>
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+            <div className='text-right shrink-0'>
+              <div className='font-mono text-sm font-bold text-fg'>× {entry.quantity}</div>
+              <div className='font-mono text-[10px] text-fg-muted'>
+                NT$ {(entry.unitPrice * entry.quantity).toLocaleString()}
+              </div>
+            </div>
           </div>
         ))}
       </div>

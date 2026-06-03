@@ -54,6 +54,7 @@ async function getMerchantStoreId(): Promise<{ storeId: string } | NextResponse>
 // ── DB 查詢結果型別 ───────────────────────────────────────────────────────────
 
 interface SettlementRow {
+  bundle_id: string | null
   shipping_method: string
   payment_method: string
   recipient_name: string | null
@@ -169,7 +170,7 @@ export async function GET(request: NextRequest) {
            products(name, suppliers(name)),
            product_variants(specs)
          ),
-         settlements(shipping_method, payment_method, recipient_name, recipient_phone, recipient_address, store_name, note)`
+         settlements(bundle_id, shipping_method, payment_method, recipient_name, recipient_phone, recipient_address, store_name, note)`
       )
       .eq('store_id', storeId)
       .order('ordered_at', { ascending: false })
@@ -211,6 +212,7 @@ export async function GET(request: NextRequest) {
       shipping_vendor: row.shipping_vendor as any,
       settlement: row.settlements[0]
         ? ({
+            bundle_id: row.settlements[0].bundle_id ?? null,
             shipping_method: row.settlements[0].shipping_method as ShippingMethod,
             payment_method: row.settlements[0].payment_method as PaymentMethod,
             recipient_name: row.settlements[0].recipient_name,

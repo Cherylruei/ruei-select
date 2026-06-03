@@ -38,23 +38,9 @@ async function getMerchantStoreId(): Promise<{ storeId: string } | NextResponse>
   return { storeId: store.id }
 }
 
-type ShippingMethod = 'pickup' | 'convenience' | 'maihuobian' | 'home_delivery'
-type PaymentMethod = 'cash' | 'transfer' | 'cod'
-
 interface BatchCheckoutBody {
   orderIds: string[]
-  shipping_method: ShippingMethod
-  payment_method: PaymentMethod
-  recipient_name?: string
-  recipient_phone?: string
-  recipient_address?: string
-  store_name?: string
-  note?: string
 }
-
-const VALID_SHIPPING: ShippingMethod[] = ['pickup', 'convenience', 'maihuobian', 'home_delivery']
-const VALID_PAYMENT: PaymentMethod[] = ['cash', 'transfer', 'cod']
-const PHONE_RE = /^09\d{8}$/
 
 interface OrderRow {
   id: string
@@ -71,44 +57,10 @@ export async function POST(request: NextRequest) {
     const { storeId } = authResult
 
     const body = (await request.json()) as BatchCheckoutBody
-    const {
-      orderIds,
-      shipping_method,
-      payment_method,
-      recipient_name,
-      recipient_phone,
-      recipient_address,
-      store_name,
-      note,
-    } = body
+    const { orderIds } = body
 
     if (!Array.isArray(orderIds) || orderIds.length === 0) {
       return NextResponse.json({ error: 'orderIds must be a non-empty array' }, { status: 400 })
-    }
-
-    if (!shipping_method || !VALID_SHIPPING.includes(shipping_method)) {
-      return NextResponse.json({ error: 'Invalid shipping_method' }, { status: 400 })
-    }
-    if (!payment_method || !VALID_PAYMENT.includes(payment_method)) {
-      return NextResponse.json({ error: 'Invalid payment_method' }, { status: 400 })
-    }
-
-    // 依物流驗證必填
-    if (shipping_method === 'convenience' || shipping_method === 'maihuobian') {
-      if (!recipient_name?.trim())
-        return NextResponse.json({ error: 'recipient_name is required' }, { status: 400 })
-      if (!recipient_phone?.trim() || !PHONE_RE.test(recipient_phone.trim()))
-        return NextResponse.json({ error: 'Invalid phone format' }, { status: 400 })
-      if (!store_name?.trim())
-        return NextResponse.json({ error: 'store_name is required' }, { status: 400 })
-    }
-    if (shipping_method === 'home_delivery') {
-      if (!recipient_name?.trim())
-        return NextResponse.json({ error: 'recipient_name is required' }, { status: 400 })
-      if (!recipient_phone?.trim() || !PHONE_RE.test(recipient_phone.trim()))
-        return NextResponse.json({ error: 'Invalid phone format' }, { status: 400 })
-      if (!recipient_address?.trim())
-        return NextResponse.json({ error: 'recipient_address is required' }, { status: 400 })
     }
 
     const db = createServiceClient()
@@ -147,15 +99,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
+    // 所有訂單共用同一個 bundle_id，視為整筆出貨單位
+    const bundleId = crypto.randomUUID()
+
     const settlementData = orderIds.map((orderId) => ({
       order_id: orderId,
-      shipping_method,
-      payment_method,
-      recipient_name: recipient_name?.trim() ?? null,
-      recipient_phone: recipient_phone?.trim() ?? null,
-      recipient_address: recipient_address?.trim() ?? null,
-      store_name: store_name?.trim() ?? null,
-      note: note?.trim() ?? null,
+      bundle_id: bundleId,
+      shipping_method: null,
+      payment_method: null,
     }))
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
