@@ -71,7 +71,8 @@ async function getLineProfile(accessToken: string): Promise<LineProfile> {
 }
 
 function deriveEmail(lineId: string): string {
-  return `line_${lineId}@internal.rueiselect.local`
+  // Supabase 會將 email 正規化為小寫儲存，這裡先轉小寫避免比對不一致
+  return `line_${lineId}@internal.rueiselect.local`.toLowerCase()
 }
 
 function derivePassword(lineId: string): string {
@@ -142,11 +143,18 @@ export async function POST(request: NextRequest) {
     // LINE_CHANNEL_SECRET 輪替會導致推導密碼不符 → 用 admin 強制更新後重試
     if (signInError?.message.includes('Invalid login credentials')) {
       const { data: listData } = await serviceClient.auth.admin.listUsers({ perPage: 1000 })
-      const authUser = listData?.users?.find((u) => u.email === email)
-      if (authUser) {
-        await serviceClient.auth.admin.updateUserById(authUser.id, { password })
-        signInError = (await sessionClient.auth.signInWithPassword({ email, password })).error
+      // Supabase 儲存的 email 為小寫，比對時兩邊都正規化避免大小寫不一致
+      const authUser = listData?.users?.find((u) => u.email?.toLowerCase() === email)
+      if (!authUser) {
+        throw new Error(`Auth user not found for ${email} (cannot reset password)`)
       }
+      const { error: updateError } = await serviceClient.auth.admin.updateUserById(authUser.id, {
+        password,
+      })
+      if (updateError) {
+        throw new Error(`Failed to reset auth password: ${updateError.message}`)
+      }
+      signInError = (await sessionClient.auth.signInWithPassword({ email, password })).error
     }
 
     if (signInError) {
