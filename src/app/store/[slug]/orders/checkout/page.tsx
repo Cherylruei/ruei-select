@@ -815,32 +815,6 @@ function PaymentSection({
       <path d='M4 11h16M9 7V5h6v2' />
     </svg>
   )
-  const lineIcon = (
-    <svg width='16' height='16' viewBox='0 0 24 24' fill='currentColor'>
-      <rect x='3' y='4' width='18' height='16' rx='2' opacity='0.15' />
-      <rect
-        x='3'
-        y='4'
-        width='18'
-        height='16'
-        rx='2'
-        fill='none'
-        stroke='currentColor'
-        strokeWidth='1.6'
-      />
-      <text
-        x='12'
-        y='15.5'
-        textAnchor='middle'
-        fontFamily='system-ui'
-        fontWeight='900'
-        fontSize='6.5'
-        fill='currentColor'
-      >
-        PAY
-      </text>
-    </svg>
-  )
   return (
     <div
       className='bg-surface rounded-xl shadow-sm p-4 lg:p-6'
@@ -1254,6 +1228,7 @@ function CheckoutContent() {
   }, [slug, selectedIds])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (shippingMethod === 'pickup') setPaymentMethod('cash')
     else if (shippingMethod === 'maihuobian') setPaymentMethod('cod')
     else setPaymentMethod('transfer')

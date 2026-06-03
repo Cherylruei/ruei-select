@@ -161,6 +161,7 @@ export interface OrderItem {
 // ── Sprint 4：商家後台訂單類型 ─────────────────────────────────────────────────
 
 export interface OrderSettlement {
+  bundle_id: string | null // Sprint 5: 同一次代客結單共用相同 bundle_id
   shipping_method: ShippingMethod
   payment_method: PaymentMethod
   recipient_name: string | null

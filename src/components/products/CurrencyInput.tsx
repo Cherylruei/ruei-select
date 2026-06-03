@@ -30,6 +30,7 @@ export default function CurrencyInput({
 
   useEffect(() => {
     if (currency === 'TWD' || !value) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setRate(null)
       setRateWarning(null)
       return

@@ -130,10 +130,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         return NextResponse.json({ error: 'recipient_address is required' }, { status: 400 })
     }
 
-    // 新增 settlements 記錄
+    // 新增 settlements 記錄（單筆結單自成一個 bundle）
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: settlementError } = await (db as any).from('settlements').insert({
       order_id: orderId,
+      bundle_id: crypto.randomUUID(),
       shipping_method,
       payment_method,
       recipient_name: recipient_name?.trim() ?? null,

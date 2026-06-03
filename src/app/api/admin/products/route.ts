@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
-import type { ProductOption, VariantOption } from '@/types'
+import type { VariantOption } from '@/types'
 
 function extractLineId(email: string | undefined): string | null {
   const match = email?.match(/^line_(.+)@internal\.rueiselect\.local$/)

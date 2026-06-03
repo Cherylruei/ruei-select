@@ -54,6 +54,7 @@ async function getMerchantStoreId(): Promise<{ storeId: string } | NextResponse>
 // ── DB 查詢結果型別 ───────────────────────────────────────────────────────────
 
 interface SettlementRow {
+  bundle_id: string | null
   shipping_method: string
   payment_method: string
   recipient_name: string | null
@@ -102,6 +103,8 @@ const VALID_STATUSES: OrderStatus[] = [
   'cancelled',
 ]
 
+const AUTO_COMPLETE_DAYS = 14
+
 export async function GET(request: NextRequest) {
   try {
     const authResult = await getMerchantStoreId()
@@ -110,9 +113,24 @@ export async function GET(request: NextRequest) {
 
     const db = createServiceClient()
     const statusParam = request.nextUrl.searchParams.get('status') as OrderStatus | null
+    const memberIdParam = request.nextUrl.searchParams.get('memberId')
     const validStatus = statusParam && VALID_STATUSES.includes(statusParam) ? statusParam : null
 
+    // ── AC-B10: lazy auto-complete shipped → completed（14 天）──
+    if (validStatus === 'shipped' || !validStatus) {
+      const cutoff = new Date()
+      cutoff.setDate(cutoff.getDate() - AUTO_COMPLETE_DAYS)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (db as any)
+        .from('orders')
+        .update({ status: 'completed', updated_at: new Date().toISOString() })
+        .eq('store_id', storeId)
+        .eq('status', 'shipped')
+        .lt('updated_at', cutoff.toISOString())
+    }
+
     // ── 查詢所有訂單（用於計算各狀態數量）──────────────────────
+    // 若有 memberId 篩選，counts 仍回傳全賣場數量（保持 pipeline 準確）
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: allRows, error: countError } = (await (db as any)
       .from('orders')
@@ -152,13 +170,18 @@ export async function GET(request: NextRequest) {
            products(name, suppliers(name)),
            product_variants(specs)
          ),
-         settlements(shipping_method, payment_method, recipient_name, recipient_phone, recipient_address, store_name, note)`
+         settlements(bundle_id, shipping_method, payment_method, recipient_name, recipient_phone, recipient_address, store_name, note)`
       )
       .eq('store_id', storeId)
       .order('ordered_at', { ascending: false })
 
     if (validStatus) {
       query = query.eq('status', validStatus)
+    }
+
+    // AC-18.12：依顧客展開時篩選 memberId（member_id 欄位）
+    if (memberIdParam) {
+      query = query.eq('member_id', memberIdParam)
     }
 
     const { data: rows, error } = (await query) as {
@@ -189,6 +212,7 @@ export async function GET(request: NextRequest) {
       shipping_vendor: row.shipping_vendor as any,
       settlement: row.settlements[0]
         ? ({
+            bundle_id: row.settlements[0].bundle_id ?? null,
             shipping_method: row.settlements[0].shipping_method as ShippingMethod,
             payment_method: row.settlements[0].payment_method as PaymentMethod,
             recipient_name: row.settlements[0].recipient_name,
