@@ -137,7 +137,17 @@ export async function POST(request: NextRequest) {
 
     // Sign in → sets session cookies via createRouteHandlerClient
     const sessionClient = await createRouteHandlerClient()
-    const { error: signInError } = await sessionClient.auth.signInWithPassword({ email, password })
+    let { error: signInError } = await sessionClient.auth.signInWithPassword({ email, password })
+
+    // LINE_CHANNEL_SECRET 輪替會導致推導密碼不符 → 用 admin 強制更新後重試
+    if (signInError?.message.includes('Invalid login credentials')) {
+      const { data: listData } = await serviceClient.auth.admin.listUsers({ perPage: 1000 })
+      const authUser = listData?.users?.find((u) => u.email === email)
+      if (authUser) {
+        await serviceClient.auth.admin.updateUserById(authUser.id, { password })
+        signInError = (await sessionClient.auth.signInWithPassword({ email, password })).error
+      }
+    }
 
     if (signInError) {
       throw new Error(`Session creation failed: ${signInError.message}`)
