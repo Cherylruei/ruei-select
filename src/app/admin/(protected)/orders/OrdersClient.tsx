@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { useCallback, useEffect, useRef, useState, useTransition } from 'react'
+import { useCallback, useEffect, useState, useTransition } from 'react'
 import type {
   AdminOrder,
   OrderStatus,
@@ -125,9 +125,6 @@ export default function OrdersClient() {
   // AC-18.12: 依顧客分組（allocated）
   const [groupByCustomer, setGroupByCustomer] = useState(false)
 
-  // AC-B6~B9: 已結單批次出貨
-  const [selectedSettledIds, setSelectedSettledIds] = useState<Set<string>>(new Set())
-
   const { toasts, toast, dismiss } = useToast()
 
   const fetchOrders = useCallback(
@@ -166,7 +163,6 @@ export default function OrdersClient() {
     (tab: TabKey) => {
       setGroupByProduct(false)
       setGroupByCustomer(false)
-      setSelectedSettledIds(new Set())
       setSearch('')
       const params = new URLSearchParams(searchParams.toString())
       if (tab === 'all') params.delete('status')
@@ -193,9 +189,6 @@ export default function OrdersClient() {
 
   // 顧客分組 toggle 適用的 Tab
   const showCustomerGroupToggle = !loading && orders.length > 0 && activeTab === 'allocated'
-
-  // 批次勾選適用的 Tab
-  const showBatchSelection = activeTab === 'settled'
 
   return (
     <>
@@ -363,21 +356,15 @@ export default function OrdersClient() {
           />
         ) : activeTab === 'allocated' && groupByCustomer ? (
           <div className='p-5'>
-            <CustomerGroupGrid orders={filteredOrders} toastFn={toast} />
+            <CustomerGroupGrid
+              orders={filteredOrders}
+              onRefresh={() => fetchOrders(activeTab)}
+              toastFn={toast}
+            />
           </div>
         ) : activeTab === 'settled' || activeTab === 'shipped' ? (
           <SettledOrdersList
             orders={filteredOrders}
-            showBatchSelection={showBatchSelection}
-            selectedIds={selectedSettledIds}
-            onToggleSelect={(id) =>
-              setSelectedSettledIds((prev) => {
-                const next = new Set(prev)
-                if (next.has(id)) next.delete(id)
-                else next.add(id)
-                return next
-              })
-            }
             onRefresh={() => fetchOrders(activeTab)}
             toastFn={toast}
           />
@@ -385,19 +372,6 @@ export default function OrdersClient() {
           <OrdersTable orders={filteredOrders} />
         )}
       </section>
-
-      {/* AC-B7: 已結單批次出貨 BatchActionBar */}
-      {showBatchSelection && selectedSettledIds.size > 0 && (
-        <BatchActionBar
-          selectedIds={selectedSettledIds}
-          onClear={() => setSelectedSettledIds(new Set())}
-          onSuccess={() => {
-            setSelectedSettledIds(new Set())
-            fetchOrders(activeTab)
-          }}
-          toastFn={toast}
-        />
-      )}
     </>
   )
 }
@@ -488,7 +462,7 @@ function OrderRow({ order }: { order: AdminOrder }) {
             }}
           />
           <div className='leading-tight min-w-0'>
-            <div className='font-semibold truncate max-w-[180px]'>{itemName}</div>
+            <div className='font-semibold truncate max-w-45'>{itemName}</div>
             {extraCount > 0 && (
               <div className='font-mono text-[10px] text-fg-subtle'>+{extraCount} 件</div>
             )}
@@ -572,41 +546,82 @@ function buildCustomerGroups(orders: AdminOrder[]): CustomerGroup[] {
   return Array.from(map.values())
 }
 
+// 已配單訂單排序：allocated → ordered → pending_purchase → 其他
+const STATUS_SORT: Partial<Record<OrderStatus, number>> = {
+  allocated: 0,
+  ordered: 1,
+  pending_purchase: 2,
+}
+function sortOrdersForCustomer(orders: AdminOrder[]): AdminOrder[] {
+  return [...orders].sort((a, b) => {
+    const sa = STATUS_SORT[a.status as OrderStatus] ?? 3
+    const sb = STATUS_SORT[b.status as OrderStatus] ?? 3
+    if (sa !== sb) return sa - sb
+    return new Date(b.ordered_at).getTime() - new Date(a.ordered_at).getTime()
+  })
+}
+
 interface CustomerGroupGridProps {
   orders: AdminOrder[]
+  onRefresh: () => void
   toastFn: (msg: string, type: 'success' | 'error') => void
 }
 
-function CustomerGroupGrid({ orders, toastFn }: CustomerGroupGridProps) {
+function CustomerGroupGrid({ orders, onRefresh, toastFn }: CustomerGroupGridProps) {
   const groups = buildCustomerGroups(orders)
   return (
     <div className='grid sm:grid-cols-2 gap-4'>
       {groups.map((group) => (
-        <CustomerCard key={group.memberId} group={group} toastFn={toastFn} />
+        <CustomerCard key={group.memberId} group={group} onRefresh={onRefresh} toastFn={toastFn} />
       ))}
     </div>
   )
 }
 
-// ── CustomerCard：AC-18.12 可展開，顯示顧客全部訂單 ──────────────────────────
+const CHECKOUT_SHIPPING_OPTIONS: { value: ShippingMethod; label: string }[] = [
+  { value: 'convenience', label: '超商店到店' },
+  { value: 'maihuobian', label: '賣貨便' },
+  { value: 'home_delivery', label: '宅配' },
+  { value: 'pickup', label: '自取' },
+]
+
+function derivePayment(method: ShippingMethod): PaymentMethod {
+  if (method === 'pickup') return 'cash'
+  if (method === 'maihuobian') return 'cod'
+  return 'transfer'
+}
+
+// ── CustomerCard：可展開，多選已配單 → inline 代客結單 ────────────────────────
 
 interface CustomerCardProps {
   group: CustomerGroup
+  onRefresh: () => void
   toastFn: (msg: string, type: 'success' | 'error') => void
 }
 
-function CustomerCard({ group, toastFn }: CustomerCardProps) {
-  const router = useRouter()
+function CustomerCard({ group, onRefresh, toastFn }: CustomerCardProps) {
   const bgColor = avatarColor(group.memberName)
   const totalItems = group.allocatedOrders.flatMap((o) => o.items).length
   const totalAmount = group.allocatedOrders.reduce((sum, o) => sum + orderSubtotal(o), 0)
 
-  // AC-18.12a: 展開/收起
   const [expanded, setExpanded] = useState(false)
   const [allOrders, setAllOrders] = useState<AdminOrder[] | null>(null)
   const [loadingAll, setLoadingAll] = useState(false)
-  // AC-18.12b: 勾選 allocated 訂單
-  const [selectedOrderId, setSelectedOrderId] = useState<string | null>(null)
+
+  // 多選已配單訂單
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const [showForm, setShowForm] = useState(false)
+
+  // 代客結單表單
+  const [shippingMethod, setShippingMethod] = useState<ShippingMethod>('convenience')
+  const [recipientName, setRecipientName] = useState('')
+  const [recipientPhone, setRecipientPhone] = useState('')
+  const [storeName, setStoreName] = useState('')
+  const [recipientAddress, setRecipientAddress] = useState('')
+  const [checkoutNote, setCheckoutNote] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const paymentMethod = derivePayment(shippingMethod)
 
   async function handleExpand() {
     if (expanded) {
@@ -614,17 +629,91 @@ function CustomerCard({ group, toastFn }: CustomerCardProps) {
       return
     }
     setExpanded(true)
-    if (allOrders !== null) return // 已載入，不重複 fetch
+    if (allOrders !== null) return
     setLoadingAll(true)
     try {
       const res = await fetch(`/api/admin/orders?memberId=${group.memberId}`)
       const json = (await res.json()) as { success: boolean; data: AdminOrder[] }
-      if (json.success) setAllOrders(json.data)
+      if (json.success) setAllOrders(sortOrdersForCustomer(json.data))
     } catch {
       toastFn('載入訂單失敗', 'error')
     } finally {
       setLoadingAll(false)
     }
+  }
+
+  const allocatedOrders = allOrders?.filter((o) => o.status === 'allocated') ?? []
+  const allAllocatedSelected =
+    allocatedOrders.length > 0 && allocatedOrders.every((o) => selectedIds.has(o.id))
+
+  function toggleOrder(id: string) {
+    setSelectedIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
+
+  function toggleAllAllocated() {
+    if (allAllocatedSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(allocatedOrders.map((o) => o.id)))
+    }
+  }
+
+  async function handleBatchCheckout() {
+    if (selectedIds.size === 0) return
+    setIsSubmitting(true)
+    try {
+      const res = await fetch('/api/admin/orders/batch-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orderIds: Array.from(selectedIds),
+          shipping_method: shippingMethod,
+          payment_method: paymentMethod,
+          recipient_name: recipientName || undefined,
+          recipient_phone: recipientPhone || undefined,
+          store_name: storeName || undefined,
+          recipient_address: recipientAddress || undefined,
+          note: checkoutNote || undefined,
+        }),
+      })
+      const json = (await res.json()) as { success?: boolean; error?: string; settled?: number }
+      if (json.success) {
+        toastFn(`已代客完成結單 ${json.settled} 件`, 'success')
+        setSelectedIds(new Set())
+        setShowForm(false)
+        setAllOrders(null)
+        onRefresh()
+      } else {
+        throw new Error(json.error ?? '結單失敗')
+      }
+    } catch (err) {
+      toastFn(err instanceof Error ? err.message : '結單失敗', 'error')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  function isFormValid() {
+    if (shippingMethod === 'convenience' || shippingMethod === 'maihuobian') {
+      return (
+        recipientName.trim() !== '' &&
+        /^09\d{8}$/.test(recipientPhone.trim()) &&
+        storeName.trim() !== ''
+      )
+    }
+    if (shippingMethod === 'home_delivery') {
+      return (
+        recipientName.trim() !== '' &&
+        /^09\d{8}$/.test(recipientPhone.trim()) &&
+        recipientAddress.trim() !== ''
+      )
+    }
+    return true
   }
 
   return (
@@ -666,7 +755,7 @@ function CustomerCard({ group, toastFn }: CustomerCardProps) {
         </svg>
       </button>
 
-      {/* 展開：顯示全部訂單（AC-18.12a~d）*/}
+      {/* 展開：所有訂單（allocated 優先）+ 多選代客結單 */}
       {expanded && (
         <div className='border-t border-line'>
           {loadingAll ? (
@@ -676,7 +765,7 @@ function CustomerCard({ group, toastFn }: CustomerCardProps) {
               <div className='divide-y divide-line'>
                 {allOrders.map((order) => {
                   const isAllocated = order.status === 'allocated'
-                  const isSelected = selectedOrderId === order.id
+                  const isChecked = selectedIds.has(order.id)
                   const firstItem = order.items[0]
                   const label = firstItem
                     ? firstItem.product_name +
@@ -691,12 +780,11 @@ function CustomerCard({ group, toastFn }: CustomerCardProps) {
                         isAllocated ? '' : 'opacity-40',
                       ].join(' ')}
                     >
-                      {/* AC-18.12b/d: checkbox */}
                       <input
                         type='checkbox'
                         disabled={!isAllocated}
-                        checked={isSelected}
-                        onChange={() => setSelectedOrderId(isSelected ? null : order.id)}
+                        checked={isChecked}
+                        onChange={() => toggleOrder(order.id)}
                         className='w-4 h-4 rounded accent-primary cursor-pointer disabled:cursor-not-allowed'
                       />
                       <div className='flex-1 min-w-0'>
@@ -716,22 +804,157 @@ function CustomerCard({ group, toastFn }: CustomerCardProps) {
                 })}
               </div>
 
-              {/* AC-18.12c: 代客結單按鈕（選了一筆 allocated 才啟用）*/}
+              {/* 操作列：全選已到貨 + 代客結單按鈕 */}
               <div className='px-5 py-3 border-t border-line flex items-center justify-between bg-ink-50'>
-                <span className='text-xs text-fg-muted'>
-                  {selectedOrderId ? '已選 1 筆已到貨訂單' : '勾選已到貨訂單以代客結單'}
-                </span>
                 <button
                   type='button'
-                  disabled={!selectedOrderId}
-                  onClick={() => {
-                    if (selectedOrderId) router.push(`/admin/orders/${selectedOrderId}/checkout`)
-                  }}
+                  onClick={toggleAllAllocated}
+                  disabled={allocatedOrders.length === 0}
+                  className='text-xs text-secondary font-display font-semibold hover:underline disabled:opacity-40 disabled:cursor-not-allowed'
+                >
+                  {allAllocatedSelected ? '取消全選' : '全選已到貨'}
+                </button>
+                <button
+                  type='button'
+                  disabled={selectedIds.size === 0}
+                  onClick={() => setShowForm((f) => !f)}
                   className='h-8 px-4 rounded-pill bg-secondary text-white font-display font-semibold text-xs hover:bg-secondary-hv transition disabled:opacity-40 disabled:cursor-not-allowed'
                 >
-                  代客結單
+                  {showForm
+                    ? '收起結單'
+                    : `代客結單${selectedIds.size > 0 ? ` ${selectedIds.size} 件` : ''}`}
                 </button>
               </div>
+
+              {/* Inline 代客結單表單 */}
+              {showForm && (
+                <div className='border-t border-line px-5 py-4 space-y-4 bg-sunken'>
+                  <h4 className='font-display font-bold text-sm text-fg'>
+                    代客結單 — 共 {selectedIds.size} 件
+                  </h4>
+
+                  <div>
+                    <label className='block text-fg-subtle text-[12px] mb-2'>物流方式</label>
+                    <div className='flex flex-wrap gap-2'>
+                      {CHECKOUT_SHIPPING_OPTIONS.map(({ value, label }) => (
+                        <button
+                          key={value}
+                          type='button'
+                          onClick={() => setShippingMethod(value)}
+                          className={[
+                            'h-8 px-3.5 rounded-pill font-display font-semibold text-xs transition',
+                            shippingMethod === value
+                              ? 'bg-secondary text-white'
+                              : 'bg-surface border border-line text-fg-muted hover:bg-sunken',
+                          ].join(' ')}
+                        >
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {(shippingMethod === 'convenience' || shippingMethod === 'maihuobian') && (
+                    <div className='grid grid-cols-2 gap-3'>
+                      <div>
+                        <label className='block text-fg-subtle text-[12px] mb-1.5'>
+                          收件人姓名
+                        </label>
+                        <input
+                          value={recipientName}
+                          onChange={(e) => setRecipientName(e.target.value)}
+                          placeholder='王小明'
+                          className='w-full h-9 px-3 rounded-lg border border-line bg-surface text-sm outline-none focus:border-primary transition'
+                        />
+                      </div>
+                      <div>
+                        <label className='block text-fg-subtle text-[12px] mb-1.5'>手機</label>
+                        <input
+                          value={recipientPhone}
+                          onChange={(e) => setRecipientPhone(e.target.value)}
+                          placeholder='0912345678'
+                          className='w-full h-9 px-3 rounded-lg border border-line bg-surface text-sm font-mono outline-none focus:border-primary transition'
+                        />
+                      </div>
+                      <div className='col-span-2'>
+                        <label className='block text-fg-subtle text-[12px] mb-1.5'>
+                          超商門市名稱
+                        </label>
+                        <input
+                          value={storeName}
+                          onChange={(e) => setStoreName(e.target.value)}
+                          placeholder='7-11 台北信義店'
+                          className='w-full h-9 px-3 rounded-lg border border-line bg-surface text-sm outline-none focus:border-primary transition'
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {shippingMethod === 'home_delivery' && (
+                    <div className='grid grid-cols-2 gap-3'>
+                      <div>
+                        <label className='block text-fg-subtle text-[12px] mb-1.5'>
+                          收件人姓名
+                        </label>
+                        <input
+                          value={recipientName}
+                          onChange={(e) => setRecipientName(e.target.value)}
+                          placeholder='王小明'
+                          className='w-full h-9 px-3 rounded-lg border border-line bg-surface text-sm outline-none focus:border-primary transition'
+                        />
+                      </div>
+                      <div>
+                        <label className='block text-fg-subtle text-[12px] mb-1.5'>手機</label>
+                        <input
+                          value={recipientPhone}
+                          onChange={(e) => setRecipientPhone(e.target.value)}
+                          placeholder='0912345678'
+                          className='w-full h-9 px-3 rounded-lg border border-line bg-surface text-sm font-mono outline-none focus:border-primary transition'
+                        />
+                      </div>
+                      <div className='col-span-2'>
+                        <label className='block text-fg-subtle text-[12px] mb-1.5'>收件地址</label>
+                        <input
+                          value={recipientAddress}
+                          onChange={(e) => setRecipientAddress(e.target.value)}
+                          placeholder='台北市信義區松仁路 100 號'
+                          className='w-full h-9 px-3 rounded-lg border border-line bg-surface text-sm outline-none focus:border-primary transition'
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className='flex items-center gap-2 text-sm'>
+                    <span className='text-fg-subtle text-[12px]'>付款方式：</span>
+                    <span className='font-display font-semibold text-fg text-xs'>
+                      {paymentMethod === 'cash'
+                        ? '現金自取'
+                        : paymentMethod === 'cod'
+                          ? '賣貨便貨到付款'
+                          : '匯款'}
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className='block text-fg-subtle text-[12px] mb-1.5'>備註（選填）</label>
+                    <input
+                      value={checkoutNote}
+                      onChange={(e) => setCheckoutNote(e.target.value)}
+                      placeholder='給商家的備注'
+                      className='w-full h-9 px-3 rounded-lg border border-line bg-surface text-sm outline-none focus:border-primary transition'
+                    />
+                  </div>
+
+                  <button
+                    type='button'
+                    disabled={isSubmitting || !isFormValid()}
+                    onClick={handleBatchCheckout}
+                    className='w-full h-10 rounded-pill bg-secondary text-white font-display font-bold text-sm hover:bg-secondary-hv transition disabled:opacity-50'
+                  >
+                    {isSubmitting ? '處理中…' : `確認代客結單 ${selectedIds.size} 件`}
+                  </button>
+                </div>
+              )}
             </>
           ) : (
             <div className='px-5 py-4 text-sm text-fg-muted'>此顧客沒有訂單</div>
@@ -741,23 +964,13 @@ function CustomerCard({ group, toastFn }: CustomerCardProps) {
 
       {/* 未展開時：快捷操作 */}
       {!expanded && (
-        <div className='flex gap-2 px-5 pb-5 border-t border-line pt-3'>
+        <div className='px-5 pb-5 border-t border-line pt-3'>
           <button
             type='button'
             onClick={handleExpand}
-            className='flex-1 h-9 rounded-pill bg-secondary text-white font-display font-semibold text-xs hover:bg-secondary-hv transition'
+            className='w-full h-9 rounded-pill bg-secondary text-white font-display font-semibold text-xs hover:bg-secondary-hv transition'
           >
             展開查看全部訂單
-          </button>
-          <button
-            type='button'
-            onClick={() => {
-              const firstAllocated = group.allocatedOrders[0]
-              if (firstAllocated) router.push(`/admin/orders/${firstAllocated.id}`)
-            }}
-            className='inline-flex items-center justify-center h-9 px-4 rounded-pill border border-line text-fg font-display font-semibold text-xs hover:bg-sunken transition'
-          >
-            查看訂單
           </button>
         </div>
       )}
@@ -765,37 +978,19 @@ function CustomerCard({ group, toastFn }: CustomerCardProps) {
   )
 }
 
-// ── 已結單 / 已出貨 展開卡片清單（含批次勾選）────────────────────────────────
+// ── 已結單 / 已出貨 展開卡片清單 ─────────────────────────────────────────────
 
 interface SettledOrdersListProps {
   orders: AdminOrder[]
-  showBatchSelection: boolean
-  selectedIds: Set<string>
-  onToggleSelect: (id: string) => void
   onRefresh: () => void
   toastFn: (msg: string, type: 'success' | 'error') => void
 }
 
-function SettledOrdersList({
-  orders,
-  showBatchSelection,
-  selectedIds,
-  onToggleSelect,
-  onRefresh,
-  toastFn,
-}: SettledOrdersListProps) {
+function SettledOrdersList({ orders, onRefresh, toastFn }: SettledOrdersListProps) {
   return (
     <div className='divide-y divide-line'>
       {orders.map((order) => (
-        <SettledOrderCard
-          key={order.id}
-          order={order}
-          showCheckbox={showBatchSelection}
-          isSelected={selectedIds.has(order.id)}
-          onToggleSelect={() => onToggleSelect(order.id)}
-          onRefresh={onRefresh}
-          toastFn={toastFn}
-        />
+        <SettledOrderCard key={order.id} order={order} onRefresh={onRefresh} toastFn={toastFn} />
       ))}
     </div>
   )
@@ -803,24 +998,14 @@ function SettledOrdersList({
 
 interface SettledOrderCardProps {
   order: AdminOrder
-  showCheckbox: boolean
-  isSelected: boolean
-  onToggleSelect: () => void
   onRefresh: () => void
   toastFn: (msg: string, type: 'success' | 'error') => void
 }
 
-function SettledOrderCard({
-  order,
-  showCheckbox,
-  isSelected,
-  onToggleSelect,
-  onRefresh,
-  toastFn,
-}: SettledOrderCardProps) {
+function SettledOrderCard({ order, onRefresh, toastFn }: SettledOrderCardProps) {
   const [expanded, setExpanded] = useState(false)
   const [shippingNumber, setShippingNumber] = useState('')
-  const [shippingVendor, setShippingVendor] = useState<ShippingVendor>('黑貓')
+  const [shippingVendor, setShippingVendor] = useState<ShippingVendor>('7-11')
   const [isPending, startTransition] = useTransition()
   const isShipped = order.status === 'shipped'
   const { settlement } = order
@@ -877,20 +1062,6 @@ function SettledOrderCard({
         className='flex items-center gap-3 px-5 py-4 cursor-pointer hover:bg-ink-50 transition select-none'
         onClick={() => setExpanded((e) => !e)}
       >
-        {/* AC-B6: 批次勾選 checkbox */}
-        {showCheckbox && (
-          <input
-            type='checkbox'
-            checked={isSelected}
-            onClick={(e) => e.stopPropagation()}
-            onChange={(e) => {
-              e.stopPropagation()
-              onToggleSelect()
-            }}
-            className='w-4 h-4 rounded accent-primary cursor-pointer shrink-0'
-          />
-        )}
-
         <div className='w-28 shrink-0'>
           <div className='font-mono font-semibold text-sm text-fg'>{shortId(order.id)}</div>
           <div className='font-mono text-[10px] text-fg-subtle'>{formatDate(order.ordered_at)}</div>
@@ -905,7 +1076,7 @@ function SettledOrderCard({
           <span className='font-semibold text-sm truncate'>{order.member_name}</span>
         </div>
 
-        <div className='flex-[2] min-w-0 hidden sm:block'>
+        <div className='flex-2 min-w-0 hidden sm:block'>
           <div className='text-sm truncate text-fg'>
             {itemLabel}
             {extraCount > 0 && (
@@ -1078,119 +1249,6 @@ function SettledOrderCard({
           )}
         </div>
       )}
-    </div>
-  )
-}
-
-// ── AC-B7~B8: BatchActionBar（已結單批次出貨）─────────────────────────────────
-
-interface BatchActionBarProps {
-  selectedIds: Set<string>
-  onClear: () => void
-  onSuccess: () => void
-  toastFn: (msg: string, type: 'success' | 'error') => void
-}
-
-function BatchActionBar({ selectedIds, onClear, onSuccess, toastFn }: BatchActionBarProps) {
-  const [showForm, setShowForm] = useState(false)
-  const [shippingVendor, setShippingVendor] = useState<ShippingVendor>('7-11')
-  const [shippingNumber, setShippingNumber] = useState('')
-  const [isPending, startTransition] = useTransition()
-  const formRef = useRef<HTMLDivElement>(null)
-
-  function handleConfirm() {
-    startTransition(async () => {
-      try {
-        const res = await fetch('/api/admin/orders/batch', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            orderIds: Array.from(selectedIds),
-            status: 'shipped',
-            shipping_vendor: shippingVendor,
-            ...(shippingNumber.trim() ? { shipping_number: shippingNumber.trim() } : {}),
-          }),
-        })
-        const json = (await res.json()) as { success?: boolean; error?: string; updated?: number }
-        if (json.success) {
-          toastFn(`已批次確認出貨 ${json.updated} 筆訂單`, 'success')
-          onSuccess()
-        } else {
-          throw new Error(json.error ?? '批次出貨失敗')
-        }
-      } catch (err) {
-        toastFn(err instanceof Error ? err.message : '批次出貨失敗', 'error')
-      }
-    })
-  }
-
-  return (
-    <div className='fixed bottom-6 left-1/2 -translate-x-1/2 z-40 w-full max-w-xl px-4'>
-      <div className='bg-fg text-white rounded-2xl shadow-xl overflow-hidden'>
-        {/* 主列 */}
-        <div className='flex items-center gap-3 px-5 py-3'>
-          <span className='font-display font-bold text-sm'>已選 {selectedIds.size} 筆</span>
-          <div className='flex-1' />
-          <button
-            type='button'
-            onClick={onClear}
-            className='h-8 px-3 rounded-pill bg-white/10 hover:bg-white/20 font-display font-semibold text-xs transition'
-          >
-            取消選取
-          </button>
-          <button
-            type='button'
-            onClick={() => setShowForm((f) => !f)}
-            className='h-8 px-4 rounded-pill bg-primary text-white font-display font-semibold text-xs shadow-pink hover:bg-primary-hv transition'
-          >
-            確認出貨
-          </button>
-        </div>
-
-        {/* AC-B8: 展開填寫共用物流資訊 */}
-        {showForm && (
-          <div ref={formRef} className='border-t border-white/15 px-5 py-4 space-y-3'>
-            <p className='text-xs text-white/70'>所有選取訂單將使用同一組物流資訊出貨</p>
-            <div className='grid grid-cols-2 gap-3'>
-              <div>
-                <label className='block text-white/70 text-[11px] mb-1'>物流商</label>
-                <select
-                  value={shippingVendor}
-                  onChange={(e) => setShippingVendor(e.target.value as ShippingVendor)}
-                  className='w-full h-9 px-3 rounded-lg bg-white/10 border border-white/20 text-white text-sm outline-none focus:border-primary transition'
-                >
-                  {SHIPPING_VENDORS.map((v) => (
-                    <option key={v} value={v} className='text-fg'>
-                      {v}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className='block text-white/70 text-[11px] mb-1'>
-                  物流單號
-                  <span className='ml-1 text-white/40'>（選填）</span>
-                </label>
-                <input
-                  type='text'
-                  value={shippingNumber}
-                  onChange={(e) => setShippingNumber(e.target.value)}
-                  placeholder='例：12345678901'
-                  className='w-full h-9 px-3 rounded-lg bg-white/10 border border-white/20 text-white text-sm font-mono outline-none focus:border-primary transition placeholder:text-white/30'
-                />
-              </div>
-            </div>
-            <button
-              type='button'
-              disabled={isPending}
-              onClick={handleConfirm}
-              className='w-full h-10 rounded-pill bg-primary text-white font-display font-bold text-sm shadow-pink hover:bg-primary-hv transition disabled:opacity-50'
-            >
-              {isPending ? '處理中…' : `確認批次出貨 ${selectedIds.size} 筆`}
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   )
 }
