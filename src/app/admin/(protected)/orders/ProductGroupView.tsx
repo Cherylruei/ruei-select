@@ -230,7 +230,7 @@ function ProductGroupCard({
             </div>
             <div className='text-right shrink-0'>
               <div className='font-mono text-sm font-bold text-fg'>× {entry.quantity}</div>
-              <div className='font-mono text-[10px] text-fg-muted'>
+              <div className='font-mono text-[14px] text-fg-muted'>
                 NT$ {(entry.unitPrice * entry.quantity).toLocaleString()}
               </div>
             </div>

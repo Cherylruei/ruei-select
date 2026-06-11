@@ -162,13 +162,14 @@ export interface OrderItem {
 
 export interface OrderSettlement {
   bundle_id: string | null // Sprint 5: 同一次代客結單共用相同 bundle_id
-  shipping_method: ShippingMethod
-  payment_method: PaymentMethod
+  shipping_method: ShippingMethod | null // 代客結單時可為 null，出貨時填入
+  payment_method: PaymentMethod | null // 代客結單時可為 null，出貨時填入
   recipient_name: string | null
   recipient_phone: string | null
   recipient_address: string | null
   store_name: string | null
   note: string | null
+  settled_at: string | null // settlement 建立時間（結單時間）
 }
 
 export interface AdminOrderItem {
@@ -345,9 +346,18 @@ export interface CustomerOrder {
   status: OrderStatus
   displayStatus: CustomerOrderDisplayStatus
   ordered_at: string
+  settled_at: string | null // settlements.created_at（同批結單共用日期）
+  bundle_id: string | null // 同批結單的共用 ID
   note: string | null
-  shipping_number: string | null
-  shipping_vendor: ShippingVendor | null
+  shipping_number: string | null // 商家出貨後填入
+  shipping_vendor: ShippingVendor | null // 商家出貨後填入
+  // 顧客結單時填寫的出貨資訊（settlements 欄位）
+  settlement_shipping_method: ShippingMethod | null
+  settlement_payment_method: PaymentMethod | null
+  settlement_recipient_name: string | null
+  settlement_recipient_phone: string | null
+  settlement_store_name: string | null
+  settlement_recipient_address: string | null
   items: CustomerOrderItem[]
 }
 

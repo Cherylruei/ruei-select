@@ -7,7 +7,20 @@ import Link from 'next/link'
 import { initLiff } from '@/lib/line/liff'
 import { OrderStatusBadge } from '@/components/ui/Badge'
 import OrderStatusFilter, { type OrderFilterValue } from '@/components/store/OrderStatusFilter'
-import type { CustomerOrder } from '@/types'
+import type { CustomerOrder, ShippingMethod, PaymentMethod } from '@/types'
+
+const SHIPPING_METHOD_LABELS: Record<ShippingMethod, string> = {
+  pickup: '自取',
+  convenience: '超商店到店',
+  maihuobian: '賣貨便',
+  home_delivery: '宅配',
+}
+
+const PAYMENT_METHOD_LABELS: Record<PaymentMethod, string> = {
+  cash: '現金自取',
+  transfer: '匯款',
+  cod: '貨到付款',
+}
 
 // ── 工具函式 ──────────────────────────────────────────────────────────────────
 
@@ -26,6 +39,34 @@ function formatShortId(id: string): string {
 
 function calcOrderTotal(order: CustomerOrder): number {
   return order.items.reduce((sum, item) => sum + item.quantity * item.unit_price, 0)
+}
+
+// 將 settled 訂單按 bundle_id 歸組（無 bundle_id 的每筆獨立）
+interface SettledBundle {
+  key: string
+  orders: CustomerOrder[]
+  settledAt: string | null
+  total: number
+}
+
+function groupSettledByBundle(orders: CustomerOrder[]): SettledBundle[] {
+  const map = new Map<string, SettledBundle>()
+  for (const o of orders) {
+    const key = o.bundle_id ?? o.id
+    const existing = map.get(key)
+    if (existing) {
+      existing.orders.push(o)
+      existing.total += calcOrderTotal(o)
+    } else {
+      map.set(key, { key, orders: [o], settledAt: o.settled_at, total: calcOrderTotal(o) })
+    }
+  }
+  // 按結單日期倒序排列（新結單在前）
+  return Array.from(map.values()).sort((a, b) => {
+    const da = a.settledAt ?? a.orders[0].ordered_at
+    const db = b.settledAt ?? b.orders[0].ordered_at
+    return db.localeCompare(da)
+  })
 }
 
 // ── 型別 ──────────────────────────────────────────────────────────────────────
@@ -78,8 +119,8 @@ export default function OrdersPage() {
   const counts = useMemo(
     () => ({
       all: orders.length,
-      pending: orders.filter((o) => o.status === 'pending_purchase' || o.status === 'ordered')
-        .length,
+      // 顧客只看到「已訂購」(ordered)，待採買 (pending_purchase) 是商家內部狀態不顯示
+      pending: orders.filter((o) => o.status === 'ordered').length,
       canSettle: orders.filter((o) => o.status === 'allocated').length,
       settled: orders.filter((o) => o.status === 'settled').length,
       shipped: orders.filter((o) => o.status === 'shipped').length,
@@ -108,11 +149,12 @@ export default function OrdersPage() {
     const settleIds = new Set(settleOrders.map((o) => o.id))
     switch (filterValue) {
       case 'all':
-        return orders.filter((o) => !settleIds.has(o.id))
+        // 不顯示 pending_purchase（商家內部採買狀態，顧客無需知悉）
+        return orders.filter((o) => !settleIds.has(o.id) && o.status !== 'pending_purchase')
       case 'allocated':
         return []
       case 'pending':
-        return orders.filter((o) => o.status === 'pending_purchase' || o.status === 'ordered')
+        return orders.filter((o) => o.status === 'ordered')
       case 'settled':
         return orders.filter((o) => o.status === 'settled')
       case 'shipped':
@@ -199,16 +241,6 @@ export default function OrdersPage() {
             <h1 className='font-display font-bold text-3xl mt-1.5 leading-tight'>我的訂單</h1>
             <p className='text-sm text-fg-muted mt-1'>追蹤所有預購進度，到貨後即可結單付款 ✿</p>
           </div>
-          {monthTotal > 0 && (
-            <div className='text-right'>
-              <div className='font-mono text-[10px] text-fg-subtle tracking-wider uppercase'>
-                累積消費
-              </div>
-              <div className='font-mono font-bold text-lg' style={{ color: '#D94466' }}>
-                NT$ {monthTotal.toLocaleString()}
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Desktop 6-segment stats bar：全部 → 已下單 → 已到貨 → 已結單 → 已出貨 → 已完成 */}
@@ -418,7 +450,7 @@ export default function OrdersPage() {
                       <div className='font-display font-bold text-sm leading-tight truncate'>
                         {item.product.name}
                       </div>
-                      <div className='font-mono text-[10px] text-fg-subtle mt-1'>
+                      <div className='font-mono text-[14px] text-fg-subtle mt-1'>
                         {specs.length > 0 ? `${specs.join(' · ')} · ` : ''}
                         {formatShortId(order.id)}
                       </div>
@@ -570,13 +602,28 @@ export default function OrdersPage() {
           </div>
         )}
 
-        {/* 其他訂單卡片 */}
+        {/* 其他訂單卡片（settled 按 bundle 歸組，其他逐筆顯示）*/}
         {otherOrders.length > 0 && (
           <div className='mt-4 lg:mt-0'>
             <div className='space-y-3'>
-              {otherOrders.map((order) => (
-                <OtherOrderCard key={order.id} order={order} slug={slug} />
-              ))}
+              {filterValue === 'settled' || filterValue === 'all'
+                ? (() => {
+                    const settled = otherOrders.filter((o) => o.status === 'settled')
+                    const others = otherOrders.filter((o) => o.status !== 'settled')
+                    return (
+                      <>
+                        {others.map((order) => (
+                          <OtherOrderCard key={order.id} order={order} slug={slug} />
+                        ))}
+                        {groupSettledByBundle(settled).map((bundle) => (
+                          <BundledSettledCard key={bundle.key} bundle={bundle} />
+                        ))}
+                      </>
+                    )
+                  })()
+                : otherOrders.map((order) => (
+                    <OtherOrderCard key={order.id} order={order} slug={slug} />
+                  ))}
             </div>
             <div className='py-6 flex items-center justify-center gap-3'>
               <span className='h-px w-12 lg:w-16' style={{ background: '#e6c7b4' }} />
@@ -713,7 +760,7 @@ function MobileSettleCard({
                 <div className='font-display font-bold text-sm leading-tight truncate'>
                   {item.product.name}
                 </div>
-                <div className='font-mono text-[10px] text-fg-subtle mt-1'>
+                <div className='font-mono text-[14px] text-fg-subtle mt-1'>
                   {specs.length > 0 ? `${specs.join(' · ')} · ` : ''}
                   {formatShortId(order.id)}
                 </div>
@@ -777,6 +824,150 @@ function MobileSettleCard({
   )
 }
 
+// ── 已結單 Bundle 卡片（同批結單的多筆訂單歸一個外框）─────────────────────────
+
+function BundledSettledCard({ bundle }: { bundle: SettledBundle }) {
+  const firstOrder = bundle.orders[0]
+  const dateStr = bundle.settledAt
+    ? formatOrderedAt(bundle.settledAt)
+    : formatOrderedAt(firstOrder.ordered_at)
+  const bundleLabel = formatShortId(bundle.key)
+
+  return (
+    <article
+      className='bg-surface rounded-xl shadow-sm overflow-hidden'
+      style={{ border: '1px solid #f0d9cb' }}
+    >
+      {/* Bundle header */}
+      <div
+        className='flex items-center justify-between px-4 lg:px-5 pt-3 pb-2.5 border-b'
+        style={{ borderColor: '#f0d9cb', background: '#FDF6F0' }}
+      >
+        <div className='flex items-baseline gap-2'>
+          <span className='font-mono text-xs font-semibold text-fg'>{bundleLabel}</span>
+          <span className='font-mono text-[14px] text-fg-subtle'>{dateStr} 結單</span>
+          {bundle.orders.length > 1 && (
+            <span className='font-mono text-[14px] text-fg-subtle'>
+              · {bundle.orders.length} 件
+            </span>
+          )}
+        </div>
+        <OrderStatusBadge status='settled' />
+      </div>
+
+      {/* 結單出貨資訊 */}
+      {(firstOrder.settlement_shipping_method || firstOrder.settlement_recipient_name) && (
+        <div
+          className='px-4 lg:px-5 py-2 flex flex-wrap items-center gap-x-3 gap-y-0.5 border-b'
+          style={{ borderColor: '#f0d9cb', background: '#FDF6F0' }}
+        >
+          {firstOrder.settlement_shipping_method && (
+            <span className='font-mono text-[14px] text-fg-muted'>
+              {SHIPPING_METHOD_LABELS[firstOrder.settlement_shipping_method]}
+            </span>
+          )}
+          {firstOrder.settlement_payment_method && (
+            <>
+              <span className='text-fg-subtle text-[10px]'>·</span>
+              <span className='font-mono text-[14px] text-fg-muted'>
+                {PAYMENT_METHOD_LABELS[firstOrder.settlement_payment_method]}
+              </span>
+            </>
+          )}
+          {firstOrder.settlement_recipient_name && (
+            <>
+              <span className='text-fg-subtle text-[14px]'>·</span>
+              <span className='font-mono text-[14px] text-fg'>
+                {firstOrder.settlement_recipient_name}
+              </span>
+            </>
+          )}
+          {firstOrder.settlement_recipient_phone && (
+            <span className='font-mono text-[14px] text-fg'>
+              {firstOrder.settlement_recipient_phone}
+            </span>
+          )}
+          {firstOrder.settlement_store_name && (
+            <span className='font-mono text-[14px] text-fg-muted w-full mt-0.5 truncate'>
+              {firstOrder.settlement_store_name}
+            </span>
+          )}
+          {firstOrder.settlement_recipient_address && (
+            <span className='font-mono text-[14px] text-fg-muted w-full mt-0.5 truncate'>
+              {firstOrder.settlement_recipient_address}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* 每筆訂單 */}
+      {bundle.orders.map((order, idx) => {
+        const item = order.items[0]
+        if (!item) return null
+        const specs = item.variant ? Object.values(item.variant.specs) : []
+        const isLast = idx === bundle.orders.length - 1
+        return (
+          <div
+            key={order.id}
+            className='flex items-center gap-3 lg:gap-4 px-4 lg:px-5 py-2.5 lg:py-3'
+            style={!isLast ? { borderBottom: '1px solid #f7e5d8' } : undefined}
+          >
+            <div
+              className='w-12 lg:w-14 h-12 lg:h-14 rounded-md overflow-hidden bg-sunken shrink-0 relative'
+              style={{ border: '1px solid #f0d9cb' }}
+            >
+              {item.product.primaryImage ? (
+                <Image
+                  src={item.product.primaryImage}
+                  alt={item.product.name}
+                  fill
+                  className='object-cover'
+                  sizes='56px'
+                />
+              ) : (
+                <div
+                  className='w-full h-full'
+                  style={{
+                    background:
+                      'repeating-linear-gradient(135deg,#ffe9e0,#ffe9e0 6px,#ffd9e4 6px,#ffd9e4 12px)',
+                  }}
+                  aria-hidden='true'
+                />
+              )}
+            </div>
+            <div className='flex-1 min-w-0'>
+              <div className='font-display font-bold text-sm leading-tight truncate'>
+                {item.product.name}
+              </div>
+              <div className='font-mono text-[14px] text-fg-subtle mt-0.5'>
+                {specs.length > 0 ? `${specs.join(' · ')} · ` : ''}× {item.quantity}
+              </div>
+            </div>
+            <div className='text-right shrink-0'>
+              <div className='font-mono font-bold text-sm' style={{ color: '#5E9763' }}>
+                NT$ {(item.quantity * item.unit_price).toLocaleString()}
+              </div>
+            </div>
+          </div>
+        )
+      })}
+
+      {/* Bundle 合計 */}
+      {bundle.orders.length > 1 && (
+        <div
+          className='flex items-center justify-between px-4 lg:px-5 py-2.5 border-t'
+          style={{ borderColor: '#f0d9cb', background: '#FDF6F0' }}
+        >
+          <span className='font-display font-semibold text-xs text-fg-muted'>合計</span>
+          <span className='font-mono font-bold text-sm' style={{ color: '#5E9763' }}>
+            NT$ {bundle.total.toLocaleString()}
+          </span>
+        </div>
+      )}
+    </article>
+  )
+}
+
 // ── 其他訂單卡片 ──────────────────────────────────────────────────────────────
 
 function OtherOrderCard({ order, slug }: { order: CustomerOrder; slug: string }) {
@@ -804,7 +995,7 @@ function OtherOrderCard({ order, slug }: { order: CustomerOrder; slug: string })
       >
         <div className='flex items-baseline gap-2'>
           <span className='font-mono text-xs font-semibold text-fg'>{formatShortId(order.id)}</span>
-          <span className='font-mono text-[10px] text-fg-subtle'>
+          <span className='font-mono text-[14px] text-fg-subtle'>
             {formatOrderedAt(order.ordered_at)}
           </span>
         </div>
@@ -840,7 +1031,7 @@ function OtherOrderCard({ order, slug }: { order: CustomerOrder; slug: string })
           <div className='font-display font-bold text-sm leading-tight truncate'>
             {item.product.name}
           </div>
-          <div className='font-mono text-[10px] text-fg-subtle mt-1'>
+          <div className='font-mono text-[14px] text-fg-subtle mt-1'>
             {specs.length > 0 ? `${specs.join(' · ')} · ` : ''}× {item.quantity}
           </div>
         </div>

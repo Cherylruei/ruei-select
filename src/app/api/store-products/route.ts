@@ -17,6 +17,9 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = request.nextUrl
     const slug = searchParams.get('slug')
+    const exclude = searchParams.get('exclude')
+    const limitParam = searchParams.get('limit')
+    const limit = limitParam ? Math.min(Math.max(1, parseInt(limitParam, 10)), 50) : undefined
 
     if (!slug) {
       return NextResponse.json({ error: 'Missing slug' }, { status: 400 })
@@ -46,14 +49,20 @@ export async function GET(request: NextRequest) {
     const db = createServiceClient()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: rows, error } = (await (db as any)
+    let query = (db as any)
       .from('products')
       .select(
         'id, name, description, category_id, product_categories(name), product_images(url, sort_order), product_variants(price)'
       )
       .eq('store_id', storeId)
       .eq('status', 'active')
-      .order('created_at', { ascending: false })) as {
+      .order('created_at', { ascending: false })
+
+    if (exclude) query = query.neq('id', exclude)
+    if (limit) query = query.limit(limit)
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: rows, error } = (await query) as {
       data: ProductRow[] | null
       error: { message: string } | null
     }
