@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createRouteHandlerClient, createServiceClient } from '@/lib/supabase/server'
-import type { OrderStatus } from '@/types'
+import type { OrderStatus, ShippingMethod, PaymentMethod } from '@/types'
 
 function extractLineId(email: string | undefined): string | null {
   const match = email?.match(/^line_(.+)@internal\.rueiselect\.local$/)
@@ -51,6 +51,8 @@ interface BatchPatchBody {
   status: OrderStatus
   shipping_number?: string
   shipping_vendor?: string
+  shipping_method?: ShippingMethod
+  payment_method?: PaymentMethod
 }
 
 interface OrderStatusRow {
@@ -68,7 +70,14 @@ export async function PATCH(request: NextRequest) {
     const { storeId } = authResult
 
     const body = (await request.json()) as BatchPatchBody
-    const { orderIds, status: newStatus, shipping_number, shipping_vendor } = body
+    const {
+      orderIds,
+      status: newStatus,
+      shipping_number,
+      shipping_vendor,
+      shipping_method,
+      payment_method,
+    } = body
 
     if (!Array.isArray(orderIds) || orderIds.length === 0) {
       return NextResponse.json({ error: 'orderIds must be a non-empty array' }, { status: 400 })
@@ -153,6 +162,22 @@ export async function PATCH(request: NextRequest) {
       .in('id', orderIds)
 
     if (updateError) throw new Error(updateError.message)
+
+    // settled → shipped 時，同步更新 settlements 的物流方式與付款方式
+    if (newStatus === 'shipped' && (shipping_method || payment_method)) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const settlementUpdate: Record<string, any> = {}
+      if (shipping_method) settlementUpdate.shipping_method = shipping_method
+      if (payment_method) settlementUpdate.payment_method = payment_method
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: settlementError } = await (db as any)
+        .from('settlements')
+        .update(settlementUpdate)
+        .in('order_id', orderIds)
+
+      if (settlementError) throw new Error(settlementError.message)
+    }
 
     return NextResponse.json({ success: true, updated: orderIds.length })
   } catch (err) {

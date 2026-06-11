@@ -40,6 +40,17 @@ interface OrderItemRow {
   } | null
 }
 
+interface SettlementRow {
+  bundle_id: string | null
+  created_at: string
+  shipping_method: string | null
+  payment_method: string | null
+  recipient_name: string | null
+  recipient_phone: string | null
+  store_name: string | null
+  recipient_address: string | null
+}
+
 interface OrderRow {
   id: string
   status: string
@@ -48,6 +59,7 @@ interface OrderRow {
   shipping_number: string | null
   shipping_vendor: string | null
   order_items: OrderItemRow[]
+  settlements: SettlementRow[]
 }
 
 export async function POST(request: NextRequest) {
@@ -197,7 +209,8 @@ export async function GET(request: NextRequest) {
            id, quantity, unit_price, product_id, variant_id,
            products(id, name, product_images(url, sort_order)),
            product_variants(id, specs)
-         )`
+         ),
+         settlements(bundle_id, created_at, shipping_method, payment_method, recipient_name, recipient_phone, store_name, recipient_address)`
       )
       .eq('member_id', memberId)
       .order('ordered_at', { ascending: false })) as {
@@ -207,36 +220,49 @@ export async function GET(request: NextRequest) {
 
     if (error) throw new Error(error.message)
 
-    const orders: CustomerOrder[] = (rows ?? []).map((row) => ({
-      id: row.id,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      status: row.status as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      displayStatus: toDisplayStatus(row.status as any),
-      ordered_at: row.ordered_at,
-      note: row.note,
-      shipping_number: row.shipping_number,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      shipping_vendor: row.shipping_vendor as any,
-      items: row.order_items.map((item) => {
-        const sortedImages = item.products
-          ? [...item.products.product_images].sort((a, b) => a.sort_order - b.sort_order)
-          : []
-        return {
-          id: item.id,
-          quantity: item.quantity,
-          unit_price: item.unit_price,
-          product: {
-            id: item.products?.id ?? item.product_id,
-            name: item.products?.name ?? '',
-            primaryImage: sortedImages[0]?.url ?? null,
-          },
-          variant: item.product_variants
-            ? { id: item.product_variants.id, specs: item.product_variants.specs }
-            : null,
-        }
-      }),
-    }))
+    const orders: CustomerOrder[] = (rows ?? []).map((row) => {
+      const settlement = row.settlements?.[0] ?? null
+      return {
+        id: row.id,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        status: row.status as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        displayStatus: toDisplayStatus(row.status as any),
+        ordered_at: row.ordered_at,
+        settled_at: settlement?.created_at ?? null,
+        bundle_id: settlement?.bundle_id ?? null,
+        note: row.note,
+        shipping_number: row.shipping_number,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        shipping_vendor: row.shipping_vendor as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        settlement_shipping_method: (settlement?.shipping_method ?? null) as any,
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        settlement_payment_method: (settlement?.payment_method ?? null) as any,
+        settlement_recipient_name: settlement?.recipient_name ?? null,
+        settlement_recipient_phone: settlement?.recipient_phone ?? null,
+        settlement_store_name: settlement?.store_name ?? null,
+        settlement_recipient_address: settlement?.recipient_address ?? null,
+        items: row.order_items.map((item) => {
+          const sortedImages = item.products
+            ? [...item.products.product_images].sort((a, b) => a.sort_order - b.sort_order)
+            : []
+          return {
+            id: item.id,
+            quantity: item.quantity,
+            unit_price: item.unit_price,
+            product: {
+              id: item.products?.id ?? item.product_id,
+              name: item.products?.name ?? '',
+              primaryImage: sortedImages[0]?.url ?? null,
+            },
+            variant: item.product_variants
+              ? { id: item.product_variants.id, specs: item.product_variants.specs }
+              : null,
+          }
+        }),
+      }
+    })
 
     return NextResponse.json({ orders })
   } catch (err) {

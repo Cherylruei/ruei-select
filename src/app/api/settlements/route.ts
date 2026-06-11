@@ -106,11 +106,15 @@ export async function POST(request: NextRequest) {
         ? (cvsBranch ?? null)
         : null
 
+    // 同一批結單共用一個 bundle_id，讓前後台都能按 bundle 歸組顯示
+    const bundleId = crypto.randomUUID()
+
     // INSERT settlements + UPDATE orders.status 逐筆執行
     for (const orderId of orderIds) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error: insertErr } = await (db as any).from('settlements').insert({
         order_id: orderId,
+        bundle_id: bundleId,
         shipping_method: shippingMethod,
         payment_method: paymentMethod,
         recipient_name: recipientName || null,

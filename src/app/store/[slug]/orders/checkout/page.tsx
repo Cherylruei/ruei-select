@@ -363,115 +363,60 @@ function ItemsSummary({
       </button>
 
       {open && (
-        <div className='border-t' style={{ borderColor: '#f7e5d8' }}>
-          {/* Mobile: vertical list */}
-          <div className='lg:hidden'>
-            {orders.map((order, idx) => {
-              const item = order.items[0]
-              if (!item) return null
-              const specs = item.variant ? Object.values(item.variant.specs) : []
-              return (
+        <div
+          className='border-t divide-y'
+          style={{ borderColor: '#f7e5d8', '--tw-divide-color': '#f7e5d8' } as React.CSSProperties}
+        >
+          {orders.map((order) => {
+            const item = order.items[0]
+            if (!item) return null
+            const specs = item.variant ? Object.values(item.variant.specs) : []
+            return (
+              <div
+                key={order.id}
+                className='flex items-center gap-3 px-4 lg:px-5 py-2.5 lg:py-3'
+                style={{ borderColor: '#f7e5d8' }}
+              >
                 <div
-                  key={order.id}
-                  className={`flex items-center gap-3 px-4 py-2.5 ${idx < orders.length - 1 ? 'border-b' : ''}`}
-                  style={idx < orders.length - 1 ? { borderColor: '#f7e5d8' } : undefined}
+                  className='w-10 lg:w-11 h-10 lg:h-11 rounded-md overflow-hidden bg-sunken shrink-0 relative'
+                  style={{ border: '1px solid #f0d9cb' }}
                 >
-                  <div
-                    className='w-10 h-10 rounded-md overflow-hidden bg-sunken shrink-0 relative'
-                    style={{ border: '1px solid #f0d9cb' }}
-                  >
-                    {item.product.primaryImage ? (
-                      <Image
-                        src={item.product.primaryImage}
-                        alt={item.product.name}
-                        fill
-                        className='object-cover'
-                        sizes='40px'
-                      />
-                    ) : (
-                      <div
-                        className='w-full h-full'
-                        style={{
-                          background:
-                            'repeating-linear-gradient(135deg,#ffe9e0,#ffe9e0 6px,#ffd9e4 6px,#ffd9e4 12px)',
-                        }}
-                        aria-hidden='true'
-                      />
-                    )}
-                  </div>
-                  <div className='flex-1 min-w-0'>
-                    <div className='font-display font-semibold text-sm leading-tight truncate'>
-                      {item.product.name}
-                    </div>
-                    <div className='font-mono text-[10px] text-fg-subtle'>
-                      {specs.length > 0 ? `${specs.join(' · ')} · ` : ''}× {item.quantity}
-                    </div>
-                  </div>
-                  <span className='font-mono font-semibold text-sm whitespace-nowrap'>
-                    NT$ {(item.quantity * item.unit_price).toLocaleString()}
-                  </span>
-                </div>
-              )
-            })}
-          </div>
-
-          {/* Desktop: 3-col grid */}
-          <div
-            className='hidden lg:grid'
-            style={{ gridTemplateColumns: `repeat(${Math.min(orders.length, 3)}, 1fr)` }}
-          >
-            {orders.slice(0, 3).map((order, idx) => {
-              const item = order.items[0]
-              if (!item) return null
-              const specs = item.variant ? Object.values(item.variant.specs) : []
-              const last = idx === Math.min(orders.length, 3) - 1
-              return (
-                <div
-                  key={order.id}
-                  className={`flex items-center gap-3 px-5 py-3 ${!last ? 'border-r' : ''}`}
-                  style={!last ? { borderColor: '#f7e5d8' } : undefined}
-                >
-                  <div
-                    className='w-11 h-11 rounded-md overflow-hidden bg-sunken shrink-0 relative'
-                    style={{ border: '1px solid #f0d9cb' }}
-                  >
-                    {item.product.primaryImage ? (
-                      <Image
-                        src={item.product.primaryImage}
-                        alt={item.product.name}
-                        fill
-                        className='object-cover'
-                        sizes='44px'
-                      />
-                    ) : (
-                      <div
-                        className='w-full h-full'
-                        style={{
-                          background:
-                            'repeating-linear-gradient(135deg,#ffe9e0,#ffe9e0 8px,#ffd9e4 8px,#ffd9e4 16px)',
-                        }}
-                        aria-hidden='true'
-                      />
-                    )}
-                  </div>
-                  <div className='flex-1 min-w-0 leading-tight'>
-                    <div className='font-display font-semibold text-sm truncate'>
-                      {item.product.name}
-                    </div>
-                    <div className='font-mono text-[10px] text-fg-subtle mt-0.5'>
-                      {specs.length > 0 ? `${specs.join(' · ')} · ` : ''}× {item.quantity}
-                    </div>
+                  {item.product.primaryImage ? (
+                    <Image
+                      src={item.product.primaryImage}
+                      alt={item.product.name}
+                      fill
+                      className='object-cover'
+                      sizes='44px'
+                    />
+                  ) : (
                     <div
-                      className='font-mono text-xs font-semibold mt-0.5'
-                      style={{ color: '#D94466' }}
-                    >
-                      NT$ {(item.quantity * item.unit_price).toLocaleString()}
-                    </div>
+                      className='w-full h-full'
+                      style={{
+                        background:
+                          'repeating-linear-gradient(135deg,#ffe9e0,#ffe9e0 6px,#ffd9e4 6px,#ffd9e4 12px)',
+                      }}
+                      aria-hidden='true'
+                    />
+                  )}
+                </div>
+                <div className='flex-1 min-w-0'>
+                  <div className='font-display font-semibold text-sm leading-tight truncate'>
+                    {item.product.name}
+                  </div>
+                  <div className='font-mono text-[10px] text-fg-subtle mt-0.5'>
+                    {specs.length > 0 ? `${specs.join(' · ')} · ` : ''}× {item.quantity}
                   </div>
                 </div>
-              )
-            })}
-          </div>
+                <span
+                  className='font-mono font-semibold text-sm whitespace-nowrap'
+                  style={{ color: '#D94466' }}
+                >
+                  NT$ {(item.quantity * item.unit_price).toLocaleString()}
+                </span>
+              </div>
+            )
+          })}
         </div>
       )}
     </div>

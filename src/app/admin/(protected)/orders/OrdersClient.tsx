@@ -33,8 +33,8 @@ const TAB_ACTIVE: Record<TabKey, string> = {
   allocated: 'bg-success-bg text-success',
   settled: 'bg-sakura-100 text-sakura-700',
   shipped: 'bg-earth-100 text-earth-700',
-  completed: 'bg-sunken text-fg-muted',
-  cancelled: 'bg-sunken text-fg-subtle',
+  completed: 'bg-ink-300 text-fg',
+  cancelled: 'bg-ink-400 text-fg-muted',
 }
 
 const PIPELINE: { key: OrderStatus; label: string; dot: string; hint: string }[] = [
@@ -159,9 +159,9 @@ export default function OrdersClient() {
     <>
       <ToastContainer toasts={toasts} onDismiss={dismiss} />
 
-      {/* ── Pipeline 進度摘要 ─────────────────────────────────────────── */}
+      {/* ── Pipeline 進度摘要（桌面版）─────────────────────────────────── */}
       {counts && (
-        <section className='bg-surface border border-line rounded-xl p-5'>
+        <section className='hidden md:block bg-surface border border-line rounded-xl p-5'>
           <div className='flex items-center justify-between mb-4'>
             <div>
               <h2 className='font-display font-bold text-base'>處理進度</h2>
@@ -181,7 +181,7 @@ export default function OrdersClient() {
               >
                 <div className='flex items-center gap-1.5'>
                   <span className={`w-2 h-2 rounded-pill ${dot}`} />
-                  <span className='font-mono text-[10px] text-fg-muted uppercase tracking-wider'>
+                  <span className='font-mono text-[14px] text-fg-muted uppercase tracking-wider'>
                     {label}
                   </span>
                 </div>
@@ -198,51 +198,83 @@ export default function OrdersClient() {
       {/* ── 訂單表格卡片 ──────────────────────────────────────────────── */}
       <section className='bg-surface border border-line rounded-xl overflow-hidden'>
         {/* Tabs + 搜尋 */}
-        <div className='px-5 pt-4 pb-3 border-b border-line'>
-          <div className='flex items-center gap-1.5 flex-wrap'>
-            {STATUS_TABS.map(({ key, label, dot }) => {
-              const isActive = activeTab === key
-              const count = counts
-                ? key === 'all'
-                  ? counts.all
-                  : counts[key as OrderStatus]
-                : null
-              return (
-                <button
-                  key={key}
-                  type='button'
-                  onClick={() => switchTab(key)}
-                  className={[
-                    'inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill font-display font-semibold text-xs transition whitespace-nowrap',
-                    isActive ? TAB_ACTIVE[key] : 'bg-sunken text-fg-muted hover:bg-ink-200',
-                  ].join(' ')}
+        <div className='border-b border-line'>
+          {/* 行動版：水平滾動 tabs */}
+          <div className='md:hidden overflow-x-auto'>
+            <div className='flex items-center gap-2 px-4 py-3 w-max'>
+              {STATUS_TABS.map(({ key, label, dot }) => {
+                const isActive = activeTab === key
+                const count = counts
+                  ? key === 'all'
+                    ? counts.all
+                    : counts[key as OrderStatus]
+                  : null
+                return (
+                  <button
+                    key={key}
+                    type='button'
+                    onClick={() => switchTab(key)}
+                    className={[
+                      'inline-flex items-center gap-1.5 h-9 px-4 rounded-pill font-display font-semibold text-xs transition whitespace-nowrap',
+                      isActive ? TAB_ACTIVE[key] : 'bg-sunken text-fg-muted',
+                    ].join(' ')}
+                  >
+                    {dot && isActive && <span className='w-1.5 h-1.5 rounded-pill bg-current' />}
+                    {label}
+                    {count !== null && <span className='font-mono opacity-80'>{count}</span>}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
+          {/* 桌面版：彈性 tabs + 搜尋 */}
+          <div className='hidden md:block px-5 pt-4 pb-3'>
+            <div className='flex items-center gap-1.5 flex-wrap'>
+              {STATUS_TABS.map(({ key, label, dot }) => {
+                const isActive = activeTab === key
+                const count = counts
+                  ? key === 'all'
+                    ? counts.all
+                    : counts[key as OrderStatus]
+                  : null
+                return (
+                  <button
+                    key={key}
+                    type='button'
+                    onClick={() => switchTab(key)}
+                    className={[
+                      'inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill font-display font-semibold text-xs transition whitespace-nowrap',
+                      isActive ? TAB_ACTIVE[key] : 'bg-sunken text-fg-muted hover:bg-ink-200',
+                    ].join(' ')}
+                  >
+                    {dot && isActive && <span className='w-1.5 h-1.5 rounded-pill bg-current' />}
+                    {label}
+                    {count !== null && <span className='font-mono opacity-80'>{count}</span>}
+                  </button>
+                )
+              })}
+              <div className='flex-1' />
+              <div className='relative'>
+                <input
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  placeholder='搜尋訂單號、顧客、商品…'
+                  className='w-64 h-8 pl-9 pr-3 rounded-pill border border-line bg-surface text-sm outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition placeholder:text-fg-subtle'
+                />
+                <svg
+                  width='14'
+                  height='14'
+                  viewBox='0 0 24 24'
+                  fill='none'
+                  stroke='currentColor'
+                  strokeWidth='1.8'
+                  className='absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle pointer-events-none'
                 >
-                  {dot && isActive && <span className='w-1.5 h-1.5 rounded-pill bg-current' />}
-                  {label}
-                  {count !== null && <span className='font-mono opacity-80'>{count}</span>}
-                </button>
-              )
-            })}
-            <div className='flex-1' />
-            <div className='relative'>
-              <input
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder='搜尋訂單號、顧客、商品…'
-                className='w-64 h-8 pl-9 pr-3 rounded-pill border border-line bg-surface text-sm outline-none focus:border-primary focus:shadow-[0_0_0_3px_var(--c-primary-bg)] transition placeholder:text-fg-subtle'
-              />
-              <svg
-                width='14'
-                height='14'
-                viewBox='0 0 24 24'
-                fill='none'
-                stroke='currentColor'
-                strokeWidth='1.8'
-                className='absolute left-3 top-1/2 -translate-y-1/2 text-fg-subtle pointer-events-none'
-              >
-                <circle cx='11' cy='11' r='6' />
-                <path d='M20 20l-4-4' strokeLinecap='round' />
-              </svg>
+                  <circle cx='11' cy='11' r='6' />
+                  <path d='M20 20l-4-4' strokeLinecap='round' />
+                </svg>
+              </div>
             </div>
           </div>
         </div>
@@ -298,40 +330,89 @@ export default function OrdersClient() {
 
 function OrdersTable({ orders }: { orders: AdminOrder[] }) {
   return (
-    <div className='overflow-x-auto'>
-      <table className='w-full text-sm'>
-        <thead>
-          <tr className='bg-ink-50'>
-            <th className='text-left pl-5 pr-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
-              訂單
-            </th>
-            <th className='text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
-              顧客
-            </th>
-            <th className='text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
-              商品
-            </th>
-            <th className='text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted hidden md:table-cell'>
-              供應商
-            </th>
-            <th className='text-right px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
-              金額
-            </th>
-            <th className='px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
-              狀態
-            </th>
-            <th className='text-center px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted hidden sm:table-cell'>
-              來源
-            </th>
-            <th className='w-10' />
-          </tr>
-        </thead>
-        <tbody>
-          {orders.map((order) => (
-            <OrderRow key={order.id} order={order} />
-          ))}
-        </tbody>
-      </table>
+    <>
+      {/* 行動版：卡片列表 */}
+      <div className='md:hidden divide-y divide-line'>
+        {orders.map((order) => (
+          <MobileOrderCard key={order.id} order={order} />
+        ))}
+      </div>
+      {/* 桌面版：表格 */}
+      <div className='hidden md:block overflow-x-auto'>
+        <table className='w-full text-sm'>
+          <thead>
+            <tr className='bg-ink-50'>
+              <th className='text-left pl-5 pr-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+                訂單
+              </th>
+              <th className='text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+                顧客
+              </th>
+              <th className='text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+                商品
+              </th>
+              <th className='text-left px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+                供應商
+              </th>
+              <th className='text-right px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+                金額
+              </th>
+              <th className='px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+                狀態
+              </th>
+              <th className='text-center px-3 py-2.5 font-display font-bold text-[10px] uppercase tracking-wider text-fg-muted'>
+                來源
+              </th>
+              <th className='w-10' />
+            </tr>
+          </thead>
+          <tbody>
+            {orders.map((order) => (
+              <OrderRow key={order.id} order={order} />
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </>
+  )
+}
+
+function MobileOrderCard({ order }: { order: AdminOrder }) {
+  const router = useRouter()
+  const subtotal = orderSubtotal(order)
+  const firstItem = order.items[0]
+  const extraCount = order.items.length - 1
+  const itemName = firstItem
+    ? firstItem.product_name +
+      (firstItem.variant_specs ? `・${specLabel(firstItem.variant_specs)}` : '')
+    : '—'
+  const bgColor = avatarColor(order.member_name)
+
+  return (
+    <div
+      className='flex items-center gap-3 px-4 py-3.5 active:bg-ink-50 cursor-pointer'
+      onClick={() => router.push(`/admin/orders/${order.id}`)}
+    >
+      <div
+        className={`w-10 h-10 rounded-pill ${bgColor} text-white font-display font-bold text-sm flex items-center justify-center shrink-0 select-none`}
+      >
+        {order.member_name.charAt(0)}
+      </div>
+      <div className='flex-1 min-w-0'>
+        <div className='flex items-center justify-between gap-2'>
+          <div className='font-mono font-semibold text-fg text-xs'>{shortId(order.id)}</div>
+          <OrderStatusBadge status={order.status} />
+        </div>
+        <div className='font-semibold text-sm leading-tight mt-0.5'>{order.member_name}</div>
+        <div className='text-xs text-fg-muted mt-0.5 truncate'>
+          {itemName}
+          {extraCount > 0 ? ` +${extraCount}` : ''}
+        </div>
+        <div className='flex items-center justify-between mt-1'>
+          <div className='font-mono text-[10px] text-fg-subtle'>{formatDate(order.ordered_at)}</div>
+          <div className='font-mono font-semibold text-sm'>NT$ {subtotal.toLocaleString()}</div>
+        </div>
+      </div>
     </div>
   )
 }
@@ -683,34 +764,50 @@ function CustomerCard({ group, onCheckoutSuccess, toastFn }: CustomerCardProps) 
               </div>
 
               {/* 操作列：全選已到貨 + 收合 + 代客結單按鈕 */}
-              <div className='px-5 py-3 border-t border-line flex items-center justify-between bg-ink-50'>
-                <button
-                  type='button'
-                  onClick={toggleAllAllocated}
-                  disabled={allocatedOrders.length === 0}
-                  className='text-xs text-secondary font-display font-semibold hover:underline disabled:opacity-40 disabled:cursor-not-allowed'
-                >
-                  {allAllocatedSelected ? '取消全選' : '全選已到貨'}
-                </button>
+              <div className='px-4 py-3 border-t border-line flex items-center justify-between gap-3 bg-ink-50'>
                 <div className='flex items-center gap-2'>
                   <button
                     type='button'
-                    onClick={() => setExpanded(false)}
-                    className='h-8 px-3 rounded-pill border border-line text-fg-muted font-display font-semibold text-xs hover:bg-sunken transition'
+                    onClick={toggleAllAllocated}
+                    disabled={allocatedOrders.length === 0}
+                    className='flex flex-col items-center justify-center w-14 h-12 rounded-xl border border-line text-secondary font-display font-semibold text-[10px] leading-snug hover:bg-sunken transition disabled:opacity-40 disabled:cursor-not-allowed'
                   >
-                    收合訂單
+                    {allAllocatedSelected ? (
+                      <>
+                        <span>取消</span>
+                        <span>全選</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>全選</span>
+                        <span>已到貨</span>
+                      </>
+                    )}
                   </button>
                   <button
                     type='button'
-                    disabled={selectedIds.size === 0 || isSubmitting}
-                    onClick={handleBatchCheckout}
-                    className='h-8 px-4 rounded-pill bg-secondary text-white font-display font-semibold text-xs hover:bg-secondary-hv transition disabled:opacity-40 disabled:cursor-not-allowed'
+                    onClick={() => setExpanded(false)}
+                    className='flex flex-col items-center justify-center w-14 h-12 rounded-xl border border-line text-fg-muted font-display font-semibold text-[10px] leading-snug hover:bg-sunken transition'
                   >
-                    {isSubmitting
-                      ? '處理中…'
-                      : `代客結單${selectedIds.size > 0 ? ` ${selectedIds.size} 件` : ''}`}
+                    <span>收合</span>
+                    <span>訂單</span>
                   </button>
                 </div>
+                <button
+                  type='button'
+                  disabled={selectedIds.size === 0 || isSubmitting}
+                  onClick={handleBatchCheckout}
+                  className='flex flex-col items-center justify-center flex-1 h-12 rounded-xl bg-secondary text-white font-display font-semibold text-xs leading-snug hover:bg-secondary-hv transition disabled:opacity-40 disabled:cursor-not-allowed'
+                >
+                  {isSubmitting ? (
+                    <span>處理中…</span>
+                  ) : (
+                    <>
+                      <span>代客結單</span>
+                      {selectedIds.size > 0 && <span>{selectedIds.size} 件</span>}
+                    </>
+                  )}
+                </button>
               </div>
             </>
           ) : (

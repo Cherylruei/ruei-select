@@ -62,6 +62,7 @@ interface SettlementRow {
   recipient_address: string | null
   store_name: string | null
   note: string | null
+  created_at: string
 }
 
 interface OrderRow {
@@ -170,10 +171,10 @@ export async function GET(request: NextRequest) {
            products(name, suppliers(name)),
            product_variants(specs)
          ),
-         settlements(bundle_id, shipping_method, payment_method, recipient_name, recipient_phone, recipient_address, store_name, note)`
+         settlements(bundle_id, shipping_method, payment_method, recipient_name, recipient_phone, recipient_address, store_name, note, created_at)`
       )
       .eq('store_id', storeId)
-      .order('ordered_at', { ascending: false })
+      .order(validStatus ? 'updated_at' : 'ordered_at', { ascending: false })
 
     if (validStatus) {
       query = query.eq('status', validStatus)
@@ -220,6 +221,7 @@ export async function GET(request: NextRequest) {
             recipient_address: row.settlements[0].recipient_address,
             store_name: row.settlements[0].store_name,
             note: row.settlements[0].note,
+            settled_at: row.settlements[0].created_at,
           } satisfies OrderSettlement)
         : null,
       items: row.order_items.map(

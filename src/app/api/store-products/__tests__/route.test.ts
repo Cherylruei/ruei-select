@@ -68,20 +68,26 @@ const mockProductRows: MockProductRow[] = [
 ]
 
 function makeMockDb(products: MockProductRow[] | null, error?: { message: string } | null) {
-  const queryBuilder = {
+  const result = { data: products, error: error ?? null }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const queryBuilder: any = {
     from: vi.fn().mockReturnThis(),
     select: vi.fn().mockReturnThis(),
     eq: vi.fn().mockReturnThis(),
-    order: vi.fn().mockResolvedValue({ data: products, error: error ?? null }),
+    neq: vi.fn().mockReturnThis(),
+    order: vi.fn().mockReturnThis(),
+    limit: vi.fn().mockResolvedValue(result),
+    // Thenable so `await queryBuilder` works when .limit() is not called
+    then: (resolve: (v: typeof result) => void) => resolve(result),
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return queryBuilder as any
+  return queryBuilder
 }
 
-function makeRequest(slug?: string, token?: string) {
-  const url = slug
-    ? `http://localhost:3000/api/store-products?slug=${slug}`
-    : 'http://localhost:3000/api/store-products'
+function makeRequest(slug?: string, token?: string, extra?: Record<string, string>) {
+  const params = new URLSearchParams()
+  if (slug) params.set('slug', slug)
+  if (extra) Object.entries(extra).forEach(([k, v]) => params.set(k, v))
+  const url = `http://localhost:3000/api/store-products?${params.toString()}`
   const req = new NextRequest(url)
   if (token) req.headers.set('authorization', `Bearer ${token}`)
   return req
@@ -166,5 +172,39 @@ describe('GET /api/store-products', () => {
     const res = await GET(makeRequest('test-store', 'valid-token'))
     const json = await res.json()
     expect(json.products[0].primaryImage).toBe('https://example.com/first.jpg')
+  })
+
+  it('exclude 排除指定商品 → 回傳其他商品', async () => {
+    mockVerify.mockResolvedValue({
+      result: { status: 'approved', store: mockStore, member: mockMember },
+    })
+    const db = makeMockDb([mockProductRows[1]])
+    mockCreateServiceClient.mockReturnValue(db)
+
+    const res = await GET(
+      makeRequest('test-store', 'valid-token', { exclude: 'prod-1', limit: '4' })
+    )
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.products).toHaveLength(1)
+    expect(json.products[0].id).toBe('prod-2')
+    expect(db.neq).toHaveBeenCalledWith('id', 'prod-1')
+    expect(db.limit).toHaveBeenCalledWith(4)
+  })
+
+  it('exclude 後無其他商品 → 回傳空陣列', async () => {
+    mockVerify.mockResolvedValue({
+      result: { status: 'approved', store: mockStore, member: mockMember },
+    })
+    mockCreateServiceClient.mockReturnValue(makeMockDb([]))
+
+    const res = await GET(
+      makeRequest('test-store', 'valid-token', { exclude: 'prod-1', limit: '4' })
+    )
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.products).toHaveLength(0)
   })
 })
