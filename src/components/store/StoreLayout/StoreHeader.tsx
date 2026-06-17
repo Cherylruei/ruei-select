@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import StoreUserMenu from './StoreUserMenu'
 
 interface StoreHeaderProps {
   name: string
@@ -189,20 +190,7 @@ export default function StoreHeader({ name, avatarUrl, slug, memberName }: Store
             </svg>
           </button>
 
-          <div
-            className='flex items-center gap-2 pl-1 pr-3 h-10 rounded-full bg-surface'
-            style={{ border: '1px solid #f0d9cb' }}
-          >
-            <div className='w-7 h-7 rounded-full bg-primary text-white font-display font-bold text-xs flex items-center justify-center shrink-0'>
-              {initial}
-            </div>
-            <div className='leading-tight'>
-              <div className='font-display font-semibold text-xs text-fg'>
-                {memberName ?? '會員'}
-              </div>
-              <div className='font-mono text-[9px] text-fg-subtle'>已驗證</div>
-            </div>
-          </div>
+          <StoreUserMenu slug={slug} memberName={memberName} />
         </div>
 
         {/* Mobile: avatar shortcut */}

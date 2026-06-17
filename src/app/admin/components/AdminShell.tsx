@@ -21,6 +21,7 @@ const CUSTOM_HEADER_PATHS = new Set([
   '/admin/products/new',
   '/admin/orders',
   '/admin/orders/new',
+  '/admin/customers',
 ])
 
 function getPageTitle(pathname: string): string {

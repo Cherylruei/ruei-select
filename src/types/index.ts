@@ -70,6 +70,7 @@ export interface StoreMember {
   source: MemberSource
   referring_product_id: string | null
   note: string | null
+  rejection_reason: string | null
   applied_at: string
   reviewed_at: string | null
 }

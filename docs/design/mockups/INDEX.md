@@ -36,8 +36,8 @@
 
 | Sprint | 路由 | 元件 | 狀態 | Mockup | 主要內容 |
 |---|---|---|---|---|---|
-| 3 | `/store/[slug]/login` | `<StoreLogin/>` | ⬜ | _尚未繪製_ | 顧客 LINE LIFF 快速登入 |
-| 3 | `/store/[slug]/register` | `<StoreRegister/>` | ⬜ | _尚未繪製_ | 顧客申請：姓名 / 手機 / LINE ID → 「待商家核准」狀態 |
+| 3 | `/store/[slug]/login` | `<StoreLogin/>` | ✅ | [store-login.html](./store-login.html) · [PC](./store-login-pc.html) | 顧客 LINE LIFF 快速登入 ｜PC: 置中分割卡（左 brand hero + 右 LINE 登入） |
+| 3 | `/store/[slug]/register` | `<StoreRegister/>` | ✅ | [store-register.html](./store-register.html) · [PC](./store-register-pc.html) | 顧客申請：姓名 / 手機 / LINE ID → 「待商家核准」狀態 ｜PC: 頂欄 + 2-col（表單 + 接下來會發生什麼）+ 送出後狀態畫面 |
 | 3 | `/store/[slug]` | `<StoreProducts/>` | ✅ | [store-products.html](./store-products.html) · [PC](./store-products-pc.html) | Hero banner + 分類 pills + 商品 grid + 許願池 CTA + bottom tab ｜PC: top nav + sidebar 篩選 + 4 欄 grid |
 | 3 | `/store/[slug]/products/[id]` | `<StoreProductDetail/>` | ⬜ | _尚未繪製_ | 商品詳細：圖片輪播 + 規格選擇 + 數量 + 下單確認彈窗（無購物車） |
 | 4 | `/store/[slug]/orders` | `<StoreOrders/>` | ✅ | [store-orders.html](./store-orders.html) · [PC](./store-orders-pc.html) | stats + 可結單漸層卡（勾選與小計）+ 其他訂單列表 ｜PC: 5 stats + 2-col hero + 卡片網格 |
