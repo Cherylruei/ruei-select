@@ -48,6 +48,19 @@ export async function GET(request: NextRequest) {
     const storeId = outcome.result.store.id
     const db = createServiceClient()
 
+    // 橫幅設定（US-NEW-BANNER-IMG）：前台首頁 hero 用，NULL 由前台 fallback 預設漸層版面
+    const { data: storeRow } = (await db
+      .from('stores')
+      .select('banner_image_url, banner_link_url')
+      .eq('id', storeId)
+      .single()) as {
+      data: {
+        banner_image_url: string | null
+        banner_link_url: string | null
+      } | null
+      error: unknown
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query = (db as any)
       .from('products')
@@ -61,7 +74,6 @@ export async function GET(request: NextRequest) {
     if (exclude) query = query.neq('id', exclude)
     if (limit) query = query.limit(limit)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: rows, error } = (await query) as {
       data: ProductRow[] | null
       error: { message: string } | null
@@ -85,7 +97,13 @@ export async function GET(request: NextRequest) {
       }
     })
 
-    return NextResponse.json({ products })
+    return NextResponse.json({
+      products,
+      store: {
+        banner_image_url: storeRow?.banner_image_url ?? null,
+        banner_link_url: storeRow?.banner_link_url ?? null,
+      },
+    })
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Internal server error'
     return NextResponse.json({ error: message }, { status: 500 })

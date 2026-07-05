@@ -67,7 +67,21 @@ const mockProductRows: MockProductRow[] = [
   },
 ]
 
-function makeMockDb(products: MockProductRow[] | null, error?: { message: string } | null) {
+interface MockBanner {
+  banner_image_url: string | null
+  banner_link_url: string | null
+}
+
+const NULL_BANNER: MockBanner = {
+  banner_image_url: null,
+  banner_link_url: null,
+}
+
+function makeMockDb(
+  products: MockProductRow[] | null,
+  error?: { message: string } | null,
+  banner: MockBanner = NULL_BANNER
+) {
   const result = { data: products, error: error ?? null }
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const queryBuilder: any = {
@@ -77,6 +91,8 @@ function makeMockDb(products: MockProductRow[] | null, error?: { message: string
     neq: vi.fn().mockReturnThis(),
     order: vi.fn().mockReturnThis(),
     limit: vi.fn().mockResolvedValue(result),
+    // 橫幅查詢用：db.from('stores').select().eq().single()
+    single: vi.fn().mockResolvedValue({ data: banner, error: null }),
     // Thenable so `await queryBuilder` works when .limit() is not called
     then: (resolve: (v: typeof result) => void) => resolve(result),
   }
@@ -191,6 +207,43 @@ describe('GET /api/store-products', () => {
     expect(json.products[0].id).toBe('prod-2')
     expect(db.neq).toHaveBeenCalledWith('id', 'prod-1')
     expect(db.limit).toHaveBeenCalledWith(4)
+  })
+
+  it('回傳 store 橫幅欄位（有設定時帶出商家上傳的圖片與連結）', async () => {
+    mockVerify.mockResolvedValue({
+      result: { status: 'approved', store: mockStore, member: mockMember },
+    })
+    mockCreateServiceClient.mockReturnValue(
+      makeMockDb(mockProductRows, null, {
+        banner_image_url: 'https://example.com/banner.jpg',
+        banner_link_url: 'https://example.com/promo',
+      })
+    )
+
+    const res = await GET(makeRequest('test-store', 'valid-token'))
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.store).toEqual({
+      banner_image_url: 'https://example.com/banner.jpg',
+      banner_link_url: 'https://example.com/promo',
+    })
+  })
+
+  it('store 未設定橫幅時回傳 NULL（前台 fallback 預設版面）', async () => {
+    mockVerify.mockResolvedValue({
+      result: { status: 'approved', store: mockStore, member: mockMember },
+    })
+    mockCreateServiceClient.mockReturnValue(makeMockDb(mockProductRows))
+
+    const res = await GET(makeRequest('test-store', 'valid-token'))
+    const json = await res.json()
+
+    expect(res.status).toBe(200)
+    expect(json.store).toEqual({
+      banner_image_url: null,
+      banner_link_url: null,
+    })
   })
 
   it('exclude 後無其他商品 → 回傳空陣列', async () => {

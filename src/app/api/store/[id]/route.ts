@@ -54,6 +54,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       description?: string | null
       avatar_url?: string | null
       allow_public_products?: boolean
+      banner_link_url?: string | null
     }
 
     const name = body.name !== undefined ? body.name.trim() : store.name
@@ -74,6 +75,18 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: '賣場介紹不能超過 200 個字' }, { status: 400 })
     }
 
+    // 橫幅連結：空字串視為 NULL（不可點擊）
+    const bannerLinkUrl =
+      body.banner_link_url === undefined
+        ? undefined
+        : body.banner_link_url === null
+          ? null
+          : body.banner_link_url.trim() || null
+
+    if (bannerLinkUrl && bannerLinkUrl.length > 500) {
+      return NextResponse.json({ error: '橫幅連結網址不能超過 500 個字' }, { status: 400 })
+    }
+
     const updates: Partial<Store> = {
       name,
       description,
@@ -82,6 +95,7 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     if (body.avatar_url !== undefined) updates.avatar_url = body.avatar_url
     if (body.allow_public_products !== undefined)
       updates.allow_public_products = body.allow_public_products
+    if (bannerLinkUrl !== undefined) updates.banner_link_url = bannerLinkUrl
 
     const serviceClient = createServiceClient()
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

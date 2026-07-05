@@ -40,6 +40,8 @@ export interface Store {
   slug: string
   invite_token: string
   allow_public_products: boolean
+  banner_image_url: string | null
+  banner_link_url: string | null
   created_at: string
   updated_at: string
 }

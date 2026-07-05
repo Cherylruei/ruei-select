@@ -24,11 +24,19 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
     initialStore?.avatar_url ?? null
   )
   const [copyLabel, setCopyLabel] = useState('複製連結')
+  const [bannerImageFile, setBannerImageFile] = useState<File | null>(null)
+  const [bannerImagePreview, setBannerImagePreview] = useState<string | null>(
+    initialStore?.banner_image_url ?? null
+  )
+  const [bannerLinkUrl, setBannerLinkUrl] = useState(initialStore?.banner_link_url ?? '')
+  const [isSavingBanner, setIsSavingBanner] = useState(false)
+  const [isUploadingBanner, setIsUploadingBanner] = useState(false)
   const [showRegenModal, setShowRegenModal] = useState(false)
   const [isPending, startTransition] = useTransition()
   const [isUploading, setIsUploading] = useState(false)
   const [isTogglingPublic, setIsTogglingPublic] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const bannerFileInputRef = useRef<HTMLInputElement>(null)
   const { toasts, toast, dismiss } = useToast()
 
   const isLoading = isPending || isUploading
@@ -54,6 +62,93 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
       toast('更新失敗，請稍後再試', 'error')
     } finally {
       setIsTogglingPublic(false)
+    }
+  }
+
+  function handleBannerFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      toast('僅支援 JPG / PNG / WebP 格式', 'error')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast('圖片大小不能超過 5MB', 'error')
+      return
+    }
+    setBannerImageFile(file)
+    setBannerImagePreview(URL.createObjectURL(file))
+  }
+
+  async function handleRemoveBannerImage() {
+    if (!store) return
+    setIsUploadingBanner(true)
+    try {
+      const res = await fetch(`/api/store/${store.id}/banner`, { method: 'DELETE' })
+      const body = await res.json()
+      if (!res.ok) {
+        toast(body.error || '移除失敗', 'error')
+        return
+      }
+      setStore((prev) => (prev ? { ...prev, banner_image_url: null } : prev))
+      setBannerImageFile(null)
+      setBannerImagePreview(null)
+      toast('橫幅圖片已移除', 'success')
+    } catch {
+      toast('移除失敗，請稍後再試', 'error')
+    } finally {
+      setIsUploadingBanner(false)
+    }
+  }
+
+  async function handleSaveBanner() {
+    if (!store) return
+    if (bannerLinkUrl.length > 500) {
+      toast('橫幅連結網址不能超過 500 個字', 'error')
+      return
+    }
+    setIsSavingBanner(true)
+    try {
+      let updatedStore: Store = store
+
+      if (bannerImageFile) {
+        setIsUploadingBanner(true)
+        const formData = new FormData()
+        formData.append('banner', bannerImageFile, bannerImageFile.name || 'banner')
+        const uploadRes = await fetch(`/api/store/${store.id}/banner`, {
+          method: 'POST',
+          body: formData,
+        })
+        const uploadBody = await uploadRes.json()
+        setIsUploadingBanner(false)
+        if (!uploadRes.ok) {
+          toast(uploadBody.error || '橫幅圖片上傳失敗', 'error')
+          return
+        }
+        updatedStore = { ...updatedStore, banner_image_url: uploadBody.data.banner_image_url }
+        setBannerImageFile(null)
+      }
+
+      const res = await fetch(`/api/store/${store.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          banner_link_url: bannerLinkUrl.trim() || null,
+        }),
+      })
+      const body = await res.json()
+      if (!res.ok) {
+        toast(body.error || '更新失敗', 'error')
+        return
+      }
+      updatedStore = { ...updatedStore, banner_link_url: body.data.banner_link_url }
+      setStore(updatedStore)
+      setBannerImagePreview(updatedStore.banner_image_url)
+      toast('橫幅設定已更新', 'success')
+    } catch {
+      toast('更新失敗，請稍後再試', 'error')
+    } finally {
+      setIsSavingBanner(false)
     }
   }
 
@@ -408,6 +503,161 @@ export default function StoreSettingsClient({ initialStore, appUrl }: Props) {
           </div>
         </div>
       </section>
+
+      {/* ── Section 1.5: 首頁橫幅設定 ───────────────────────────────────── */}
+      {store && (
+        <section className='bg-surface border border-line rounded-xl overflow-hidden'>
+          <div className='px-6 pt-5 pb-4 border-b border-line flex items-center justify-between'>
+            <SectionTitle>首頁橫幅設定</SectionTitle>
+            <span className='text-xs text-fg-muted'>顯示在賣場首頁頂部的大型橫幅</span>
+          </div>
+
+          <div className='p-6 space-y-4'>
+            <p className='text-sm text-fg-muted leading-relaxed'>
+              上傳顧客進入賣場時看到的橫幅圖片，可選填點擊後前往的連結。未上傳圖片時顯示系統預設版面。
+            </p>
+
+            <div>
+              <span className='block font-display font-semibold text-sm mb-1.5'>橫幅圖片</span>
+              {bannerImagePreview ? (
+                <div className='relative rounded-xl overflow-hidden group'>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={bannerImagePreview}
+                    alt='橫幅圖片預覽'
+                    className='w-full h-44 object-cover'
+                  />
+                  <div className='absolute inset-0 bg-[rgba(0,0,0,0.35)] opacity-0 group-hover:opacity-100 transition flex items-center justify-center gap-2'>
+                    <button
+                      type='button'
+                      onClick={() => bannerFileInputRef.current?.click()}
+                      disabled={isSavingBanner || isUploadingBanner}
+                      className='inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-white text-fg font-display font-semibold text-xs shadow-sm disabled:opacity-50'
+                    >
+                      更換圖片
+                    </button>
+                    <button
+                      type='button'
+                      onClick={handleRemoveBannerImage}
+                      disabled={isSavingBanner || isUploadingBanner}
+                      className='inline-flex items-center gap-1.5 h-8 px-3.5 rounded-pill bg-white text-danger font-display font-semibold text-xs shadow-sm disabled:opacity-50'
+                    >
+                      移除圖片
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  type='button'
+                  onClick={() => bannerFileInputRef.current?.click()}
+                  disabled={isSavingBanner || isUploadingBanner}
+                  className='w-full h-44 rounded-xl border-2 border-dashed border-line hover:border-secondary hover:bg-sunken transition flex flex-col items-center justify-center gap-2 text-fg-muted disabled:opacity-60 disabled:cursor-not-allowed'
+                >
+                  <svg
+                    width='28'
+                    height='28'
+                    viewBox='0 0 24 24'
+                    fill='none'
+                    stroke='currentColor'
+                    strokeWidth='1.6'
+                    strokeLinecap='round'
+                    strokeLinejoin='round'
+                    aria-hidden='true'
+                  >
+                    <rect x='3' y='3' width='18' height='18' rx='3' />
+                    <circle cx='9' cy='9' r='1.6' />
+                    <path d='M21 15l-5-5L5 21' />
+                  </svg>
+                  <span className='font-display font-semibold text-sm'>點擊上傳橫幅圖片</span>
+                  <span className='text-xs text-fg-subtle'>
+                    JPG / PNG / WebP，建議 1200×400px，檔案 ≤ 5MB
+                  </span>
+                </button>
+              )}
+              <input
+                ref={bannerFileInputRef}
+                type='file'
+                accept='image/jpeg,image/png,image/webp'
+                className='hidden'
+                onChange={handleBannerFileChange}
+                aria-label='上傳橫幅圖片'
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor='bannerLinkUrl'
+                className='block font-display font-semibold text-sm mb-1.5'
+              >
+                點擊連結（選填）
+              </label>
+              <input
+                id='bannerLinkUrl'
+                type='text'
+                className={FLD}
+                value={bannerLinkUrl}
+                onChange={(e) => setBannerLinkUrl(e.target.value)}
+                maxLength={500}
+                disabled={isSavingBanner}
+                placeholder='https://example.com 或 /store/slug/...'
+              />
+              <div className='flex items-center justify-between mt-1.5'>
+                <span className='text-xs text-fg-subtle'>
+                  留空則橫幅不可點擊，可填站內路徑或站外網址
+                </span>
+                <span
+                  className={`font-mono text-[11px] ${bannerLinkUrl.length > 500 ? 'text-danger' : 'text-fg-subtle'}`}
+                >
+                  {bannerLinkUrl.length} / 500
+                </span>
+              </div>
+            </div>
+
+            <div className='flex justify-end pt-4 border-t border-line'>
+              <button
+                type='button'
+                onClick={handleSaveBanner}
+                disabled={isSavingBanner}
+                className='inline-flex items-center gap-1.5 h-9 px-5 rounded-pill bg-secondary text-white font-display font-semibold text-sm shadow-green hover:bg-secondary-hv active:scale-[.97] transition disabled:opacity-50 disabled:cursor-not-allowed'
+              >
+                {isSavingBanner ? (
+                  <>
+                    <svg
+                      className='animate-spin'
+                      width='13'
+                      height='13'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='currentColor'
+                      strokeWidth='2'
+                      aria-hidden='true'
+                    >
+                      <path d='M21 12a9 9 0 1 1-6.219-8.56' />
+                    </svg>
+                    儲存中…
+                  </>
+                ) : (
+                  <>
+                    <svg
+                      width='13'
+                      height='13'
+                      viewBox='0 0 24 24'
+                      fill='none'
+                      stroke='currentColor'
+                      strokeWidth='2.2'
+                      strokeLinecap='round'
+                      aria-hidden='true'
+                    >
+                      <polyline points='20 6 9 17 4 12' />
+                    </svg>
+                    儲存橫幅設定
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* ── Section 2: 顧客邀請連結 ─────────────────────────────────────── */}
       <section className='bg-surface border border-line rounded-xl overflow-hidden'>
