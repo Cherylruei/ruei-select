@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'next/navigation'
 import Image from 'next/image'
-import { initLiff } from '@/lib/line/liff'
+import { initLiff, logoutLiff } from '@/lib/line/liff'
 import type { StoreAuthResult } from '@/types'
 
 type PageState = 'loading' | 'ready' | 'error'
@@ -33,6 +33,12 @@ export default function AccountPage() {
 
   const [pageState, setPageState] = useState<PageState>('loading')
   const [data, setData] = useState<AccountData | null>(null)
+  const [loggingOut, setLoggingOut] = useState(false)
+
+  const handleLogout = async () => {
+    setLoggingOut(true)
+    await logoutLiff(`/store/${slug}/login`)
+  }
 
   useEffect(() => {
     if (!slug) return
@@ -176,6 +182,30 @@ export default function AccountPage() {
           聯繫商家
         </a>
       )}
+
+      {/* 登出 */}
+      <button
+        type='button'
+        onClick={handleLogout}
+        disabled={loggingOut}
+        className='mt-3 flex items-center justify-center gap-2 w-full py-3 rounded-full bg-white border border-[var(--neutral-200)] text-[var(--neutral-600)] text-[14px] font-semibold transition-colors hover:bg-[var(--neutral-50)] disabled:opacity-60'
+      >
+        <svg
+          viewBox='0 0 24 24'
+          width='18'
+          height='18'
+          fill='none'
+          stroke='currentColor'
+          strokeWidth='1.8'
+          strokeLinecap='round'
+          strokeLinejoin='round'
+          aria-hidden='true'
+        >
+          <path d='M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4' />
+          <path d='M16 17l5-5-5-5M21 12H9' />
+        </svg>
+        {loggingOut ? '登出中…' : '登出'}
+      </button>
     </div>
   )
 }

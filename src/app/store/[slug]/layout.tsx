@@ -32,8 +32,8 @@ export default function StoreLayout({ children, params }: StoreLayoutProps) {
   const initialized = useRef(false)
   const pathname = usePathname()
 
-  // /join 是公開路由，不受 auth guard 管轄
-  const isJoinPage = pathname.endsWith('/join')
+  // /join、/login 是登入前的公開路由，不套會員外框、不受 auth guard 管轄
+  const isPublicPage = pathname.endsWith('/join') || pathname.endsWith('/login')
 
   useEffect(() => {
     params.then((p) => setSlug(p.slug))
@@ -86,8 +86,8 @@ export default function StoreLayout({ children, params }: StoreLayoutProps) {
     run()
   }, [slug])
 
-  // join 頁直接渲染，不套 auth guard
-  if (isJoinPage) {
+  // 公開頁（join / login）直接渲染，不套 auth guard 與會員外框
+  if (isPublicPage) {
     return <>{children}</>
   }
 

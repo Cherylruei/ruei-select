@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="zh-Hant" data-variant="candy">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>芮選 · 小美的選物店 · 登入（PC）</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../src/styles/design-tokens.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="_tailwind-config.js"></script>
+  <style>
+    body { font-family: var(--font-body); }
+    [data-variant="candy"] {
+      --r-sm: 10px; --r-md: 14px; --r-lg: 18px; --r-xl: 22px; --r-2xl: 28px;
+      --line-warm:        #F0D9CB;
+      --line-warm-strong: #E6C7B4;
+      --line-warm-soft:   #F7E5D8;
+    }
+    .card-line { border: 1px solid var(--line-warm); }
+    .desktop-hint {
+      position: fixed; left: 24px; top: 24px;
+      font-family: var(--font-mono); font-size: 11px; color: var(--fg-subtle);
+      letter-spacing: 0.15em; text-transform: uppercase; z-index: 50;
+    }
+    .logo-body { fill: #FFD9E4; } .logo-eye { fill: #3B2A2A; }
+    .logo-blush { fill: #FF6E94; opacity: 0.7; } .logo-sparkle { fill: #FFB347; }
+
+    .sparkle { position: absolute; pointer-events: none; color: var(--c-accent); animation: twinkle 2s ease-in-out infinite; }
+    @keyframes twinkle { 0%,100% { transform: scale(1); opacity: 0.55; } 50% { transform: scale(1.2); opacity: 1; } }
+    @keyframes floaty { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-7px); } }
+    .floaty { animation: floaty 4s ease-in-out infinite; }
+
+    .line-btn { background: #06C755; box-shadow: 0 12px 30px rgba(6,199,85,0.34); }
+    .line-btn:hover { background: #05B14C; }
+
+    /* 左側賣點 row */
+    .sell-row { display: flex; align-items: center; gap: 14px; }
+    .sell-ico { width: 44px; height: 44px; border-radius: 999px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  </style>
+</head>
+<body style="background: linear-gradient(160deg, #FFF6F1 0%, #FCEAE0 55%, #F6DCD0 100%); min-height: 100vh;">
+
+  <span class="desktop-hint">DESKTOP · 1280 PX · /STORE/[SLUG]/LOGIN · LINE LIFF · PC</span>
+
+  <!-- ===== Centered split card ===== -->
+  <main class="min-h-screen flex items-center justify-center px-8 py-12">
+    <div class="w-full max-w-[940px] grid grid-cols-2 rounded-2xl overflow-hidden card-line bg-surface"
+         style="box-shadow: 0 40px 90px -30px rgba(255,110,148,0.40), 0 0 0 1px rgba(255,110,148,0.10); min-height: 600px;">
+
+      <!-- ===== Left: brand hero panel ===== -->
+      <section class="relative px-11 py-12 flex flex-col overflow-hidden" style="background: linear-gradient(150deg, #FF6E94 0%, #9A8CFF 100%);">
+        <span class="sparkle" style="top:60px;right:54px;font-size:20px;">✦</span>
+        <span class="sparkle" style="top:200px;left:40px;font-size:14px;animation-delay:.8s;">✦</span>
+        <span class="sparkle" style="bottom:120px;right:80px;font-size:16px;animation-delay:1.3s;">✦</span>
+        <div class="absolute -right-16 -top-16 w-56 h-56 rounded-pill bg-white/12"></div>
+        <div class="absolute -left-12 bottom-2 w-32 h-32 rounded-pill bg-white/10"></div>
+
+        <!-- brand head -->
+        <div class="relative z-10 flex flex-col items-start">
+          <div class="floaty w-20 h-20 rounded-2xl bg-white/95 flex items-center justify-center" style="box-shadow:0 18px 40px -10px rgba(60,40,40,0.35);">
+            <svg width="54" height="54" viewBox="0 0 44 44">
+              <rect class="logo-sparkle" x="35" y="6" width="6" height="6" transform="rotate(45 38 9)" rx="1" />
+              <rect class="logo-sparkle" x="4" y="32" width="4" height="4" transform="rotate(45 6 34)" rx="0.8" />
+              <rect class="logo-body" x="6" y="10" width="32" height="28" rx="14" />
+              <circle class="logo-blush" cx="13" cy="27" r="2.5"/>
+              <circle class="logo-blush" cx="31" cy="27" r="2.5"/>
+              <ellipse class="logo-eye" cx="17" cy="22" rx="1.6" ry="2.4"/>
+              <ellipse class="logo-eye" cx="27" cy="22" rx="1.6" ry="2.4"/>
+              <ellipse class="logo-blush" cx="22" cy="29" rx="3" ry="1.4"/>
+            </svg>
+          </div>
+          <div class="inline-flex items-center gap-1.5 font-mono text-[10px] text-white tracking-[0.2em] uppercase px-2.5 py-1 mt-6 rounded-pill bg-white/15" style="border:1px solid rgba(255,255,255,0.28);">
+            邀請你加入
+          </div>
+          <h1 class="font-display font-bold text-white text-3xl mt-3 leading-tight">小美的選物店</h1>
+          <p class="text-white/85 text-xs mt-2 font-mono tracking-[0.18em]">RUEI · SELECT</p>
+        </div>
+
+        <div class="flex-1"></div>
+
+        <!-- selling points -->
+        <div class="relative z-10 space-y-4">
+          <div class="sell-row">
+            <div class="sell-ico bg-white/95" style="color:#E8527C;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg>
+            </div>
+            <div class="leading-tight">
+              <div class="font-display font-bold text-white text-sm">精選好物</div>
+              <div class="text-white/75 text-xs mt-0.5">日本・英國・台灣職人小物</div>
+            </div>
+          </div>
+          <div class="sell-row">
+            <div class="sell-ico bg-white/95" style="color:#7E70E8;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z"/></svg>
+            </div>
+            <div class="leading-tight">
+              <div class="font-display font-bold text-white text-sm">許願代購</div>
+              <div class="text-white/75 text-xs mt-0.5">想要的找不到？小美幫你跨海找</div>
+            </div>
+          </div>
+          <div class="sell-row">
+            <div class="sell-ico bg-white/95" style="color:#C97A1E;">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><rect x="4" y="5" width="16" height="16" rx="2"/><path d="M8 10h8M8 14h5"/></svg>
+            </div>
+            <div class="leading-tight">
+              <div class="font-display font-bold text-white text-sm">訂單追蹤</div>
+              <div class="text-white/75 text-xs mt-0.5">從下單到收貨，狀態一目了然</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ===== Right: login panel ===== -->
+      <section class="px-12 py-12 flex flex-col">
+
+        <div class="flex-1 flex flex-col justify-center">
+          <h2 class="font-display font-bold text-2xl leading-snug">日本・英國・台灣<br/>職人小物，幫你跨海代購</h2>
+          <p class="text-sm text-fg-muted mt-4 leading-relaxed">
+            用 LINE 一秒登入，加入小美的選物清單。<br/>
+            登入後填寫資料，待小美核准即可逛賣場 ✿
+          </p>
+
+          <!-- LINE login CTA -->
+          <a href="store-register-pc.html" class="line-btn mt-9 w-full h-14 rounded-pill text-white font-display font-bold text-md flex items-center justify-center gap-2.5 active:scale-[.98] transition">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.9 3 2.75 6.43 2.75 10.66c0 3.79 3.3 6.96 7.76 7.56.3.06.71.2.81.46.09.24.06.6.03.85l-.13.79c-.04.24-.18.92.81.5s5.34-3.14 7.29-5.38h0c1.34-1.47 1.99-2.97 1.99-4.78C21.31 6.43 17.13 3 12 3z"/></svg>
+            用 LINE 快速登入
+          </a>
+          <div class="flex items-center justify-center gap-1.5 mt-4 text-fg-subtle">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg>
+            <span class="font-mono text-[10px] tracking-wide">透過 LINE 安全登入 · 不會公開你的帳號</span>
+          </div>
+
+          <!-- divider -->
+          <div class="flex items-center gap-3 mt-9">
+            <span class="flex-1 h-px" style="background:var(--line-warm-strong);"></span>
+            <span class="font-mono text-[10px] text-fg-subtle tracking-wider uppercase">為什麼用 LINE</span>
+            <span class="flex-1 h-px" style="background:var(--line-warm-strong);"></span>
+          </div>
+          <ul class="mt-5 space-y-2.5">
+            <li class="flex items-start gap-2.5 text-[13px] text-fg-muted">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2F8A52" stroke-width="2.4" stroke-linecap="round" class="shrink-0 mt-0.5"><path d="M5 12l4 4 10-10"/></svg>
+              免記帳號密碼，點一下就完成
+            </li>
+            <li class="flex items-start gap-2.5 text-[13px] text-fg-muted">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2F8A52" stroke-width="2.4" stroke-linecap="round" class="shrink-0 mt-0.5"><path d="M5 12l4 4 10-10"/></svg>
+              核准結果與訂單通知直接傳到 LINE
+            </li>
+          </ul>
+        </div>
+
+        <p class="text-center text-[11px] text-fg-subtle mt-8 leading-relaxed">
+          登入即表示同意小美的選物店<a class="text-primary font-semibold" href="#">服務條款</a>與<a class="text-primary font-semibold" href="#">隱私權政策</a>
+        </p>
+      </section>
+
+    </div>
+  </main>
+</body>
+</html>

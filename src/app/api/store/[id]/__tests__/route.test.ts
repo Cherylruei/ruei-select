@@ -162,6 +162,64 @@ describe('PATCH /api/store/[id]', () => {
     expect(body.data.allow_public_products).toBe(true)
   })
 
+  it('updates banner_link_url and returns 200', async () => {
+    mockRhcAuth.getUser.mockResolvedValue({ data: { user: MOCK_USER }, error: null })
+
+    const updatedStore = {
+      ...MOCK_STORE,
+      banner_link_url: 'https://example.com/promo',
+    }
+    const mockUsersQuery = {
+      select: vi.fn().mockReturnThis(),
+      eq: vi.fn().mockReturnThis(),
+      single: vi.fn().mockResolvedValue({ data: { id: 'user-1' }, error: null }),
+    }
+    const storeSelectSingle = vi.fn().mockResolvedValue({ data: MOCK_STORE, error: null })
+    const storeUpdateSingle = vi.fn().mockResolvedValue({ data: updatedStore, error: null })
+    const storeUpdateSelect = { select: vi.fn().mockReturnValue({ single: storeUpdateSingle }) }
+    const storeUpdateEq = { eq: vi.fn().mockReturnValue(storeUpdateSelect) }
+    const storeUpdateFn = vi.fn().mockReturnValue(storeUpdateEq)
+
+    mockServiceFrom.mockImplementation((table: string) => {
+      if (table === 'users') return mockUsersQuery
+      if (table === 'stores')
+        return {
+          select: vi.fn().mockReturnThis(),
+          eq: vi.fn().mockReturnValue({ single: storeSelectSingle }),
+          update: storeUpdateFn,
+        }
+      return {}
+    })
+
+    const { PATCH } = await import('../route')
+    const res = await PATCH(
+      makeRequest('PATCH', 'store-1', {
+        banner_link_url: 'https://example.com/promo',
+      }),
+      { params: Promise.resolve({ id: 'store-1' }) }
+    )
+    expect(res.status).toBe(200)
+    const body = await res.json()
+    expect(body.success).toBe(true)
+    expect(body.data.banner_link_url).toBe('https://example.com/promo')
+    expect(storeUpdateFn).toHaveBeenCalledWith(
+      expect.objectContaining({
+        banner_link_url: 'https://example.com/promo',
+      })
+    )
+  })
+
+  it('returns 400 when banner_link_url exceeds 500 chars', async () => {
+    setupUserAndStore()
+
+    const { PATCH } = await import('../route')
+    const res = await PATCH(
+      makeRequest('PATCH', 'store-1', { banner_link_url: 'https://example.com/'.repeat(30) }),
+      { params: Promise.resolve({ id: 'store-1' }) }
+    )
+    expect(res.status).toBe(400)
+  })
+
   it('returns 403 when store belongs to another user', async () => {
     mockRhcAuth.getUser.mockResolvedValue({ data: { user: MOCK_USER }, error: null })
 

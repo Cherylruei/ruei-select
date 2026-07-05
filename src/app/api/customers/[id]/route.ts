@@ -6,8 +6,8 @@ function extractLineId(email: string | undefined): string | null {
   return match ? match[1] : null
 }
 
-type ReviewAction = 'approve' | 'reject'
-const VALID_ACTIONS: ReviewAction[] = ['approve', 'reject']
+type ReviewAction = 'approve' | 'reject' | 'restore'
+const VALID_ACTIONS: ReviewAction[] = ['approve', 'reject', 'restore']
 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -44,10 +44,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     const body = await request.json()
     const action = body?.action as string | undefined
+    const rejectionReason = body?.rejection_reason as string | undefined
 
     if (!VALID_ACTIONS.includes(action as ReviewAction)) {
       return NextResponse.json(
-        { error: 'Invalid action. Must be approve or reject' },
+        { error: 'Invalid action. Must be approve, reject, or restore' },
         { status: 400 }
       )
     }
@@ -64,16 +65,34 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     if (!member) return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
 
-    if (member.status !== 'pending') {
+    if (action === 'reject' && member.status !== 'pending') {
       return NextResponse.json({ error: 'Member already reviewed' }, { status: 409 })
     }
+    if (action === 'approve' && member.status !== 'pending') {
+      return NextResponse.json({ error: 'Member already reviewed' }, { status: 409 })
+    }
+    if (action === 'restore' && member.status !== 'rejected') {
+      return NextResponse.json({ error: 'Member is not rejected' }, { status: 409 })
+    }
 
-    const newStatus = action === 'approve' ? 'approved' : 'rejected'
+    const newStatus = action === 'approve' || action === 'restore' ? 'approved' : 'rejected'
+
+    const updatePayload: Record<string, unknown> = {
+      status: newStatus,
+      reviewed_at: new Date().toISOString(),
+    }
+
+    if (action === 'reject') {
+      updatePayload.rejection_reason = rejectionReason ?? null
+    }
+    if (action === 'restore') {
+      updatePayload.rejection_reason = null
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const membersTable = serviceClient.from('store_members') as any
     const { data: updated, error: updateError } = (await membersTable
-      .update({ status: newStatus, reviewed_at: new Date().toISOString() })
+      .update(updatePayload)
       .eq('id', id)
       .select()
       .single()) as { data: unknown; error: unknown }

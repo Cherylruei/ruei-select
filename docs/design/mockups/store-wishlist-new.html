@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="zh-Hant" data-variant="candy">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>芮選 · 新增許願</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;500;700;900&family=Noto+Sans+TC:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../src/styles/design-tokens.css" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="_tailwind-config.js"></script>
+  <style>
+    body { font-family: var(--font-body); }
+    [data-variant="candy"] {
+      --r-sm: 10px; --r-md: 14px; --r-lg: 20px; --r-xl: 24px; --r-2xl: 28px;
+      --line-warm:        #F0D9CB;
+      --line-warm-strong: #E6C7B4;
+      --line-warm-soft:   #F7E5D8;
+    }
+    .card-line  { border: 1px solid var(--line-warm); }
+    .divider-warm { border-color: var(--line-warm-soft); }
+    .phone {
+      width: 100%; max-width: 420px; margin: 0 auto;
+      min-height: 100vh; background: var(--bg-app);
+      position: relative; box-shadow: 0 0 80px rgba(255, 110, 148, 0.12);
+    }
+    @media (min-width: 768px) {
+      .phone { margin: 24px auto; min-height: calc(100vh - 48px); border-radius: var(--r-2xl); overflow: hidden; }
+    }
+    .desktop-hint {
+      display: none; position: fixed; left: 24px; top: 24px;
+      font-family: var(--font-mono); font-size: 11px; color: var(--fg-subtle);
+      letter-spacing: 0.15em; text-transform: uppercase;
+    }
+    @media (min-width: 1024px) { .desktop-hint { display: block; } }
+    .logo-body { fill: #FFD9E4; } .logo-eye { fill: #3B2A2A; }
+    .logo-blush { fill: #FF6E94; opacity: 0.7; } .logo-sparkle { fill: #FFB347; }
+
+    .fld {
+      width: 100%; background: var(--bg-surface);
+      border: 1.5px solid var(--line-warm-strong); border-radius: var(--r-md);
+      padding: 12px 14px; font-size: 15px; outline: none;
+      transition: border-color .18s, box-shadow .18s; color: var(--fg-default);
+    }
+    .fld:focus { border-color: var(--c-primary); box-shadow: 0 0 0 4px var(--c-primary-bg); }
+    .fld::placeholder { color: var(--ink-400); }
+    .fld-lbl { font-family: var(--font-display); font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 5px; margin-bottom: 7px; }
+    .req { display:inline-flex; align-items:center; height:18px; padding:0 7px; border-radius:999px; background:var(--c-primary-bg); color:var(--c-primary-hv); font-family:var(--font-display); font-weight:700; font-size:10px; }
+    .opt { font-family: var(--font-body); font-weight: 500; font-size: 11px; color: var(--fg-subtle); }
+  </style>
+</head>
+<body style="background: linear-gradient(160deg, #FFF6F1 0%, #FCEAE0 55%, #F6DCD0 100%);">
+
+  <span class="desktop-hint">MOBILE · 390 PX · /STORE/[SLUG]/WISHLIST/NEW</span>
+
+  <div class="phone pb-28">
+
+    <!-- ===== Top bar ===== -->
+    <header class="px-5 pt-6 pb-4 sticky top-0 z-20 bg-app/90 backdrop-blur-md border-b" style="border-color: var(--line-warm-soft);">
+      <div class="flex items-center justify-between">
+        <a href="store-wishlist.html" class="w-10 h-10 rounded-pill bg-surface flex items-center justify-center shadow-sm card-line">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg>
+        </a>
+        <span class="font-display font-bold text-md">我要許願</span>
+        <div class="w-10"></div>
+      </div>
+    </header>
+
+    <!-- ===== Intro ===== -->
+    <section class="px-5 pt-4">
+      <div class="rounded-2xl p-4 flex items-start gap-3" style="background:#ECE7FF;border:1px solid #DDD3FF;">
+        <div class="w-9 h-9 rounded-pill flex items-center justify-center shrink-0" style="background:#9A8CFF;color:#fff;">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M12 4l2.5 5 5.5.8-4 4 1 5.5L12 16.8 7 19.3l1-5.5-4-4 5.5-.8L12 4z"/></svg>
+        </div>
+        <div class="leading-snug">
+          <div class="font-display font-bold text-sm" style="color:#7E70E8;">告訴小美你想要什麼</div>
+          <div class="text-[12px] text-fg-muted mt-0.5">許願會公開在許願牆，越多人附和越快進貨 ✿</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== Form ===== -->
+    <section class="px-5 pt-5 space-y-5">
+
+      <!-- 商品名稱 -->
+      <div>
+        <div class="fld-lbl">商品名稱 <span class="req">必填</span></div>
+        <input id="nameInput" class="fld" placeholder="例：Marimekko 保冷袋、日本蜂蜜蛋糕…" oninput="validate()" />
+      </div>
+
+      <!-- 連結 / 照片 擇一 -->
+      <div class="rounded-xl p-4" style="background:var(--bg-surface);border:1.5px solid var(--line-warm);">
+        <div class="flex items-center justify-between mb-1">
+          <div class="fld-lbl mb-0">商品連結或照片 <span class="req">擇一</span></div>
+          <span id="reqChip" class="inline-flex items-center gap-1 h-6 px-2.5 rounded-pill font-display font-bold text-[11px]" style="background:#FBEBD2;color:#C97A1E;">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor"/></svg>
+            待填寫
+          </span>
+        </div>
+        <p class="text-[12px] text-fg-muted mb-3.5">有<b class="text-fg-default">商品連結</b>最好（小美能直接找到同款）；不方便的話，<b class="text-fg-default">至少上傳一張照片</b>。</p>
+
+        <!-- 連結 -->
+        <div class="fld-lbl text-[13px]">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7E70E8" stroke-width="1.9" stroke-linecap="round"><path d="M10 13a5 5 0 007 0l2-2a5 5 0 00-7-7l-1 1"/><path d="M14 11a5 5 0 00-7 0l-2 2a5 5 0 007 7l1-1"/></svg>
+          商品連結 <span class="opt">推薦</span>
+        </div>
+        <input id="linkInput" class="fld" placeholder="貼上購物網站連結 https://…" oninput="validate()" />
+
+        <!-- OR divider -->
+        <div class="flex items-center gap-3 my-3.5">
+          <span class="flex-1 h-px" style="background:var(--line-warm-strong);"></span>
+          <span class="font-display font-bold text-xs text-fg-subtle">或</span>
+          <span class="flex-1 h-px" style="background:var(--line-warm-strong);"></span>
+        </div>
+
+        <!-- 照片 -->
+        <div class="fld-lbl text-[13px]">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#FF6E94" stroke-width="1.9" stroke-linecap="round"><rect x="3" y="6" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.5"/><path d="M3 17l5-4 4 3 3-3 6 5"/></svg>
+          商品照片
+        </div>
+        <div id="photoZone" class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="addPhoto()" class="aspect-square rounded-md flex flex-col items-center justify-center gap-1 transition" style="border:1.5px dashed var(--line-warm-strong);background:#FFF8F4;color:var(--c-primary-hv);">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M12 7v10M7 12h10"/></svg>
+            <span class="font-mono text-[9px]">相簿/相機</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 型號 / 規格 -->
+      <div>
+        <div class="fld-lbl">型號 / 規格 <span class="opt">選填</span></div>
+        <input class="fld" placeholder="例：紅色、L 號、500ml…" />
+      </div>
+
+      <!-- 備註 -->
+      <div>
+        <div class="fld-lbl">想說的話 <span class="opt">選填</span></div>
+        <textarea class="fld resize-none" rows="2" placeholder="例：希望中秋前能收到～"></textarea>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ===== Sticky bottom CTA ===== -->
+  <div class="fixed bottom-0 left-0 right-0 z-30 max-w-[420px] mx-auto px-5 py-4 bg-surface/95 backdrop-blur-md" style="border-top:1px solid var(--line-warm);">
+    <button id="submitBtn" disabled onclick="submitWish()" class="w-full h-12 rounded-pill bg-primary text-white font-display font-bold shadow-pink hover:bg-primary-hv active:scale-[.98] transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:shadow-none disabled:cursor-not-allowed">
+      送出許願
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </button>
+    <p id="footHint" class="text-center font-mono text-[10px] text-fg-subtle mt-2">填寫商品名稱 + 連結或照片即可送出</p>
+  </div>
+
+  <!-- ===== Success overlay ===== -->
+  <div id="successOverlay" class="fixed inset-0 z-50 hidden items-center justify-center px-8" style="background:rgba(35,34,32,0.45);backdrop-filter:blur(2px);">
+    <div class="bg-surface rounded-2xl p-7 text-center max-w-[320px] w-full" style="box-shadow:var(--shadow-lg);">
+      <div class="w-16 h-16 rounded-pill mx-auto flex items-center justify-center" style="background:#E1F4E6;color:#2F8A52;">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>
+      </div>
+      <div class="font-display font-bold text-lg mt-4">許願已送出 ✿</div>
+      <p class="text-sm text-fg-muted mt-1.5 leading-snug">已公開到許願牆，等待小美確認。<br/>你會在「我的許願」追蹤狀態。</p>
+      <a href="store-wishlist.html" class="mt-5 w-full inline-flex items-center justify-center h-11 rounded-pill bg-primary text-white font-display font-bold shadow-pink">回到許願牆</a>
+    </div>
+  </div>
+
+  <script>
+    let photoCount = 0;
+    const COLORS = ['placeholder-img-pink','placeholder-img-mint','placeholder-img-mango'];
+    function addPhoto(){
+      if (photoCount >= 2) return; // demo: cap at 2 then keep add btn
+      const zone = document.getElementById('photoZone');
+      const cls = ['#FFD9E4','#C2EBDF','#FFDDB0'][photoCount % 3];
+      const tile = document.createElement('div');
+      tile.className = 'relative aspect-square rounded-md card-line overflow-hidden';
+      tile.style.background = 'repeating-linear-gradient(135deg,' + cls + ',' + cls + ' 7px,#fff 7px,#fff 14px)';
+      tile.innerHTML = '<button onclick="this.parentElement.remove();photoCount--;validate()" class="absolute top-1 right-1 w-5 h-5 rounded-pill bg-black/55 text-white flex items-center justify-center"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M6 18L18 6"/></svg></button>';
+      zone.insertBefore(tile, zone.firstChild);
+      photoCount++;
+      validate();
+    }
+    function validate(){
+      const name = document.getElementById('nameInput').value.trim();
+      const link = document.getElementById('linkInput').value.trim();
+      const hasMedia = !!link || photoCount > 0;
+      const chip = document.getElementById('reqChip');
+      if (hasMedia){
+        chip.style.background = '#E1F4E6'; chip.style.color = '#2F8A52';
+        chip.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M5 12l4 4 10-10"/></svg>' + (link ? '已附連結' : '已附照片');
+      } else {
+        chip.style.background = '#FBEBD2'; chip.style.color = '#C97A1E';
+        chip.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16.5" r="0.6" fill="currentColor"/></svg>待填寫';
+      }
+      const ok = name && hasMedia;
+      const btn = document.getElementById('submitBtn');
+      const hint = document.getElementById('footHint');
+      btn.disabled = !ok;
+      if (!name) hint.textContent = '請填寫商品名稱';
+      else if (!hasMedia) hint.textContent = '請貼上連結或上傳至少一張照片';
+      else hint.textContent = '太好了！可以送出許願了 ✿';
+    }
+    function submitWish(){
+      if (document.getElementById('submitBtn').disabled) return;
+      const o = document.getElementById('successOverlay');
+      o.classList.remove('hidden'); o.classList.add('flex');
+    }
+  </script>
+</body>
+</html>

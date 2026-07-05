@@ -24,7 +24,9 @@
       "Bash(node -e \"require\\('jsdom'\\); console.log\\('jsdom ok'\\)\")",
       "Bash(node -e \"require\\('@testing-library/react'\\); console.log\\('RTL ok'\\)\")",
       "Bash(node -e \"require\\('jsdom'\\); console.log\\('jsdom ok'\\)\")",
-      "Bash(node -e \"require\\('@testing-library/react'\\); console.log\\('RTL ok'\\)\")"
+      "Bash(node -e \"require\\('@testing-library/react'\\); console.log\\('RTL ok'\\)\")",
+      "Bash(Get-ChildItem \"c:\\\\Users\\\\heave\\\\ruei-select\\\\.claude\\\\skills\" -ErrorAction SilentlyContinue)",
+      "Bash(Select-Object Name)"
     ]
   },
   "hooks": {

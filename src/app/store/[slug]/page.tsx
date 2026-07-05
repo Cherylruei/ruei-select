@@ -14,6 +14,8 @@ export default function StoreHomePage() {
   const slug = params.slug
 
   const [products, setProducts] = useState<StoreProductSummary[]>([])
+  const [bannerImageUrl, setBannerImageUrl] = useState<string | null>(null)
+  const [bannerLinkUrl, setBannerLinkUrl] = useState<string | null>(null)
   const [pageState, setPageState] = useState<PageState>('loading')
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [keyword, setKeyword] = useState('')
@@ -35,8 +37,18 @@ export default function StoreHomePage() {
           setPageState('error')
           return
         }
-        const data = (await res.json()) as { products: StoreProductSummary[] }
+        const data = (await res.json()) as {
+          products: StoreProductSummary[]
+          store?: {
+            banner_image_url: string | null
+            banner_link_url: string | null
+          }
+        }
         setProducts(data.products)
+        if (data.store) {
+          setBannerImageUrl(data.store.banner_image_url)
+          setBannerLinkUrl(data.store.banner_link_url)
+        }
         setPageState(data.products.length === 0 ? 'empty' : 'ready')
       } catch {
         setPageState('error')
@@ -180,75 +192,96 @@ export default function StoreHomePage() {
       <div className='hidden lg:block'>
         {/* Hero banner */}
         <section className='px-8 pt-8'>
-          <div
-            className='rounded-2xl px-10 py-9 relative overflow-hidden flex items-center gap-8'
-            style={{
-              background: 'linear-gradient(125deg, #FF6E94 0%, #9A8CFF 100%)',
-              boxShadow:
-                '0 22px 50px -22px rgba(154,140,255,0.50), 0 0 0 1px rgba(255,110,148,0.18)',
-            }}
-          >
-            <div className='absolute -right-12 -top-12 w-56 h-56 rounded-full bg-white/[0.12]' />
-            <div className='absolute right-32 bottom-4 w-24 h-24 rounded-full bg-white/10' />
-            <div className='absolute right-10 top-12 w-14 h-14 rounded-full bg-white/[0.14]' />
-
-            <div className='relative z-10 flex-1 max-w-xl'>
-              <span
-                className='inline-flex items-center gap-1.5 font-mono text-[11px] text-white tracking-[0.2em] uppercase px-2.5 py-1 rounded-full whitespace-nowrap'
-                style={{
-                  background: 'rgba(255,255,255,0.15)',
-                  border: '1px solid rgba(255,255,255,0.28)',
-                }}
+          {bannerImageUrl ? (
+            bannerLinkUrl ? (
+              <a
+                href={bannerLinkUrl}
+                className='group block rounded-2xl overflow-hidden relative h-56 shadow-[0_22px_50px_-22px_rgba(20,19,15,0.35)]'
               >
-                ★ 本週精選商品
-              </span>
-              <h1 className='font-display font-bold text-white text-3xl mt-3 leading-[1.15]'>
-                精選好物
-                <br />
-                讓你的生活更精彩
-              </h1>
-              <p className='text-white/85 text-sm mt-3 font-mono tracking-wide'>
-                {products.length} 件商品等你探索
-              </p>
-              <div className='mt-5 flex items-center gap-3'>
-                <button
-                  onClick={() => setActiveCategory(null)}
-                  className='inline-flex items-center gap-1.5 h-10 px-5 rounded-full bg-white font-display font-bold text-sm shadow-sm'
-                  style={{ color: 'var(--c-primary)' }}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={bannerImageUrl}
+                  alt='賣場橫幅'
+                  className='w-full h-full object-cover transition duration-500 ease-out group-hover:scale-[1.035] group-hover:brightness-90'
+                />
+              </a>
+            ) : (
+              <div className='rounded-2xl overflow-hidden relative h-56 shadow-[0_22px_50px_-22px_rgba(20,19,15,0.35)]'>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={bannerImageUrl} alt='賣場橫幅' className='w-full h-full object-cover' />
+              </div>
+            )
+          ) : (
+            <div
+              className='rounded-2xl px-10 py-9 relative overflow-hidden flex items-center gap-8'
+              style={{
+                background: 'linear-gradient(125deg, #FF6E94 0%, #9A8CFF 100%)',
+                boxShadow:
+                  '0 22px 50px -22px rgba(154,140,255,0.50), 0 0 0 1px rgba(255,110,148,0.18)',
+              }}
+            >
+              <div className='absolute -right-12 -top-12 w-56 h-56 rounded-full bg-white/[0.12]' />
+              <div className='absolute right-32 bottom-4 w-24 h-24 rounded-full bg-white/10' />
+              <div className='absolute right-10 top-12 w-14 h-14 rounded-full bg-white/[0.14]' />
+
+              <div className='relative z-10 flex-1 max-w-xl'>
+                <span
+                  className='inline-flex items-center gap-1.5 font-mono text-[11px] text-white tracking-[0.2em] uppercase px-2.5 py-1 rounded-full whitespace-nowrap'
+                  style={{
+                    background: 'rgba(255,255,255,0.15)',
+                    border: '1px solid rgba(255,255,255,0.28)',
+                  }}
                 >
-                  所有商品
-                </button>
+                  ★ 本週精選商品
+                </span>
+                <h1 className='font-display font-bold text-white text-3xl mt-3 leading-[1.15]'>
+                  精選好物
+                  <br />
+                  讓你的生活更精彩
+                </h1>
+                <p className='text-white/85 text-sm mt-3 font-mono tracking-wide'>
+                  {products.length} 件商品等你探索
+                </p>
+                <div className='mt-5 flex items-center gap-3'>
+                  <button
+                    onClick={() => setActiveCategory(null)}
+                    className='inline-flex items-center gap-1.5 h-10 px-5 rounded-full bg-white font-display font-bold text-sm shadow-sm'
+                    style={{ color: 'var(--c-primary)' }}
+                  >
+                    所有商品
+                  </button>
+                </div>
+              </div>
+
+              {/* Product collage */}
+              <div className='flex items-center gap-3 ml-auto relative z-10'>
+                <div
+                  className='w-32 h-40 rounded-xl shadow-md'
+                  style={{
+                    background:
+                      'repeating-linear-gradient(135deg, #FFEAD0, #FFEAD0 8px, #FFDDB0 8px, #FFDDB0 16px)',
+                    transform: 'rotate(-6deg)',
+                  }}
+                />
+                <div
+                  className='w-36 h-44 rounded-xl shadow-md'
+                  style={{
+                    background:
+                      'repeating-linear-gradient(135deg, #FFE9E0, #FFE9E0 8px, #FFD9E4 8px, #FFD9E4 16px)',
+                    transform: 'translateY(-12px) rotate(3deg)',
+                  }}
+                />
+                <div
+                  className='w-32 h-40 rounded-xl shadow-md'
+                  style={{
+                    background:
+                      'repeating-linear-gradient(135deg, #ECE7FF, #ECE7FF 8px, #DDD3FF 8px, #DDD3FF 16px)',
+                    transform: 'rotate(7deg)',
+                  }}
+                />
               </div>
             </div>
-
-            {/* Product collage */}
-            <div className='flex items-center gap-3 ml-auto relative z-10'>
-              <div
-                className='w-32 h-40 rounded-xl shadow-md'
-                style={{
-                  background:
-                    'repeating-linear-gradient(135deg, #FFEAD0, #FFEAD0 8px, #FFDDB0 8px, #FFDDB0 16px)',
-                  transform: 'rotate(-6deg)',
-                }}
-              />
-              <div
-                className='w-36 h-44 rounded-xl shadow-md'
-                style={{
-                  background:
-                    'repeating-linear-gradient(135deg, #FFE9E0, #FFE9E0 8px, #FFD9E4 8px, #FFD9E4 16px)',
-                  transform: 'translateY(-12px) rotate(3deg)',
-                }}
-              />
-              <div
-                className='w-32 h-40 rounded-xl shadow-md'
-                style={{
-                  background:
-                    'repeating-linear-gradient(135deg, #ECE7FF, #ECE7FF 8px, #DDD3FF 8px, #DDD3FF 16px)',
-                  transform: 'rotate(7deg)',
-                }}
-              />
-            </div>
-          </div>
+          )}
         </section>
 
         {/* Main grid: sidebar + product grid */}

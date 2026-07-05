@@ -9,6 +9,7 @@ const PAGE_TITLES: Record<string, string> = {
   '/admin/store': '賣場設定',
   '/admin/suppliers': '供應商管理',
   '/admin/customers': '顧客管理',
+  '/admin/announcements': '公告管理',
   '/admin/products': '商品管理',
   '/admin/orders': '訂單管理',
 }
@@ -21,6 +22,8 @@ const CUSTOM_HEADER_PATHS = new Set([
   '/admin/products/new',
   '/admin/orders',
   '/admin/orders/new',
+  '/admin/customers',
+  '/admin/announcements',
 ])
 
 function getPageTitle(pathname: string): string {

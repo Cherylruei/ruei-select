@@ -40,6 +40,8 @@ export interface Store {
   slug: string
   invite_token: string
   allow_public_products: boolean
+  banner_image_url: string | null
+  banner_link_url: string | null
   created_at: string
   updated_at: string
 }
@@ -70,6 +72,7 @@ export interface StoreMember {
   source: MemberSource
   referring_product_id: string | null
   note: string | null
+  rejection_reason: string | null
   applied_at: string
   reviewed_at: string | null
 }
@@ -377,6 +380,23 @@ export interface StoreAuthResult {
     line_id: string | null
     applied_at: string
   }
+}
+
+// 商家公告（US-NEW-ANNOUNCE）
+export type AnnouncementType = 'info' | 'promo' | 'warning'
+
+export interface StoreAnnouncement {
+  id: string
+  title: string
+  content: string
+  type: AnnouncementType
+  created_at: string
+}
+
+export interface AdminAnnouncement extends StoreAnnouncement {
+  is_active: boolean
+  expires_at: string | null
+  updated_at: string
 }
 
 // AI 文案優化回傳格式
