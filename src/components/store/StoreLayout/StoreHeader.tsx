@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import StoreUserMenu from './StoreUserMenu'
+import StoreNotificationBell from './StoreNotificationBell'
 
 interface StoreHeaderProps {
   name: string
@@ -170,37 +171,21 @@ export default function StoreHeader({ name, avatarUrl, slug, memberName }: Store
 
         {/* Desktop right: bell + user pill */}
         <div className='hidden lg:flex items-center gap-2 shrink-0'>
-          <button
-            className='relative w-10 h-10 rounded-full bg-surface flex items-center justify-center'
-            style={{ border: '1px solid #f0d9cb' }}
-            aria-label='通知'
-          >
-            <svg
-              width='18'
-              height='18'
-              viewBox='0 0 24 24'
-              fill='none'
-              stroke='currentColor'
-              strokeWidth='1.8'
-              strokeLinecap='round'
-              aria-hidden='true'
-            >
-              <path d='M6 16V11a6 6 0 1112 0v5l2 2H4l2-2z' />
-              <path d='M10 20a2 2 0 004 0' />
-            </svg>
-          </button>
-
+          <StoreNotificationBell slug={slug} />
           <StoreUserMenu slug={slug} memberName={memberName} />
         </div>
 
-        {/* Mobile: avatar shortcut */}
-        <Link
-          href={`/store/${slug}/account`}
-          className='lg:hidden w-8 h-8 rounded-full bg-primary text-white font-display font-bold text-sm flex items-center justify-center shrink-0'
-          aria-label='帳戶'
-        >
-          {initial}
-        </Link>
+        {/* Mobile: bell + avatar shortcut */}
+        <div className='lg:hidden flex items-center gap-2 shrink-0'>
+          <StoreNotificationBell slug={slug} />
+          <Link
+            href={`/store/${slug}/account`}
+            className='w-8 h-8 rounded-full bg-primary text-white font-display font-bold text-sm flex items-center justify-center'
+            aria-label='帳戶'
+          >
+            {initial}
+          </Link>
+        </div>
       </div>
     </header>
   )

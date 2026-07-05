@@ -382,6 +382,23 @@ export interface StoreAuthResult {
   }
 }
 
+// 商家公告（US-NEW-ANNOUNCE）
+export type AnnouncementType = 'info' | 'promo' | 'warning'
+
+export interface StoreAnnouncement {
+  id: string
+  title: string
+  content: string
+  type: AnnouncementType
+  created_at: string
+}
+
+export interface AdminAnnouncement extends StoreAnnouncement {
+  is_active: boolean
+  expires_at: string | null
+  updated_at: string
+}
+
 // AI 文案優化回傳格式
 export interface CopywritingResult {
   name: string

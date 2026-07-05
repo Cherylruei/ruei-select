@@ -1,6 +1,6 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
@@ -101,6 +101,25 @@ const NAV_SECTIONS: { section: string; items: NavItem[] }[] = [
           </svg>
         ),
       },
+      {
+        href: '/admin/announcements',
+        label: '公告管理',
+        exact: false,
+        icon: (
+          <svg
+            viewBox='0 0 24 24'
+            width='18'
+            height='18'
+            fill='none'
+            stroke='currentColor'
+            strokeWidth='1.8'
+            strokeLinecap='round'
+          >
+            <path d='M6 16V11a6 6 0 1112 0v5l2 2H4l2-2z' />
+            <path d='M10 20a2 2 0 004 0' />
+          </svg>
+        ),
+      },
     ],
   },
   {
@@ -162,6 +181,20 @@ export default function Sidebar({
 }: SidebarProps) {
   const pathname = usePathname()
   const firstChar = displayName.charAt(0)
+  const [announceCount, setAnnounceCount] = useState(0)
+
+  useEffect(() => {
+    let cancelled = false
+    fetch('/api/admin/announcements')
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => {
+        if (!cancelled && j?.success) setAnnounceCount(j.active_count ?? 0)
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [pathname])
 
   return (
     <aside
@@ -228,13 +261,18 @@ export default function Sidebar({
                 ? { backgroundColor: 'var(--c-primary-bg)', color: 'var(--c-primary-hv)' }
                 : undefined
 
+              const tag =
+                item.href === '/admin/announcements' && announceCount > 0
+                  ? String(announceCount)
+                  : item.tag
+
               const content = (
                 <>
                   <span className='shrink-0 w-5 h-5 grid place-items-center'>{item.icon}</span>
                   <span className='flex-1'>{item.label}</span>
-                  {item.tag && (
+                  {tag && (
                     <span className='font-mono text-xs px-2 py-0.5 rounded-pill bg-primary text-white font-medium'>
-                      {item.tag}
+                      {tag}
                     </span>
                   )}
                 </>
