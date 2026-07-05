@@ -60,29 +60,30 @@ export default function JoinClient({ slug, storeName, storeAvatarUrl }: JoinClie
     if (liffInitialized.current) return
     liffInitialized.current = true
 
-    if (process.env.NODE_ENV === 'development') {
-      /* eslint-disable react-hooks/set-state-in-effect */
-      setLiffToken('dev-mock-token')
-      setDisplayName('測試用戶')
-      setForm((prev) => ({ ...prev, name: '測試用戶' }))
-      setPageState('form')
-      /* eslint-enable react-hooks/set-state-in-effect */
-      return
-    }
-
     async function initAndLogin() {
       try {
-        const liff = await initLiff()
-        if (!liff.isLoggedIn()) {
-          liff.login({ redirectUri: window.location.href })
-          return
+        // 第一步：取得 token 與顯示名稱
+        // 這是唯一因環境而異的部分；dev 走 mock token，prod 走真實 LIFF
+        let token: string
+        let profileName: string
+        if (process.env.NODE_ENV === 'development') {
+          token = 'dev-mock-token'
+          profileName = '測試用戶'
+        } else {
+          const liff = await initLiff()
+          if (!liff.isLoggedIn()) {
+            liff.login({ redirectUri: window.location.href })
+            return
+          }
+          token = liff.getAccessToken() ?? ''
+          const profile = await liff.getProfile()
+          profileName = profile.displayName
         }
-        const token = liff.getAccessToken()
-        const profile = await liff.getProfile()
 
+        // 第二步：不分環境，一律先檢查會員狀態
         // 已是審核通過的會員 → 直接進入賣場，不顯示申請表單
         const authRes = await fetch(`/api/store-auth?slug=${encodeURIComponent(slug)}`, {
-          headers: { Authorization: `Bearer ${token ?? ''}` },
+          headers: { Authorization: `Bearer ${token}` },
         })
         if (authRes.ok) {
           const authData = await authRes.json()
@@ -92,9 +93,10 @@ export default function JoinClient({ slug, storeName, storeAvatarUrl }: JoinClie
           }
         }
 
+        // 第三步：非會員 → 顯示申請表單
         setLiffToken(token)
-        setDisplayName(profile.displayName)
-        setForm((prev) => ({ ...prev, name: profile.displayName }))
+        setDisplayName(profileName)
+        setForm((prev) => ({ ...prev, name: profileName }))
         setPageState('form')
       } catch {
         setPageState('error')
